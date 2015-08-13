@@ -1,0 +1,13 @@
+:pass_through: 
+  :content_types: 
+  - application\/audio
+  - application\/video
+  - application\/image
+  - application\/pdf
+  - application\/.*flash
+  - application\/octet-stream
+  - image\/
+  :content_length: 100000
+:port: 8081
+:proxy_mode: 1
+:bind_addr: "127.0.0.1"  

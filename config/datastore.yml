@@ -1,0 +1,5 @@
+:adapter: :file
+:findings: findings
+:conversations: conversations
+:event_logs_dir: logs
+:scan_logs_dir: scan_logs

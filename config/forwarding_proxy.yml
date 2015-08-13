@@ -1,0 +1,12 @@
+webscarab: 
+      :description: ""
+      :auth_type: ""
+      :username: ""
+      :password: ""
+      :host: 127.0.0.1
+      :domain: ""
+      :name: webscarab
+      :port: "8008"
+      :workstation: ""
+      :enabled: true
+      :target_pattern: "siberas.de"

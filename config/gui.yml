@@ -1,0 +1,23 @@
+:history_file: "history.yml"
+:save_passwords: false
+:save_without_master: false
+:fext_img:
+  - jpg
+  - gif
+  - bmp
+  - ico
+  - png
+  - jpeg 
+:fext_docs:
+  - ppt
+  - doc
+  - xls
+  - pptx
+  - docx
+  - xlsx
+  - pdf
+:fext_javascript: 
+  - js
+  - json
+:fext_style:
+  - css

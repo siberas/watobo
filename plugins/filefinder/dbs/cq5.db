@@ -1,0 +1,23 @@
+system/console							# [Felix Web Console]
+system/console/components
+system/admin    						# [CQSE; servlet engine]
+system/sling/cqform/defaultlogin.html
+crx/de/index.jsp 						# [CRX Web Console] 
+crx/ 									# [CRX Web Console]
+
+etc/packages.html
+content/geometrixx
+libs/cq/core/content/login.html
+libs/cq/core/content/welcome.html
+libs/granite/ui/content/dumplibs.html
+
+
+# jackrabbits
+populate.jsp
+search.jsp
+repository/default
+rmi
+repository.xml
+etc/packages
+etc/replication
+

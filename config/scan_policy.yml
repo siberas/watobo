@@ -1,0 +1,13 @@
+default: 
+    Watobo::Modules::Active::Xss::Xss_simple: true
+    Watobo::Modules::Active::Sap::Its_service_parameter: false
+    Watobo::Modules::Active::Sqlinjection::Sql_numerical: false
+    Watobo::Modules::Active::Discovery::Http_methods: false
+    Watobo::Modules::Active::Sap::Its_xss: false
+    Watobo::Modules::Active::Sqlinjection::Sqli_simple: true
+    Watobo::Modules::Active::Sap::Its_services: false
+    Watobo::Modules::Active::Sap::Its_commands: false
+    Watobo::Modules::Active::Domino::Domino_db: false
+    Watobo::Modules::Active::Directories::Dir_indexing: false
+    Watobo::Modules::Active::Sqlinjection::Sql_boolean: true
+:default_policy: default

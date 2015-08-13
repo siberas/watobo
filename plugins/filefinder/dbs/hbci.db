@@ -1,0 +1,13 @@
+cgi/hbcipt.cgi
+hbci
+pintan
+HbciPinTanHttpGate
+BankingPinTanInt/ServletPinTan
+ssl/banking
+fints_pintan/receiver
+hbci/pintan/PinTanServlet
+banking/hbci.do
+hbciTunnel/hbciTransfer.jsp
+pintan/PinTanServlet
+cgi-bin/hbciservlet
+OnlineBankingFinTS/pintan

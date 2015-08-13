@@ -1,0 +1,14 @@
+:patterns: 
+- name="(sessid)" value="([0-9a-zA-Z!-]*)"
+- (sessid)=([-0-9a-zA-Z_:]*)(;|&)?
+- (SESSIONID)=([-0-9a-zA-Z_:\.\(\)]*)(;|&)?
+- (PHPSESSID)=([0-9a-zA-Z]*)(;|&)?
+- (ASPSESSIONID)\w*=([0-9a-zA-Z]*)(;|&)?
+- (MYSAPSSO2)=([0-9a-zA-Z.=%]*)(;|&)?
+- (ELEXIRSID)=([0-9a-zA-Z!-]*)(;|&)?
+- (SLSID)=([0-9a-zA-Z!-]*)(;|&)?
+- (sid)=([0-9a-z]*)(')?
+- (saplb_\*)=([-0-9a-zA-Z_:\(\)]*)(;|&)?
+- (DomAuthSessId)=([0-9a-zA-Z]*)(;|&)?
+- (wgate)\/([\w]{4,}\/[\w=~]*)(;|&|'|")?
+- (session)=([-0-9a-zA-Z_:\.]*)(;|&)?

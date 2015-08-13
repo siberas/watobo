@@ -1,0 +1,4 @@
+:workspace_name: "workspace"
+:project_settings_file_ext: .wps
+:session_settings_file_ext: .wss
+:watobo_folder: ".watobo"

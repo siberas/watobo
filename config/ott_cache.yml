@@ -1,0 +1,4 @@
+:patterns:
+  - name="(token)" value="([0-9a-zA-Z!-]*)"
+  - (token)=([-0-9a-zA-Z_:]*)(;|&)?
+:request_ids: {}

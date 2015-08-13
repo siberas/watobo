@@ -1,0 +1,5 @@
+require 'watobo/http/data/data'
+require 'watobo/http/data/json'
+require 'watobo/http/url/url'
+require 'watobo/http/cookies/cookies'
+require 'watobo/http/xml/xml'

@@ -1,0 +1,18 @@
+:logout_signatures: 
+- ^Location.*login
+:smart_scan: true
+:ignore_server_errors: true 
+:custom_error_patterns: []
+:excluded_chats: []
+:max_parallel_checks: 15
+:excluded_parms:
+  - __VIEWSTATE
+  - __EVENTVALIDATION
+:non_unique_parms: []
+:smart_scan: true
+:www_auth: {}
+:scope: {}  
+:run_passive_checks: false
+:client_certificates: {}
+:auto_login: true
+  

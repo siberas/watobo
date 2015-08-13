@@ -1,0 +1,111 @@
+# @private 
+module Watobo#:nodoc: all
+  module Findings
+    @findings = {}
+    @findings_lock = Mutex.new
+    @event_dispatcher_listeners = Hash.new
+    def self.subscribe(event, &callback)
+      (@event_dispatcher_listeners[event] ||= []) << callback
+    end
+
+    def self.clearEvents(event)
+      @event_dispatcher_listeners[event] ||= []
+      @event_dispatcher_listeners[event].clear
+    end
+
+    def self.notify(event, *args)
+      if @event_dispatcher_listeners[event]
+        @event_dispatcher_listeners[event].each do |m|
+          m.call(*args) if m.respond_to? :call
+        end
+      end
+    end
+    
+    def self.length
+      @findings.length
+    end
+
+    def self.reset
+      @findings = {}
+      @event_dispatcher_listeners = Hash.new
+    end
+
+    def self.exist?(finding)
+      @findings.has_key?(finding.details[:fid])
+    end
+
+    def self.set(finding, prefs)
+      @findings_lock.synchronize do
+        if @findings.has_key? finding.fid
+          @findings[finding.fid].details.update prefs
+          Watobo::DataStore.update_finding(finding)
+        return true
+        end
+        return false
+      end
+    end
+
+    def self.unset_false_positive(finding)
+      @findings_lock.synchronize do
+        if @findings.has_key? finding.fid
+          @findings[finding.fid].unset_false_positive
+          Watobo::DataStore.update_finding(finding)
+        return true
+        end
+        return false
+      end
+    end
+
+    def self.set_false_positive(finding)
+      @findings_lock.synchronize do
+        if @findings.has_key? finding.fid
+          @findings[finding.fid].set_false_positive
+          Watobo::DataStore.update_finding(finding)
+        return true
+        end
+        return false
+      end
+    end
+
+    def self.each(&block)
+      if block_given?
+        @findings_lock.synchronize do
+          @findings.map{|f| yield f }
+        end
+      end
+    end
+
+    def self.delete(finding)
+      @findings_lock.synchronize do
+        Watobo::DataStore.delete_finding(finding)
+        @findings.delete finding.fid        
+      end
+    end
+
+    def self.add(finding, opts={})
+      @findings_lock.synchronize do
+        options = {
+          :notify => true,
+          :save_finding => true
+        }
+        options.update opts
+        puts "[Project] add finding #{finding.fid}" if $DEBUG
+
+        unless @findings.has_key?(finding.fid)
+          begin
+            @findings[finding.fid] = finding
+            notify(:new, finding) if options[:notify] == true
+
+            Watobo::DataStore.add_finding(finding) if options[:save_finding] == true
+          rescue => bang
+            puts "!!!ERROR: #{Module.nesting[0].name}"
+            puts bang
+            puts bang.backtrace if $DEBUG
+          end
+        end
+      end
+
+    end
+
+  end
+end

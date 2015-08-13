@@ -1,0 +1,1 @@
+require 'watobo/parser/html'
