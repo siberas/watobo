@@ -2,6 +2,7 @@ begin
   print "\nLoading FXRuby ... this may take some time ... "
   require 'fox16'
   require 'fox16/colors'
+  require 'watobo/patch_fxruby_setfocus'
   print "[OK]\n"
 rescue LoadError
   print "[FAILED]\n"
