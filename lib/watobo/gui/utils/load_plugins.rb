@@ -37,7 +37,9 @@ module Watobo#:nodoc: all
               load pgf
               class_constant = Watobo.class_eval(class_name)
 
-              Watobo::Gui.add_plugin class_constant.new(Watobo::Gui.application, project)
+              Watobo::Gui.application.runOnUiThread do
+                Watobo::Gui.add_plugin class_constant.new(Watobo::Gui.application, project)
+              end
             else
 
               Dir["#{sub}/#{File.basename(sub)}.rb"].each do |plugin_file|
@@ -76,8 +78,9 @@ module Watobo#:nodoc: all
                   #puts class_name
                   class_constant = Watobo.class_eval(class_name)
 
-                  Watobo::Gui.add_plugin class_constant.new(Watobo::Gui.application, project)
-                  
+                  Watobo::Gui.application.runOnUiThread do
+                    Watobo::Gui.add_plugin class_constant.new(Watobo::Gui.application, project)
+                  end
                 rescue => bang
                   puts bang
                   puts bang.backtrace if $DEBUG
@@ -88,15 +91,17 @@ module Watobo#:nodoc: all
 
               Watobo::Plugin.constants.each do |pc|
                 puts ">> PLUGIN >> #{pc.to_s}"
-                
+
                 pclass = Watobo::Plugin.class_eval(pc.to_s)
-                
+
                 if pclass.respond_to? :create_gui
                   puts "ADD NEW PLUGIN #{pc.upcase}"
                   # TODO: In later versions - if all plugins are switched to the new style - this will not be necessary here
-                  gui = pclass.create_gui()
-                  # puts gui.class
-                  Watobo::Gui.add_plugin pclass
+                  Watobo::Gui.application.runOnUiThread do
+                    gui = pclass.create_gui()
+                    # puts gui.class
+                    Watobo::Gui.add_plugin pclass
+                  end
 
                 # exit
                 end

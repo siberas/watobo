@@ -57,40 +57,28 @@ module Watobo#:nodoc: all
          @scanner = nil
       end
     end
-    
+
     @chat_lock.synchronize do
       @chat_queue.each do |c|
         addChat(c)
       end
       @chat_queue.clear
     end
-    
+
     @status_lock.synchronize do
       unless @new_status.nil?
         update_status(@new_status)
       end
-        
+
     end
-    
-    @msg_lock.synchronize do
-      while @msg_queue.length > 0
-        msg = @msg_queue.shift
-        case msg
-        when :modal_finished
-          puts "stopping modal ..."
-          getApp.stopModal
-          puts "modal stopped"
-        end
-      end
-    end
-    
+
   }
  end
 
       def update_status(new_status)
         case new_status
         when SCAN_STARTED
-          
+
         when SCAN_FINISHED
           @scan_button.icon = ICON_START
           @dashboard.setScanStatus("Finished")
@@ -786,40 +774,37 @@ module Watobo#:nodoc: all
             puts bang.backtrace if $DEBUG
             puts "!!! Could not create project :("
           ensure
-          puts "* stop modal mode" if $DEBUG
-          @msg_lock.synchronize do
-          #getApp.stopModal
-          @msg_queue << :modal_finished
+            puts "* stop modal mode" if $DEBUG
+            runOnUiThread do
+              getApp.stopModal
+            end
           end
-
-          end
-
         }
         getApp().runModal
-      
-      
-       update_conversation_table()
-       update_status_bar()
-       puts "* starting interceptor"
-       Watobo::Interceptor.start
-       puts "* starting passive scanner"
-       Watobo::PassiveScanner.start
-       @browserView = BrowserPreview.new(Watobo::Interceptor.proxy)
-       
-       #  be sure to hide the progress window      
-       @progress_window.destroy
-       
-       
-       @chatTable.show
-       @sites_tree.show
-       @sites_tree.reload
-       @findings_tree.show
-       @findings_tree.reload
-       
-       @chatTable.apply_filter(@conversation_table_ctrl.filter)
-       @conversation_table_ctrl.update_text
-       
-        
+
+
+        update_conversation_table()
+        update_status_bar()
+        puts "* starting interceptor"
+        Watobo::Interceptor.start
+        puts "* starting passive scanner"
+        Watobo::PassiveScanner.start
+        @browserView = BrowserPreview.new(Watobo::Interceptor.proxy)
+
+        #  be sure to hide the progress window
+        @progress_window.destroy
+
+
+        @chatTable.show
+        @sites_tree.show
+        @sites_tree.reload
+        @findings_tree.show
+        @findings_tree.reload
+
+        @chatTable.apply_filter(@conversation_table_ctrl.filter)
+        @conversation_table_ctrl.update_text
+
+
         puts "Project Started"
         puts "Active Modules: #{Watobo::ActiveModules.length}"
         puts "Passive Modules: #{Watobo::PassiveModules.length}"
@@ -1176,7 +1161,6 @@ module Watobo#:nodoc: all
         @finding_lock = Mutex.new
         @chat_lock = Mutex.new
         @status_lock = Mutex.new
-        @msg_lock = Mutex.new
 
         @finding_queue = []
         @chat_queue = []
