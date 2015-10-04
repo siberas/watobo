@@ -14,6 +14,12 @@ module Watobo#:nodoc: all
             if File.exist?(@client_key_dt.value)
               client_cert[:ssl_client_key] = OpenSSL::PKey::RSA.new(File.read(@client_key_dt.value), @password_dt.value)
             end
+            
+            client_cert[:password] = @password_dt.value
+
+            client_cert[:certificate_file] = @client_cert_dt.value
+            client_cert[:key_file] = @client_key_dt.value
+              client_cert[:type] = :pem
 
             return client_cert
           rescue => bang
@@ -30,6 +36,21 @@ module Watobo#:nodoc: all
             :key_file => @client_key_dt.value
           }
         end
+
+      def update_fields(c)
+        unless c.nil? 
+          @client_cert_dt.value = c[:certificate_file]
+          @cert_path = File.dirname(c[:certificate_file]) + '/'
+          @client_key_dt.value = c[:key_file]
+          @password_dt.value = c[:password].nil? ? '' : c[:password]
+          @retype_dt.value = c[:password].nil? ? '' : c[:password]
+          @client_cert_txt.handle(self, FXSEL(SEL_UPDATE, 0), nil)
+          @client_key_txt.handle(self, FXSEL(SEL_UPDATE, 0), nil)
+          @password_txt.handle(self, FXSEL(SEL_UPDATE, 0), nil)
+          @retype_txt.handle(self, FXSEL(SEL_UPDATE, 0), nil)
+        end
+      end
+
 
         def settings_valid?
           unless @password_dt.value.empty?
@@ -103,12 +124,12 @@ module Watobo#:nodoc: all
         private
 
         def select_cert_file()
-          cert_filename = FXFileDialog.getOpenFilename(self, "Select Certificate File", @cert_path, "*.pem\n*")
+          cert_filename = FXFileDialog.getOpenFilename(self, "Select Certificate File", @cert_path, "*.pem,*.cer\n*")
           if cert_filename != "" then
             if File.exists?(cert_filename) then
               @client_cert_dt.value = cert_filename
               @client_cert_txt.handle(self, FXSEL(SEL_UPDATE, 0), nil)
-              @cert_path = File.dirname(cert_filename)
+              @cert_path = File.dirname(cert_filename) + '/'
             end
           end
         end
@@ -120,7 +141,7 @@ module Watobo#:nodoc: all
             if File.exists?(key_filename) then
               @client_key_dt.value = key_filename
               @client_key_txt.handle(self, FXSEL(SEL_UPDATE, 0), nil)
-              @cert_path = File.dirname(key_filename)
+              @cert_path = File.dirname(key_filename) + '/'
             end
           end
         end
@@ -133,17 +154,18 @@ module Watobo#:nodoc: all
           password = @password_dt.value
 
           begin
-puts "* open certfile: #{@client_cert_dt.value}"
             if File.exist?(@client_cert_dt.value)
               p12_data = nil
               File.open(@client_cert_dt.value, "rb"){|fh|
                 p12_data = fh.read
               }
               p12 = OpenSSL::PKCS12.new( p12_data, password)
-              puts p12.certificate
               client_cert[:ssl_client_cert] = p12.certificate
               client_cert[:ssl_client_key] = p12.key
               client_cert[:extra_chain_certs] =  p12.ca_certs
+              client_cert[:certificate_file] = @client_cert_dt.value
+              client_cert[:password] = password
+              client_cert[:type] = :pkcs12
 
             end
 
@@ -154,6 +176,18 @@ puts "* open certfile: #{@client_cert_dt.value}"
           end
           return nil
         end
+      
+        def update_fields(c)
+        unless c.nil? 
+          @client_cert_dt.value = c[:certificate_file]
+          @cert_path = File.dirname(c[:certificate_file]) + '/'
+          @password_dt.value = c[:password].nil? ? '' : c[:password]
+          @retype_dt.value = c[:password].nil? ? '' : c[:password]
+          @client_cert_txt.handle(self, FXSEL(SEL_UPDATE, 0), nil)
+          @password_txt.handle(self, FXSEL(SEL_UPDATE, 0), nil)
+          @retype_txt.handle(self, FXSEL(SEL_UPDATE, 0), nil)
+        end
+      end
 
         def settings_valid?
           unless @password_dt.value.empty?
@@ -254,9 +288,6 @@ puts "* open certfile: #{@client_cert_dt.value}"
         @cert_path = nil
         @client_certificates = {}
 
-        current_certs = Watobo.project.getClientCertificates
-        @client_certificates = current_certs unless current_certs.nil?
-
         @password_policy.update prefs[:password_policy] if prefs.has_key? :password_policy
 
         @site_dt = FXDataTarget.new('')
@@ -330,7 +361,7 @@ puts "* open certfile: #{@client_cert_dt.value}"
         end
       end
 
-      def updateFields()
+      def updateFields_UNUSED()
         # @sites_combo.handle(self, FXSEL(SEL_UPDATE, 1), nil)
         @client_cert_txt.handle(self, FXSEL(SEL_UPDATE, 0), nil)
         @client_key_txt.handle(self, FXSEL(SEL_UPDATE, 0), nil)
@@ -338,18 +369,12 @@ puts "* open certfile: #{@client_cert_dt.value}"
 
       def update_fields(sender, sel, item)
         @site_dt.value = item
-        if @client_certificates.has_key? item
-          #puts "* certs found"
-          #c = @client_certificates[item]
-         # @client_cert_dt.value = c[:certificate_file]
-         # @client_key_dt.value = c[:key_file]
-         # @password_dt.value = c[:password]
-         # @retype_dt.value = c[:password]
-         # @client_cert_txt.handle(self, FXSEL(SEL_UPDATE, 0), nil)
-         # @client_key_txt.handle(self, FXSEL(SEL_UPDATE, 0), nil)
-         # @password_txt.handle(self, FXSEL(SEL_UPDATE, 0), nil)
-         # @retype_txt.handle(self, FXSEL(SEL_UPDATE, 0), nil)
-        end
+        c = Watobo::ClientCertStore.get(item)
+        return false if c.nil?
+        i = c[:type] == :pem ? 0 : 1
+        @tabBook.current = i
+        @cert_settings[i].update_fields c
+
       end
 
       def onAccept(sender, sel, event)

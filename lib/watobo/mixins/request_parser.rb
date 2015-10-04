@@ -10,7 +10,7 @@ module Watobo#:nodoc: all
       # Possible prefs:
       #
       # :code_dlmtr [String] - set ruby code delimiter
-      
+
       def parse_code(prefs={})
         cprefs = { :code_dlmtr => '%%' } # default delimiter for ruby code
         cprefs.update(prefs)
@@ -23,81 +23,81 @@ module Watobo#:nodoc: all
         begin
           # puts new_request
           expr = ''
-          
+
           pos = 0
           off = 0
           match = []
           code_marks = []
           while pos >= 0 and pos < request.length
-             code_offset = request.index(pattern, pos)
-             
-             unless code_offset.nil?
-               new_line_index = request.index("\n", pos)   
-               unless new_line_index.nil?
-                 if new_line_index < code_offset
+            code_offset = request.index(pattern, pos)
+
+            unless code_offset.nil?
+              new_line_index = request.index("\n", pos)   
+              unless new_line_index.nil?
+                if new_line_index < code_offset
                   # new_request << request[match[0]..code_offset-1] unless match.empty?
-                   match = [] 
+                  match = [] 
                   # pos = code_offset
-                 end
-               end
-               match << code_offset
-               
-               if match.length == 2
-                 code_marks << match.dup
-                 match = []
-               end
-               pos = code_offset + pattern.length
-             else
-               break
-             end
-           end
-           
-           new_request = ''
-           unless code_marks.empty?           
-           code_marks.each_with_index do |cm,i|
-             #puts cm.to_yaml
-             last = i > 0 ? ( code_marks[i-1][1] + pattern.length ) : 0
-             new_request << request[last..cm[0]-1] if cm[0] > 0
-                 exp_start = cm[0] + pattern.length
-                 exp_end = cm[1] - 1
-                
-                 expression = request[exp_start..exp_end]
-                 expression.strip!
-                 next if expression.empty?
-                 puts "DEBUG: executing: #{expression}" if $DEBUG
-                 #result = expression.empty? ? "" : eval("#{expression}")
-                 result = eval(expression)
-                 puts "DEBUG: got #{result.class}" if $DEBUG
-                 if result.is_a? File
-                   data = result.read
-                   result.close
-                 elsif result.is_a? String
-                   data = result
-                 elsif result.is_a? Array
-                    data = result.join
-                 else
-                    puts "!!!WATOBO - expression must return String or File !!!"
-                 end
-                 new_request << data
-               end
-               new_request << request[code_marks.last[1]+pattern.length..-2] unless code_marks.last[1] >= request.length-1
-           
+                end
+              end
+              match << code_offset
+
+              if match.length == 2
+                code_marks << match.dup
+                match = []
+              end
+              pos = code_offset + pattern.length
             else
-              new_request = request
+              break
             end
-         
+          end
+
+          new_request = ''
+          unless code_marks.empty?           
+            code_marks.each_with_index do |cm,i|
+              #puts cm.to_yaml
+              last = i > 0 ? ( code_marks[i-1][1] + pattern.length ) : 0
+              new_request << request[last..cm[0]-1] if cm[0] > 0
+              exp_start = cm[0] + pattern.length
+              exp_end = cm[1] - 1
+
+              expression = request[exp_start..exp_end]
+              expression.strip!
+              next if expression.empty?
+              puts "DEBUG: executing: #{expression}" if $DEBUG
+              #result = expression.empty? ? "" : eval("#{expression}")
+              result = eval(expression)
+              puts "DEBUG: got #{result.class}" if $DEBUG
+              if result.is_a? File
+                data = result.read
+                result.close
+              elsif result.is_a? String
+                data = result
+              elsif result.is_a? Array
+                data = result.join
+              else
+                puts "!!!WATOBO - expression must return String or File !!!"
+              end
+              new_request << data
+            end
+            new_request << request[code_marks.last[1]+pattern.length..-1] unless code_marks.last[1] >= request.length-1
+
+          else
+            new_request = request
+          end
+
           return new_request
 
         rescue SyntaxError, LocalJumpError, NameError => e
-        #  raise SyntaxError, "SyntaxError in '#{expression}'"
-        puts e
-        puts e.backtrace
-          
+          #  raise SyntaxError, "SyntaxError in '#{expression}'"
+          puts e
+          puts e.backtrace
+
         end
         return nil
       end
 
-      
+
       def to_request(opts={})
         options = { :update_content_length => false }
         options.update opts
@@ -105,25 +105,25 @@ module Watobo#:nodoc: all
         begin
           text = parse_code
           request = []
-          
+
           eoh = nil
-         eoh = text.index("\n\n") unless text.nil?
-           
-         unless eoh.nil?
-           header = text.slice(0, eoh).split("\n").map{|h| "#{h}\r\n"}
-           body = text.slice(eoh+2, text.length-1)
-         else
+          eoh = text.index("\n\n") unless text.nil?
+
+          unless eoh.nil?
+            header = text.slice(0, eoh).split("\n").map{|h| "#{h}\r\n"}
+            body = text.slice(eoh+2, text.length-1)
+          else
             header = text.split(/\n/).map{|h| "#{h}\r\n"}
             body = nil
-         end
-         
-         request.concat header
+          end
 
-         #Watobo::Request.create request
-         request = Watobo::Request.new(request)
-        
+          request.concat header
+
+          #Watobo::Request.create request
+          request = Watobo::Request.new(request)
+
           ct = request.content_type_ex
-         # puts ct
+          # puts ct
           # last line is without "\r\n" if text has a body
           if ct =~ /multipart/ and body then
             #Content-Type: multipart/form-data; boundary=---------------------------3035221901842
@@ -167,7 +167,7 @@ module Watobo#:nodoc: all
             request.push "\r\n"
             request.push body.strip
           end
- 
+
           request.fixupContentLength() if options[:update_content_length] == true
           return request
         rescue => bang
@@ -177,7 +177,7 @@ module Watobo#:nodoc: all
         end
         #return nil
       end
-      
+
       def to_response(opts={})
         options = { :update_content_length => false }
         options.update opts
@@ -199,14 +199,14 @@ module Watobo#:nodoc: all
           end
 
 
-         #Watobo::Response.create result
-         result = Watobo::Response.new(result)
-        
+          #Watobo::Response.create result
+          result = Watobo::Response.new(result)
+
           if body then
             result.push "\r\n"
             result.push body.strip
           end
- 
+
           result.fixupContentLength() if options[:update_content_length] == true
           puts ">>"
           puts result
@@ -240,11 +240,11 @@ module Watobo#:nodoc: all
             result.push "#{h}\r\n"
           end
 
-         # result.extend Watobo::Mixin::Parser::Url
-         # result.extend Watobo::Mixin::Parser::Web10
-         # result.extend Watobo::Mixin::Shaper::Web10
-         #Watobo::Request.create result
-         result = Watobo::Request.new(result)
+          # result.extend Watobo::Mixin::Parser::Url
+          # result.extend Watobo::Mixin::Parser::Web10
+          # result.extend Watobo::Mixin::Shaper::Web10
+          #Watobo::Request.create result
+          result = Watobo::Request.new(result)
 
           ct = result.content_type
           # last line is without "\r\n" if text has a body
@@ -307,8 +307,8 @@ if $0 == __FILE__
   $: << inc_path
 
   require 'watobo'
-  
-text =<<'EOF'
+
+  text =<<'EOF'
 %%"GET"%% http://www.siberas.de/ HTTP/1.1
 Content-Type: text/html
 %%"x"*10%%Vary: Accept-Encoding

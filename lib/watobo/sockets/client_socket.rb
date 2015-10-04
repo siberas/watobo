@@ -128,6 +128,8 @@ module Watobo#:nodoc: all
         ra = socket.remote_address
         cport = ra.ip_port
         caddr = ra.ip_address
+        #puts cport
+        #puts caddr
 
         optval = [1, 500_000].pack("I_2")
         # socket.setsockopt Socket::SOL_SOCKET, Socket::SO_RCVTIMEO, optval
@@ -139,9 +141,10 @@ module Watobo#:nodoc: all
         session = socket
 
         if Watobo::Interceptor::Proxy.transparent?
+          
 
           ci = Watobo::Interceptor::Transparent.info({ 'host' => caddr, 'port' => cport } )
-          unless ci['target'].empty? or ci['cn'].empty?
+          unless ci.nil? or ci['target'].empty? or ci['cn'].empty?
             puts "SSL-REQUEST FROM #{caddr}:#{cport}"
 
             ctx = Watobo::CertStore.acquire_ssl_ctx ci['target'], ci['cn']
@@ -162,9 +165,6 @@ module Watobo#:nodoc: all
               puts bang.backtrace
               return nil, session
             end
-          else
-            puts ci['host']
-            puts ci['cn']
           end
         end
 
@@ -177,6 +177,8 @@ module Watobo#:nodoc: all
           puts bang.backtrace if $DEBUG
           return nil
         end
+
+        return nil if request.empty?
 
         if Watobo::Interceptor::Proxy.transparent?
           #puts "> get hostname ..."

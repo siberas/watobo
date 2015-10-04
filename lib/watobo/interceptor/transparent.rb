@@ -9,7 +9,14 @@ module Watobo#:nodoc: all
       end
       
       def self.info(data)
-        @nfq_drb.info(data)
+        nfo = nil
+        begin
+        nfo = @nfq_drb.info(data)
+        rescue => bang
+          puts "! could not query nfq_server"
+          puts bang
+        end
+        nfo
       end
     end
   end

@@ -155,13 +155,16 @@ module Watobo#:nodoc: all
           
           @controller = CipherTableController.new(result_frame, :opts => LAYOUT_FILL_X)
           @controller.subscribe(:apply_filter){ |f| @cipher_table.filter = f ; @cipher_table.update_table}
-          @controller.subscribe(:copy_table){
-             types = [ FXWindow.stringType ]
-                    if acquireClipboard(types)
-                    puts
-                    @clipboard_text = @cipher_table.to_csv
-                    end
-
+          @controller.subscribe(:save_table){
+            filename = FXFileDialog.getSaveFilename(self, "Save file", nil, "All Files (*)")
+            unless filename.empty?
+        if File.exists?(filename)
+        response = FXMessageBox.question(self, MBOX_YES_NO, 'File exists', 'Overwrite existing file?') 
+        return 0 if response != MBOX_CLICKED_YES
+        end
+        File.open(filename, 'w'){|f| f.print(@cipher_table.to_csv) }
+        
+       end
           }
 
          frame = FXVerticalFrame.new(result_frame, LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_SUNKEN|FRAME_THICK, :padding=>0)

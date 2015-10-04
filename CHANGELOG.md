@@ -1,3 +1,44 @@
+#Version 0.9.22
+
+## News
+
+**ManualRequestEditor
+
+* added dynamic egress handler support. Useful for more complex request transformations, e.g. if you need a http header with a hmac which is based on the request body   
+
+**SSL-Checker**
+
+* the results can now be saved
+* bad ciphers will be added to findings
+ 
+##Fixes
+
+**WShell**
+
+* fixed a bug which prevented work on linux boxes
+* switched command execution to thread via runOnUiThread
+
+**Client-Certificates**
+
+* settings will be saved and reloaded on project start
+
+**Transparent Proxy**
+
+* crash fixed
+
+**SQLMap Plugin**
+
+* fixed load_config error
+
+**General**
+
+* fixed old yaml style file format after editing comments
+
+**Contributions**
+* Work around error 'FXComposeContext: illegal window parameter' (by Lars Kanis)
+* Use runOnUiThread for GUI activity while loading plugins in a thread (by Lars Kanis)
+
+
 Version 0.9.21
 ===
 
@@ -15,7 +56,7 @@ News
  
 **Plugins**
 
-* added Adobe Experience Manager Enumeration, crawles the site by using information of AEM/CQ5 json-Extensions
+* added Adobe Experience Manager Enumeration, crawls the site by using information of AEM/CQ5 json-Extensions
 
 **Fuzzer**
 

@@ -157,7 +157,7 @@ module Watobo#:nodoc: all
           #  new_session.sync = true
           new_sender = Watobo::Session.new(@target)
           Thread.new(new_sender, new_session) { |sender, session|
-
+           # puts "* got new connection"
             c_sock = Watobo::HTTPSocket::ClientSocket.connect(session)
             
             #puts "ClientSocket: #{c_sock}"

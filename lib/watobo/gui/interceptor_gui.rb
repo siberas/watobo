@@ -466,7 +466,12 @@ module Watobo#:nodoc: all
       def initialize(owner, opts)
         # Invoke base class initialize function first
 
-        super( owner, 'Interceptor', nil, nil, DECOR_ALL|DECOR_TITLE|DECOR_BORDER|DECOR_RESIZE, 0, 0, 600, 400, 0, 0, 0, 0, 0, 0)
+        super( owner, 'Interceptor', nil, nil, 
+        #      DECOR_ALL|DECOR_TITLE|DECOR_BORDER|DECOR_RESIZE, 0, 0, 600, 400, 0, 0, 0, 0, 0, 0)
+               DECOR_ALL, 0, 0, 600, 400, 0, 0, 0, 0, 0, 0)
+
+        self.decorations = DECOR_ALL
+
         self.connect(SEL_CLOSE, method(:onClose))
         self.icon = ICON_INTERCEPTOR
         #@interceptor = interceptor

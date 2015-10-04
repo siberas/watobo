@@ -1,4 +1,8 @@
 # @private 
+# Mozillas recommended ciphers (https://wiki.mozilla.org/Security/Server_Side_TLS):
+# ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!3DES:!MD5:!PSK
+#
+#
 module Watobo#:nodoc: all
   module Plugin
     module Sslchecker
@@ -7,14 +11,14 @@ module Watobo#:nodoc: all
         
          @info.update(
           :check_name => 'SSL-Checker',    # name of check which briefly describes functionality, will be used for tree and progress views
-          :description => "Test applikation for supportes SSL Ciphers.",   # description of checkfunction
+          :description => "Test system for supported SSL Ciphers.",   # description of checkfunction
           :author => "Andreas Schmidt", # author of check
           :version => "0.9"   # check version
           )
 
           @finding.update(
           :threat => 'Attacks on weak encryption ciphers which may lead loss of privacy',        # thread of vulnerability, e.g. loss of information
-          :class => "SSL Ciphers",    # vulnerability class, e.g. Stored XSS, SQL-Injection, ...
+          :class => "Bad SSL Ciphers",    # vulnerability class, e.g. Stored XSS, SQL-Injection, ...
           :type => FINDING_TYPE_VULN,         # FINDING_TYPE_HINT, FINDING_TYPE_INFO, FINDING_TYPE_VULN
           :rating => VULN_RATING_LOW
           )
@@ -38,11 +42,6 @@ module Watobo#:nodoc: all
           ctx.ciphers.each do |c|
             @cipherlist.push [ method, c[0]]
           end
-          #ctx.ciphers="eNULL" # because ALL don't include Null-Ciphers!!!
-          #ctx.ciphers.each do |c|
-          #  @cipherlist.push [ method, c[0]]
-          #end
-
           
           rescue => bang
             puts bang
@@ -79,7 +78,7 @@ module Watobo#:nodoc: all
           puts request.first
           return false, "WATOBO: Could not resolve hostname #{host}", nil
         rescue => bang
-          #puts bang
+          puts bang
           puts bang.backtrace if $DEBUG
         end
         
@@ -109,9 +108,9 @@ module Watobo#:nodoc: all
             @cipherlist.each do |method, c|
             checker = proc {
 
-              test_request = nil
-              test_response = nil
-              # !!! ATTENTION !!!
+#              test_request = nil
+#              test_response = nil
+
               # MAKE COPY BEFORE MODIFIYING REQUEST
               request = chat.copyRequest
 
@@ -133,12 +132,16 @@ module Watobo#:nodoc: all
               
                   notify( :cipher_checked, result)
                   if bits < 128
+              fake_headers = ["200 SSL-Handshake OK\r\n", "SSL-Method: #{method}\r\n" ]
+              fake_headers << "SSL-Algorithm: #{algo}\r\n"
+              fake_headers << "SSL-Bits: #{bits}\r\n"
+              fake_response = Watobo::Response.new(fake_headers)
 
-                  addFinding(  test_request, test_response,
+                  addFinding(  request, fake_response,
                   :test_item => "#{algo}#{bits}",
                   #:proof_pattern => "#{match}",
                   :chat => chat,
-                  :title => "[#{algo}] - #{bits} Bit"
+                  :title => "[#{method}/#{algo}] - #{bits} Bit"
                   )
                   end
                 else
@@ -147,7 +150,7 @@ module Watobo#:nodoc: all
                 #              puts "!!! ERROR: #{c}"
                 end
               
-              [ test_request, test_response ]
+              [ request, fake_response ]
 
             }
             yield checker

@@ -325,6 +325,9 @@ module Watobo#:nodoc: all
       begin
         puts "DEBUG: Setup Project" if $DEBUG and $debug_project
         importSession()
+        puts "* initialize egress handlers ..."
+        Watobo::EgressHandlers.init
+
 
       rescue => bang
         puts bang

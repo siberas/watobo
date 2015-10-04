@@ -36,6 +36,12 @@ module Watobo#:nodoc: all
         f.print Marshal::dump(finding.to_h)
         }
     end
+    
+    def save_chat(file, chat)
+      File.open(file, 'wb'){|f|
+        f.print Marshal::dump(chat.to_h)
+        }
+    end
 
     def update_finding(finding)
       finding_file = File.join("#{@findings_path}", "#{finding.id}-finding.mrs")

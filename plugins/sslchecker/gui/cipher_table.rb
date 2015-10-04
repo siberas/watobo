@@ -33,7 +33,7 @@ module Watobo#:nodoc: all
             @na_cb = FXCheckButton.new(self, "n/a", nil, 0, ICON_BEFORE_TEXT|LAYOUT_SIDE_LEFT)
             @na_cb.connect(SEL_COMMAND) { update_table }
             @na_cb.checkState = true
-            FXButton.new(self, "copy").connect(SEL_COMMAND) { notify(:copy_table) }
+            FXButton.new(self, 'save').connect(SEL_COMMAND) { notify(:save_table) }
          #   FXButton.new(self, "clear").connect(SEL_COMMAND) { notify(:clear_ciphers) }
 
           end
@@ -60,14 +60,15 @@ module Watobo#:nodoc: all
           
           # this returns a comma seperated list of the table [string] 
           def to_csv
-            csv = ""
-           self.each_row do |c,b,r|
-              csv << c.text.strip << ";"
-              csv << b.text.strip << ";"
-              csv << r.text.strip
-              csv << "\n"
+            csv = []
+           self.each_row do |c,b,r,s|
+              l = [ c.text.strip ]
+              l << b.text.strip 
+              l << r.text.strip
+              l << s.text.strip
+              csv << l.join(';')
             end
-            csv
+            return csv.join( "\n")
           end
 
           def setNewFont(font_type=nil, size=nil)

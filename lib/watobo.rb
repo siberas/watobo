@@ -43,7 +43,7 @@ dont_know_why_REQUIRE_hangs = Mechanize.new
 # @private 
 module Watobo#:nodoc: all #:nodoc: all
 
-  VERSION = "0.9.21"
+  VERSION = "0.9.22"
 
   def self.base_directory
     @base_directory ||= ""
@@ -69,15 +69,7 @@ module Watobo#:nodoc: all #:nodoc: all
     Watobo::VERSION
   end
   
-  def self.print_summary
-    puts "--- Info ---"
-    puts "Version: " + version
-    puts "Working Directory: " + Watobo.working_directory
-    puts "Active Checks Location: " + Watobo.active_module_path
-    puts "Passive Checks Location: " + Watobo.passive_module_path
-    puts "---"
-    puts
-  end
+  
 end
 
 Watobo.init_framework

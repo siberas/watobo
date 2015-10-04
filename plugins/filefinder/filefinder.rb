@@ -239,8 +239,13 @@ module Watobo#:nodoc: all
             @file_name = config[:name] if @db_name.empty?            
           end
           end
-          puts @db_list
           
+          # load predefined dbs
+          db_path = File.expand_path(File.join(File.dirname(__FILE__), 'dbs'))
+          Dir.glob("#{db_path}/*").each do |db|
+            @db_list << db
+          end
+                   
           begin            
             hs_green = FXHiliteStyle.new
             hs_green.normalForeColor = FXRGBA(255,255,255,255) #FXColor::Red

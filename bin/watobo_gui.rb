@@ -1,7 +1,7 @@
 #!/usr/bin/ruby
 if $0 == __FILE__
   inc_path = File.expand_path(File.join(File.dirname(__FILE__), "..", "lib")) # this is the same as rubygems would do
-  $: << inc_path
+$: << inc_path
 end
 
 puts "#############################################################"
@@ -13,10 +13,9 @@ puts
 puts "#############################################################"
 
 require 'watobo'
-
-Watobo.print_summary
-
-puts ">> Starting GUI ..."
 require 'watobo/gui'
 
+puts Watobo::Gui.info
+
+puts ">> Starting GUI ..."
 Watobo::Gui.start

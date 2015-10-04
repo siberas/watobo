@@ -250,6 +250,34 @@ module Watobo#:nodoc: all
             end
             return 0 if dist == 0 and not pos
          end
+         
+         def add_handler
+           @handler_path ||= Watobo.working_directory + '/'
+         handler_filename = FXFileDialog.getOpenFilename(self, "Select handler file", @handler_path, "*.rb\n*")
+          if handler_filename != "" then
+            if File.exists?(handler_filename) then
+              @handler_file = handler_filename
+              @handler_path = File.dirname(handler_filename) + "/"
+              Watobo::EgressHandlers.add(handler_filename)
+              update_egress
+            end
+          end
+        
+      end
+         
+         def update_egress
+            @egress_handlers.clearItems
+            @egress.disable
+            @egress_handlers.disable
+            if Watobo::EgressHandlers.length > 0
+                 @egress.enable
+                 @egress_handlers.enable
+                 #@egress_btn.enable
+                 Watobo::EgressHandlers.list {|h|
+                   @egress_handlers.appendItem(h.to_s, nil) 
+                 }
+            end
+         end
 
         def initialize(owner, project, chat)
             begin
@@ -371,6 +399,39 @@ module Watobo#:nodoc: all
 
                @followRedirect = FXCheckButton.new(opt, "Follow Redirects", nil, 0, JUSTIFY_LEFT|JUSTIFY_TOP|ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
                @followRedirect.checkState = false
+               
+               eframe = FXHorizontalFrame.new(opt, :opts => FRAME_NONE|LAYOUT_FILL_X, :padding => 0 )
+               @egress = FXCheckButton.new(eframe, "Egress", nil, 0, JUSTIFY_LEFT|JUSTIFY_CENTER_Y|ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
+               @egress.checkState = false
+               
+               
+               @egress_handlers = FXComboBox.new(eframe, 5, nil, 0, COMBOBOX_STATIC|FRAME_SUNKEN|FRAME_THICK|LAYOUT_SIDE_TOP)
+               #@filterCombo.width =200
+
+               @egress_handlers.numVisible = 0
+               @egress_handlers.numColumns = 23
+               @egress_handlers.editable = false
+               @egress_handlers.connect(SEL_COMMAND){|sender, sel, name|
+                 Watobo::EgressHandlers.last = name
+                 }
+               
+              # @egress_handlers.appendItem('none', nil)
+                @egress_add_btn = FXButton.new(eframe, "add", nil, nil, 0, FRAME_RAISED|FRAME_THICK)
+                @egress_add_btn.connect(SEL_COMMAND){ add_handler }
+               #@egress_handlers.connect(SEL_COMMAND, method(:onRequestChanged))
+               @egress_btn = FXButton.new(eframe, "reload", nil, nil, 0, FRAME_RAISED|FRAME_THICK)
+               @egress_btn.connect(SEL_COMMAND){
+                 Watobo::EgressHandlers.reload
+                 update_egress
+               }
+               
+               update_egress
+               
+               i = @egress_handlers.findItem(Watobo::EgressHandlers.last)
+               #puts "Last Item Index: #{i} (#{Watobo::EgressHandlers.last})"
+               @egress_handlers.setCurrentItem(i) if i >= 0
+                 
+                                
 
                @logChat = FXCheckButton.new(opt, "Log Chat", nil, 0,
                ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
@@ -553,6 +614,9 @@ module Watobo#:nodoc: all
             csrf_requests = []           
 
             prefs = Watobo::Conf::Scanner.to_h
+            
+            egress_handler = @egress.checked? ? @egress_handlers.getItem(@egress_handlers.currentItem) : ''
+           
         
             current_prefs = {:run_login => @updateSession.checked? ? @runLogin.checked? : false,
                :update_session => @updateSession.checked?,
@@ -561,7 +625,8 @@ module Watobo#:nodoc: all
             #   :csrf_requests => csrf_requests,
               # :csrf_patterns => @project.getCSRFPatterns(),
                :update_sids => @updateSID.checked?,
-               :follow_redirect => @followRedirect.checked?
+               :follow_redirect => @followRedirect.checked?,
+               :egress_handler => egress_handler
             }
             
             prefs.update current_prefs

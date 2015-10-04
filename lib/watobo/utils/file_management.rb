@@ -28,7 +28,7 @@ module Watobo#:nodoc: all
       return settings
     end 
     
-    def Utils.saveChat(chat, filename)
+    def Utils.saveChat_UNUSED(chat, filename)
       return false if filename.nil?
       return false if chat.nil?
       chat_data = {
