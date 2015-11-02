@@ -2,7 +2,7 @@
 
 ## News
 
-**ManualRequestEditor
+**ManualRequestEditor**
 
 * added dynamic egress handler support. Useful for more complex request transformations, e.g. if you need a http header with a hmac which is based on the request body   
 
@@ -12,6 +12,10 @@
 * bad ciphers will be added to findings
  
 ##Fixes
+
+**Proxy**
+
+* fixed duplicated serial numbers in fake certificates
 
 **WShell**
 

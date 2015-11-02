@@ -96,7 +96,7 @@ module Watobo#:nodoc: all
           :title => 'untitled',          # [String] title name, used for finding tree
           :check_pattern => nil,         # [String] regex of vulnerability check if possible, will be used for highlighting
           :proof_pattern => nil,         # [String] regex of finding proof if possible, will be used for highlighting
-          :threat => '',        # thread of vulnerability, e.g. loss of information
+          :threat => '',        # threat of vulnerability, e.g. loss of information
           :measure => '',       # measure
           :class => "undefined",# [String] vulnerability class, e.g. Stored XSS, SQL-Injection, ...
           :subclass => nil,     # reserved

@@ -69,10 +69,6 @@ module Watobo#:nodoc: all
       Dir.mkdir @ca_config[:fake_certs_dir]
       Dir.mkdir @ca_config[:crl_dir]
       Dir.mkdir @ca_config[:csr_dir]
-
-      #File.open @ca_config[:serial_file], 'w' do |f| f << '1' end
-      File.open @ca_config[:serial_file], 'w' do |f| f << "#{Time.now.to_i.to_s(16)}" end
-
       #print "Generating CA keypair ..."
       #puts " - rsa_key_length: " + @ca_config[:ca_rsa_key_length].to_s
       keypair = OpenSSL::PKey::RSA.new(@ca_config[:ca_rsa_key_length])
@@ -87,8 +83,11 @@ module Watobo#:nodoc: all
       cert.not_before = Time.now - 24 * 60 * 60
       cert.not_after = Time.now + @ca_config[:ca_cert_days] * 24 * 60 * 60
       cert.public_key = keypair.public_key
-     # cert.serial = 0x0
-      cert.serial = Time.now.to_i
+
+      serial = Time.now.to_i
+      cert.serial = serial
+      File.open @ca_config[:serial_file], 'w' do |f| f << "#{(serial + 1)}" end
+
       cert.version = 2 # X509v3
      # puts "Init ExtensionFactory ..."
       ef = OpenSSL::X509::ExtensionFactory.new
@@ -353,8 +352,6 @@ module Watobo#:nodoc: all
       dest = @ca_config[:csr_dir]
       csr_file = File.join dest, "csr_#{target}.pem"
       csr_file.gsub!(/\*/,"_")
-      
-      return csr_file if File.exist? csr_file
 
       name = @ca_config[:name].dup
       case cert_config[:type]
@@ -366,21 +363,14 @@ module Watobo#:nodoc: all
         name << ['CN', cert_config[:user]]
         name << ['emailAddress', cert_config[:email]]
       end
-     #puts "Create Certificate Signing Request ..."
-     # puts "Keypair File: " + keypair_file
-      #  puts name
+
       name = OpenSSL::X509::Name.new(name)
-     # puts "- - -"
 
       if File.exists? keypair_file then
-      #  puts "Get Keypair from file #{keypair_file}"
         keypair = OpenSSL::PKey::RSA.new(File.read(keypair_file), cert_config[:password])
       else
-      # puts "Create Certificate KeyPair ..."
         keypair = create_key(cert_config)
       end
-
-    #  puts "Generating CSR for #{name}" if $DEBUG
 
       req = OpenSSL::X509::Request.new
       req.version = 0
@@ -388,7 +378,6 @@ module Watobo#:nodoc: all
       req.public_key = keypair.public_key
       req.sign keypair, OpenSSL::Digest::MD5.new
 
-    #  puts "Writing CSR to #{csr_file}" if $DEBUG
       File.open csr_file, "w" do |f|
         f << req.to_pem
       end
