@@ -1,5 +1,5 @@
 # @private 
-module Watobo#:nodoc: all
+module Watobo #:nodoc: all
   module Gui
     class SimpleTextView < FXVerticalFrame
 
@@ -38,7 +38,7 @@ module Watobo#:nodoc: all
       def textStyle()
         @textbox.textStyle
       end
-      
+
       def clear
         @textbox.setText('')
       end
@@ -74,24 +74,24 @@ module Watobo#:nodoc: all
 
         # Construct some hilite styles
         hs_green = FXHiliteStyle.new
-        hs_green.normalForeColor = FXRGBA(255,255,255,255) #FXColor::Red
-        hs_green.normalBackColor = FXRGBA(0,255,0,1)   # FXColor::White
+        hs_green.normalForeColor = FXRGBA(255, 255, 255, 255) #FXColor::Red
+        hs_green.normalBackColor = FXRGBA(0, 255, 0, 1) # FXColor::White
         hs_green.style = FXText::STYLE_BOLD
 
         hs_red = FXHiliteStyle.new
-        hs_red.normalForeColor = FXRGBA(255,255,255,255) #FXColor::Red
-        hs_red.normalBackColor = FXRGBA(255,0,0,1)   # FXColor::White
+        hs_red.normalForeColor = FXRGBA(255, 255, 255, 255) #FXColor::Red
+        hs_red.normalBackColor = FXRGBA(255, 0, 0, 1) # FXColor::White
         hs_red.style = FXText::STYLE_BOLD
 
         # @req_builder = FXText.new(req_editor, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
-      
-        @textbox = FXText.new(self,  :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
+
+        @textbox = FXText.new(self, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
         @textbox.extend Watobo::Mixins::RequestParser
-  
+
         # Enable the style buffer for this text widget
         @textbox.styled = true
         # Set the styles
-        @textbox.hiliteStyles = [ hs_green, hs_red]
+        @textbox.hiliteStyles = [hs_green, hs_red]
 
         @textbox.editable = false
 
@@ -111,31 +111,31 @@ module Watobo#:nodoc: all
               addEncoder(menu_pane, sender) if @textbox.editable?
 
               FXMenuSeparator.new(menu_pane)
-              FXMenuCaption.new(menu_pane,"- Copy -")
+              FXMenuCaption.new(menu_pane, "- Copy -")
               FXMenuSeparator.new(menu_pane)
-              copyText = FXMenuCommand.new(menu_pane,"copy text: #{selection}", nil, @textbox, FXText::ID_COPY_SEL)
+              copyText = FXMenuCommand.new(menu_pane, "copy text: #{selection}", nil, @textbox, FXText::ID_COPY_SEL)
 
               FXMenuSeparator.new(menu_pane)
-              FXMenuCaption.new(menu_pane,"- Transcoder -")
+              FXMenuCaption.new(menu_pane, "- Transcoder -")
               FXMenuSeparator.new(menu_pane)
-              send2transcoder = FXMenuCommand.new(menu_pane,"send to transcoder")
+              send2transcoder = FXMenuCommand.new(menu_pane, "send to transcoder")
               send2transcoder.connect(SEL_COMMAND) {
                 t = TranscoderWindow.new(FXApp.instance, selection)
                 t.create
                 t.show(Fox::PLACEMENT_SCREEN)
               }
               FXMenuSeparator.new(menu_pane)
-              target = FXMenuCheck.new(menu_pane, "word wrap" )
-              target.check = ( @textbox.textStyle & TEXT_WORDWRAP > 0 ) ? true : false
+              target = FXMenuCheck.new(menu_pane, "word wrap")
+              target.check = (@textbox.textStyle & TEXT_WORDWRAP > 0) ? true : false
               target.connect(SEL_COMMAND) { @textbox.textStyle ^= TEXT_WORDWRAP }
 
-              target = FXMenuCheck.new(menu_pane, "big font" )
-              target.check = ( @textbox.font == @small_font ) ? false : true
+              target = FXMenuCheck.new(menu_pane, "big font")
+              target.check = (@textbox.font == @small_font) ? false : true
               target.connect(SEL_COMMAND) { |ts, tsel, titem|
                 if ts.checked?
-                @textbox.font = @big_font
+                  @textbox.font = @big_font
                 else
-                @textbox.font = @small_font
+                  @textbox.font = @small_font
                 end
 
               }
@@ -156,16 +156,15 @@ module Watobo#:nodoc: all
       def editable?()
         @textbox.editable?
       end
-      
-      
+
 
       def setText(text, prefs={})
         @text = normalizeText(text)
-      
+
         showText(@text)
         true
       end
-      
+
       alias_method :setRequest, :setText
 
       def filter(pattern)
@@ -176,13 +175,13 @@ module Watobo#:nodoc: all
         dummy.each do |line|
           begin
             if line =~ /#{pattern}/i then
-            filtered.push line
+              filtered.push line
             end
           rescue => bang
-          puts
-          puts bang
-          pattern = Regexp.quote(pattern)
-          retry
+            puts
+            puts bang
+            pattern = Regexp.quote(pattern)
+            retry
           end
         end
         showText(filtered.join("\n"))
@@ -203,8 +202,8 @@ module Watobo#:nodoc: all
           begin
             @textbox.changeStyle(start, len, @style)
           rescue => bang
-          puts "outch"
-          puts bang
+            puts "outch"
+            puts bang
           end
         end
 
@@ -213,18 +212,18 @@ module Watobo#:nodoc: all
 
       def makeMatchVisible(match_index=0)
         return true if @pattern_matches.empty?
-        return false if match_index > ( @pattern_matches.length - 1 )
+        return false if match_index > (@pattern_matches.length - 1)
         if @pattern_matches[match_index] then
-        pos = @pattern_matches[match_index][0]
-        len =@pattern_matches[match_index][1]
+          pos = @pattern_matches[match_index][0]
+          len =@pattern_matches[match_index][1]
 
-        @textbox.setCenterLine(pos)
+          @textbox.setCenterLine(pos)
 
-        #   @textbox.makePositionVisible(pos + len)
-        @textbox.makePositionVisible(@textbox.lineEnd(pos))
-        @textbox.makePositionVisible(pos)
+          #   @textbox.makePositionVisible(pos + len)
+          @textbox.makePositionVisible(@textbox.lineEnd(pos))
+          @textbox.makePositionVisible(pos)
 
-        @textbox.setCursorPos(pos)
+          @textbox.setCursorPos(pos)
         end
         return true
       end
@@ -244,7 +243,7 @@ module Watobo#:nodoc: all
 
           sindex, eindex = @textbox.findText(pattern, pos, :flags => SEARCH_REGEX|SEARCH_IGNORECASE|SEARCH_FORWARD) if not sindex
 
-          sindex, eindex = @textbox.findText(Regexp.quote(pattern),pos, :flags => SEARCH_REGEX|SEARCH_IGNORECASE|SEARCH_FORWARD) if not sindex
+          sindex, eindex = @textbox.findText(Regexp.quote(pattern), pos, :flags => SEARCH_REGEX|SEARCH_IGNORECASE|SEARCH_FORWARD) if not sindex
 
           break if not sindex or sindex.length == 0
 
@@ -252,7 +251,7 @@ module Watobo#:nodoc: all
           sindex.length.times do |i|
             start = sindex[i]
             len = eindex[i] - sindex[i]
-            @pattern_matches.push [ start, len] if start >= 0
+            @pattern_matches.push [start, len] if start >= 0
           end
 
           break if sindex.last < 0
@@ -264,17 +263,17 @@ module Watobo#:nodoc: all
 
       def showText(text)
         begin
-       # if @max_len > 0 and @max_len < text.length
-       # text = text[0..@max_len] + "\n---8<--- WATOBO ---8<---\n* PRESS RESET TO SEE FULL RESPONSE *"
-       # end
-       # text.encode('iso_8859_1')
-       # UTF-8 CleanUp
-       text = text.unpack("C*").pack("C*")
-        text.gsub!(/\x0d/u, '')
-        r = Regexp.new '[\x00-\x09\x0b-\x1f\x7f-\xff]+', nil, 'n'
-       text.gsub!(r,'.')
-           @textbox.setText(text)
-           return true
+          # if @max_len > 0 and @max_len < text.length
+          # text = text[0..@max_len] + "\n---8<--- WATOBO ---8<---\n* PRESS RESET TO SEE FULL RESPONSE *"
+          # end
+          # text.encode('iso_8859_1')
+          # UTF-8 CleanUp
+          text = text.unpack("C*").pack("C*")
+          text.gsub!(/\x0d/u, '')
+          r = Regexp.new '[\x00-\x09\x0b-\x1f\x7f-\xff]+', nil, 'n'
+          text.gsub!(r, '.')
+          @textbox.setText(text)
+          return true
         rescue => bang
           puts bang
           puts bang.backtrace if $DEBUG
@@ -293,15 +292,15 @@ module Watobo#:nodoc: all
 
       def normalizeText(text)
         begin
-        t = text
-        return "" if text.nil?
-        t = text.join if text.is_a? Array
-        t = t.unpack("C*").pack("C*")
-        t.gsub!(/\x0d/, '')
-        
-         r = Regexp.new '[\x00-\x09\x0b-\x1f\x7f-\xff]+', nil, 'n'
-        t.gsub!( r ,'.')
-        return t
+          t = text
+          return "" if text.nil?
+          t = text.join if text.is_a? Array
+          t = t.unpack("C*").pack("C*")
+          t.gsub!(/\x0d/, '')
+
+          r = Regexp.new '[\x00-\x09\x0b-\x1f\x7f-\xff]+', nil, 'n'
+          t.gsub!(r, '.')
+          return t
         rescue => bang
           puts bang
           puts bang.backtrace if $DEBUG
@@ -309,7 +308,7 @@ module Watobo#:nodoc: all
         text.join
       end
 
-      def log(text,e=nil)
+      def log(text, e=nil)
         #   @logger.addError "Not a valid expression! \n#{e}"
         t = Time.now
         now = t.strftime("%m/%d/%Y @ %H:%M:%S")
@@ -317,8 +316,8 @@ module Watobo#:nodoc: all
         notify(:error, msg)
         puts msg
         if e then
-        puts e
-        puts e.backtrace
+          puts e
+          puts e.backtrace
         end
       end
 
@@ -337,27 +336,55 @@ module Watobo#:nodoc: all
           unless event.moved?
             FXMenuPane.new(self) do |menu_pane|
               cpos = sender.cursorPos
-              
               pos = sender.selStartPos
               #puts "*selStartPos: #{pos}"
               #puts "*selEndPos: #{sender.selEndPos}"
               len = sender.selEndPos - pos
               string2decode = sender.extractText(pos, len)
               string2decode.extend Watobo::Mixin::Transcoders
+
+              fp_submenu = FXMenuPane.new(self) do |sub|
+                eh = FXMenuCommand.new(sub, "File")
+                eh.connect(SEL_COMMAND) {
+                  insf = FXFileDialog.getOpenFilename(self, "Select file to insert", nil)
+                  if insf != "" then
+                    if File.exists?(insf) then
+                      # puts "Inserting #{insf}"
+                      sender.insertText(cpos, "%%File.read('#{insf}')%%")
+                    end
+                  end
+
+                }
+              end
+              FXMenuCascade.new(menu_pane, "Insert", nil, fp_submenu)
+
               FXMenuSeparator.new(menu_pane)
-              FXMenuCaption.new(menu_pane,"- Insert -")
-              FXMenuSeparator.new(menu_pane)
-              eh = FXMenuCommand.new(menu_pane,"File")
-              eh.connect(SEL_COMMAND) {
-                 insf = FXFileDialog.getOpenFilename(self, "Select file to insert", nil)
-                 if insf != "" then
-                   if File.exists?(insf) then
-                    # puts "Inserting #{insf}"
-                     sender.insertText(cpos, "%%File.read('#{insf}')%%")
-                   end
-                 end
-                 
-              }
+              fp_submenu = FXMenuPane.new(self) do |sub|
+                target = FXMenuCommand.new(sub, "JSON")
+                target.connect(SEL_COMMAND) {
+                  begin
+                    jb = JSON.parse(string2decode)
+                    out = JSON.pretty_generate jb
+                    replace_text(sender, out)
+                  rescue => bang
+                    out = "Could prettify response :(\n\n"
+                    out << bang.to_s
+                  end
+                }
+                target = FXMenuCommand.new(sub, "XML")
+                target.connect(SEL_COMMAND) {
+                  begin
+                    doc = Nokogiri.XML(string2decode)
+                    replace_text(sender, doc.to_xml)
+                  rescue => bang
+                    puts bang
+                  end
+
+                }
+
+              end
+              FXMenuCascade.new(menu_pane, "Prettify", nil, fp_submenu)
+
               addStringInfo(menu_pane, sender)
               addDecoder(menu_pane, sender)
               addEncoder(menu_pane, sender)
@@ -386,11 +413,11 @@ module Watobo#:nodoc: all
               FXMenuPane.new(self) do |menu_pane|
                 FXMenuCaption.new(menu_pane, "Hotkeys:")
                 FXMenuSeparator.new(menu_pane)
-                [ "<ctrl-enter> - Send Request",
-                  "<ctrl-b> - Encode Base64",
-                  "<ctrl-shift-b> - Decode Base64",
-                  "<ctrl-u> - Encode URL",
-                  "<ctrl-shift-u> - Decode URL"
+                ["<ctrl-enter> - Send Request",
+                 "<ctrl-b> - Encode Base64",
+                 "<ctrl-shift-b> - Decode Base64",
+                 "<ctrl-u> - Encode URL",
+                 "<ctrl-shift-u> - Decode URL"
                 ].each do |hk|
                   FXMenuCaption.new(menu_pane, hk)
                 end
@@ -405,40 +432,40 @@ module Watobo#:nodoc: all
           end
           if @ctrl_pressed
             if event.code == KEY_Return
-            notify(:hotkey_ctrl_enter)
-            true # special handling of KEY_Return, because we don't want a linebreak in textbox.
+              notify(:hotkey_ctrl_enter)
+              true # special handling of KEY_Return, because we don't want a linebreak in textbox.
             else
               notify(:hotkey_ctrl_f) if event.code == KEY_f
               notify(:hotkey_ctrl_s) if event.code == KEY_s
               pos = @textbox.selStartPos
               len = @textbox.selEndPos - pos
               unless len==0
-                text = @textbox.extractText(pos,len)
+                text = @textbox.extractText(pos, len)
                 rptxt = case event.code
-                when KEY_u
-                  CGI::escape(text)
-                when KEY_h
-                  CGI::escapeHTML(text)
-                when KEY_H
-                  CGI::unescapeHTML(text)
-                when KEY_b
-                  Base64.strict_encode64(text)
-                when KEY_U
-                  CGI::unescape(text)
-                when KEY_B
-                  Base64.decode64(text)
-                else
-                text
-                end
-              text = normalizeText(rptxt)
-              @textbox.replaceText(pos,len, text)
-              @textbox.setSelection(pos, text.length)
+                          when KEY_u
+                            CGI::escape(text)
+                          when KEY_h
+                            CGI::escapeHTML(text)
+                          when KEY_H
+                            CGI::unescapeHTML(text)
+                          when KEY_b
+                            Base64.strict_encode64(text)
+                          when KEY_U
+                            CGI::unescape(text)
+                          when KEY_B
+                            Base64.decode64(text)
+                          else
+                            text
+                        end
+                text = normalizeText(rptxt)
+                @textbox.replaceText(pos, len, text)
+                @textbox.setSelection(pos, text.length)
               end
-            false
+              false
             end
           else
-          #puts "%04x" % event.code
-          false
+            #puts "%04x" % event.code
+            false
           end
         end
 
@@ -455,16 +482,16 @@ module Watobo#:nodoc: all
         rescue SyntaxError, LocalJumpError, NameError => bang
           puts bang
           puts bang.backtrace
-        #  puts bang.backtrace if $DEBUG
+          #  puts bang.backtrace if $DEBUG
           notify(:error, "#{$!}")
         rescue => bang
-        puts bang
-        notify(:error, "Could not parse request: #{$!}")
+          puts bang
+          notify(:error, "Could not parse request: #{$!}")
         end
 
         return nil
       end
-      
+
 
       private
 
@@ -480,23 +507,23 @@ module Watobo#:nodoc: all
 
           @markers = highlight(pattern)
           @textbox.setCursorPos(pos)
-          # else
-          #   @markers.each do |start, len|
-          #     if pos >= start and pos <= start + len then
-          #       @markers = highlight(pattern)
-          #       @textbox.setCursorPos(pos)
-          #       break
-          #     end
-          #   end
-          # end
+            # else
+            #   @markers.each do |start, len|
+            #     if pos >= start and pos <= start + len then
+            #       @markers = highlight(pattern)
+            #       @textbox.setCursorPos(pos)
+            #       break
+            #     end
+            #   end
+            # end
 
         rescue => bang
-        puts "!!!ERROR: onTextChanged"
-        puts bang
+          puts "!!!ERROR: onTextChanged"
+          puts bang
         end
       end
     end
 
-  # -> # module Watobo::Gui
+    # -> # module Watobo::Gui
   end
 end

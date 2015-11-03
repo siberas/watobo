@@ -1,11 +1,12 @@
 # @private 
-module Watobo#:nodoc: all
+module Watobo #:nodoc: all
   module Gui
     class FindingsTree < FXTreeList
       include Watobo::Constants
       include Watobo::Gui::Icons
 
       attr_accessor :project
+
       def subscribe(event, &callback)
         (@event_dispatcher_listeners[event] ||= []) << callback
       end
@@ -31,24 +32,24 @@ module Watobo#:nodoc: all
         false
       end
 
-     
+
       def reload()
-         self.clearItems        
-          @findings.clear
-          Watobo::Findings.each do |fid, finding|
-            addFinding(finding)
-          end   
-         expand_findings
-         @expandeds.each do |t|
-           site, text = t.split("|")
-           if( site = self.findItem(site, nil, SEARCH_FORWARD|SEARCH_NOWRAP) )
-             if( node = self.findItem(text, site, SEARCH_FORWARD|SEARCH_NOWRAP) )
-               self.expandTree(node)
-             else
-               @expandeds.delete t
-             end
-           end
-         end     
+        self.clearItems
+        @findings.clear
+        Watobo::Findings.each do |fid, finding|
+          addFinding(finding)
+        end
+        expand_findings
+        @expandeds.each do |t|
+          site, text = t.split("|")
+          if (site = self.findItem(site, nil, SEARCH_FORWARD|SEARCH_NOWRAP))
+            if (node = self.findItem(text, site, SEARCH_FORWARD|SEARCH_NOWRAP))
+              self.expandTree(node)
+            else
+              @expandeds.delete t
+            end
+          end
+        end
       end
 
       def useRegularIcons()
@@ -114,17 +115,17 @@ module Watobo#:nodoc: all
           site = nil
           # puts "add finding"
           if not hidden?(finding) then
-            site = self.findItem(finding.request.site, nil,SEARCH_FORWARD|SEARCH_IGNORECASE)
+            site = self.findItem(finding.request.site, nil, SEARCH_FORWARD|SEARCH_IGNORECASE)
 
             if not site then
               # found new site
               site = self.appendItem(nil, finding.request.site, @icon_project, @icon_project)
               item = self.appendItem(site, "Vulnerabilities", @icon_vuln, @icon_vuln)
-              self.setItemData(item, :finding_type )
+              self.setItemData(item, :finding_type)
               item = self.appendItem(site, "Hints", @icon_hints, @icon_hints)
-              self.setItemData(item, :finding_type )
+              self.setItemData(item, :finding_type)
               item = self.appendItem(site, "Info", @icon_info, @icon_info)
-              self.setItemData(item, :finding_type )
+              self.setItemData(item, :finding_type)
               #site = @findings_tree.moveItem(project.first,project,site)
               self.setItemData(site, :item_type_site)
 
@@ -133,31 +134,31 @@ module Watobo#:nodoc: all
             finding_type=""
 
             case finding.details[:type]
-            when FINDING_TYPE_INFO
-              finding_type = "Info"
-              icon = @icon_info_info
+              when FINDING_TYPE_INFO
+                finding_type = "Info"
+                icon = @icon_info_info
 
-            when FINDING_TYPE_HINT
-              finding_type = "Hints"
-              icon = @icon_hints_info
+              when FINDING_TYPE_HINT
+                finding_type = "Hints"
+                icon = @icon_hints_info
 
-            when FINDING_TYPE_VULN
-              finding_type = "Vulnerabilities"
-              icon = @icon_vuln_bp
-              
-              if finding.details[:rating] == VULN_RATING_LOW
-              icon = @icon_vuln_low
-              #  puts "low-rating-vuln"
-              end
-              if finding.details[:rating] == VULN_RATING_MEDIUM
-              icon = @icon_vuln_medium
-              end
-              if finding.details[:rating] == VULN_RATING_HIGH
-              icon = @icon_vuln_high
-              end
-              if finding.details[:rating] == VULN_RATING_CRITICAL
-              icon = @icon_vuln_critical
-              end
+              when FINDING_TYPE_VULN
+                finding_type = "Vulnerabilities"
+                icon = @icon_vuln_bp
+
+                if finding.details[:rating] == VULN_RATING_LOW
+                  icon = @icon_vuln_low
+                  #  puts "low-rating-vuln"
+                end
+                if finding.details[:rating] == VULN_RATING_MEDIUM
+                  icon = @icon_vuln_medium
+                end
+                if finding.details[:rating] == VULN_RATING_HIGH
+                  icon = @icon_vuln_high
+                end
+                if finding.details[:rating] == VULN_RATING_CRITICAL
+                  icon = @icon_vuln_critical
+                end
             end
 
             sub_tree = self.findItem(finding_type, site, SEARCH_FORWARD|SEARCH_IGNORECASE|SEARCH_NOWRAP)
@@ -166,13 +167,13 @@ module Watobo#:nodoc: all
               class_item = self.findItem(finding.details[:class], sub_tree, SEARCH_FORWARD|SEARCH_IGNORECASE|SEARCH_NOWRAP|SEARCH_PREFIX)
               if not class_item or class_item.parent != sub_tree
                 class_item = self.appendItem(sub_tree, finding.details[:class], icon, icon)
-                self.setItemData(class_item, :finding_class )
+                self.setItemData(class_item, :finding_class)
               end
               title_item = self.findItem(finding.details[:title], class_item, SEARCH_FORWARD|SEARCH_IGNORECASE|SEARCH_NOWRAP)
               if not title_item or title_item.parent != class_item
                 title_item = self.appendItem(class_item, finding.details[:title], nil, nil)
-                self.setItemData(title_item, :title )
-              # puts finding.details[:title]
+                self.setItemData(title_item, :title)
+                # puts finding.details[:title]
               end
               #   puts title_item
               resource = finding.request.path_ext
@@ -180,15 +181,15 @@ module Watobo#:nodoc: all
               request_item = self.findItem(resource, title_item, SEARCH_FORWARD|SEARCH_IGNORECASE|SEARCH_NOWRAP)
               if not request_item or request_item.parent != title_item
                 text = "/" + resource
-              request_item = self.appendItem(title_item, text)
-              self.setItemData(request_item, finding)
+                request_item = self.appendItem(title_item, text)
+                self.setItemData(request_item, finding)
               end
-              
+
               #
               unless class_item.text =~ / \(\d+\)$/
                 class_item.text = class_item.text + " (#{class_item.numChildren})"
               else
-              class_item.text = class_item.text.gsub(/ \(\d+\)$/, " (#{class_item.numChildren})")
+                class_item.text = class_item.text.gsub(/ \(\d+\)$/, " (#{class_item.numChildren})")
               end
             end
 
@@ -218,11 +219,11 @@ module Watobo#:nodoc: all
         useRegularIcons()
 
         @filtered_domains = Hash.new # domains which already have been filtered
-        
+
         self.connect(SEL_CLIPBOARD_REQUEST) do
-            setDNDData(FROM_CLIPBOARD, FXWindow.stringType, Fox.fxencodeStringData(@clipboard.to_s))
+          setDNDData(FROM_CLIPBOARD, FXWindow.stringType, Fox.fxencodeStringData(@clipboard.to_s))
         end
-        
+
         self.connect(SEL_EXPANDED) do |sender, sel, item|
           parent = item
           while parent.parent
@@ -233,7 +234,7 @@ module Watobo#:nodoc: all
             @expandeds << node
           end
         end
-        
+
         self.connect(SEL_COLLAPSED) do |sender, sel, item|
           parent = item
           while parent.parent
@@ -286,25 +287,23 @@ module Watobo#:nodoc: all
           unless event.moved?
             FXMenuPane.new(self) do |menu_pane|
               item = sender.getItemAt(event.win_x, event.win_y)
-              
-              
-               unless item.nil?
+              unless item.nil?
 
                 data = self.getItemData(item)
 
-                
+
                 unless self.itemLeaf?(item)
-                  FXMenuCommand.new(menu_pane, "expand tree" ).connect(SEL_COMMAND) {
+                  FXMenuCommand.new(menu_pane, "expand tree").connect(SEL_COMMAND) {
                     expandFullTree(item)
                   }
 
-                  FXMenuCommand.new(menu_pane, "collapse tree" ).connect(SEL_COMMAND) {
+                  FXMenuCommand.new(menu_pane, "collapse tree").connect(SEL_COMMAND) {
                     self.collapseFullTree(item)
                   }
-                   FXMenuSeparator.new(menu_pane)
-                  end
+                  FXMenuSeparator.new(menu_pane)
                 end
-              target = FXMenuCheck.new(menu_pane, "show scope only" )
+              end
+              target = FXMenuCheck.new(menu_pane, "show scope only")
 
               target.check = @show_scope_only
 
@@ -313,7 +312,7 @@ module Watobo#:nodoc: all
                 reload
               }
 
-              target = FXMenuCheck.new(menu_pane, "hide false-positives" )
+              target = FXMenuCheck.new(menu_pane, "hide false-positives")
 
               target.check = @hide_false_positives
 
@@ -321,118 +320,113 @@ module Watobo#:nodoc: all
                 @hide_false_positives = ts.checked?
                 reload
               }
-            
-            
-            
+
+
               unless item.nil?
 
                 data = self.getItemData(item)
 
                 FXMenuSeparator.new(menu_pane) unless data == :finding_type
-                
+
 
                 if data == :item_type_site then
-                 # FXMenuSeparator.new(menu_pane)
-                  FXMenuCommand.new(menu_pane, "add site to scope" ).connect(SEL_COMMAND) {
+                  # FXMenuSeparator.new(menu_pane)
+                  FXMenuCommand.new(menu_pane, "add site to scope").connect(SEL_COMMAND) {
                     #notify(:add_site_to_scope, item.to_s)
                     Watobo::Scope.add item.to_s
                     reload
                   }
-               # 
+                  #
                 elsif data == :title
-                   findings = []
-                      item.each do |ft|                        
-                         f = self.getItemData(ft)
-                         findings << f if f.is_a? Watobo::Finding
-                      end
-                      
-                   fp_submenu = FXMenuPane.new(self) do |sub|
-                     
-                     
+                  findings = []
+                  item.each do |ft|
+                    f = self.getItemData(ft)
+                    findings << f if f.is_a? Watobo::Finding
+                  end
 
-                    target = FXMenuCommand.new(sub, "Set False Positive" )
+                  fp_submenu = FXMenuPane.new(self) do |sub|
+
+
+                    target = FXMenuCommand.new(sub, "Set False Positive")
                     target.connect(SEL_COMMAND) {
-                     
-                     
-                     # puts "* False Positive #{findings.length}"
+
+                      # puts "* False Positive #{findings.length}"
 
                       # remember parent node to expand it later
                       fclass = item.parent.text
                       fcat = item.parent.parent.text
                       fsite = item.parent.parent.parent.text
-                      
+
                       puts ">> #{fsite} - #{fcat} - #{fclass} (#{fclass.object_id})"
-                   
+
                       notify(:set_false_positive, findings)
-                      
+
                       reload
-                      
+
                       site_item = cat_item = class_item = nil
-                       site_item = self.findItem(fsite, nil,SEARCH_FORWARD|SEARCH_IGNORECASE)
-                       
-                       unless site_item.nil?
-                         self.expandTree(site_item)
-                         cat_item = self.findItem(fcat, site_item,SEARCH_FORWARD|SEARCH_IGNORECASE)
-                       end
-                        
-                        unless cat_item.nil?
-                          self.expandTree(cat_item)
-                          class_item = self.findItem(fclass, cat_item,SEARCH_FORWARD|SEARCH_IGNORECASE)
-                       end
-                       
-                          
-                       unless class_item.nil?
-                         puts "Expanding #{class_item} (#{class_item.object_id})-> #{cat_item} -> #{site_item}"
-                         self.expandTree(class_item)
+                      site_item = self.findItem(fsite, nil, SEARCH_FORWARD|SEARCH_IGNORECASE)
+
+                      unless site_item.nil?
+                        self.expandTree(site_item)
+                        cat_item = self.findItem(fcat, site_item, SEARCH_FORWARD|SEARCH_IGNORECASE)
+                      end
+
+                      unless cat_item.nil?
+                        self.expandTree(cat_item)
+                        class_item = self.findItem(fclass, cat_item, SEARCH_FORWARD|SEARCH_IGNORECASE)
+                      end
+
+
+                      unless class_item.nil?
+                        puts "Expanding #{class_item} (#{class_item.object_id})-> #{cat_item} -> #{site_item}"
+                        self.expandTree(class_item)
                       else
                         puts "Could not find tree item for #{class_item} (#{class_item.object_id})-> #{cat_item} -> #{site_item}"
                       end
-                         
-
                     }
-                    target = FXMenuCommand.new(sub, "Unset False Positive" )
+                    target = FXMenuCommand.new(sub, "Unset False Positive")
                     target.connect(SEL_COMMAND) {
                       fclass = item.parent.text
                       fcat = item.parent.parent.text
                       fsite = item.parent.parent.parent.text
-                      
+
                       notify(:unset_false_positive, findings)
                       reload
-                       site_item = cat_item = class_item = nil
-                       site_item = self.findItem(fsite, nil,SEARCH_FORWARD|SEARCH_IGNORECASE)
-                       
-                       unless site_item.nil?
-                         self.expandTree(site_item)
-                         cat_item = self.findItem(fcat, site_item,SEARCH_FORWARD|SEARCH_IGNORECASE)
-                       end
-                        
-                        unless cat_item.nil?
-                          self.expandTree(cat_item)
-                          class_item = self.findItem(fclass, cat_item,SEARCH_FORWARD|SEARCH_IGNORECASE)
-                       end
-                       
-                          
-                       unless class_item.nil?
-                         puts "Expanding #{class_item} (#{class_item.object_id})-> #{cat_item} -> #{site_item}"
-                         self.expandTree(class_item)
+                      site_item = cat_item = class_item = nil
+                      site_item = self.findItem(fsite, nil, SEARCH_FORWARD|SEARCH_IGNORECASE)
+
+                      unless site_item.nil?
+                        self.expandTree(site_item)
+                        cat_item = self.findItem(fcat, site_item, SEARCH_FORWARD|SEARCH_IGNORECASE)
+                      end
+
+                      unless cat_item.nil?
+                        self.expandTree(cat_item)
+                        class_item = self.findItem(fclass, cat_item, SEARCH_FORWARD|SEARCH_IGNORECASE)
+                      end
+
+
+                      unless class_item.nil?
+                        puts "Expanding #{class_item} (#{class_item.object_id})-> #{cat_item} -> #{site_item}"
+                        self.expandTree(class_item)
                       else
                         puts "Could not find tree item for #{class_item} (#{class_item.object_id})-> #{cat_item} -> #{site_item}"
                       end
                     }
 
                     FXMenuSeparator.new(sub)
-                    
-                    FXMenuCommand.new(sub, "Purge - NO UNDO!" ).connect(SEL_COMMAND) {
+
+                    FXMenuCommand.new(sub, "Purge - NO UNDO!").connect(SEL_COMMAND) {
                       notify(:purge_findings, findings)
                       reload
-                  }
+                    }
                   end
-                   FXMenuCascade.new(menu_pane, "All \"#{item}\"", nil, fp_submenu)
-                   
-                   FXMenuSeparator.new(menu_pane)
-                  info = FXMenuCommand.new(menu_pane, "Details..." )
+                  FXMenuCascade.new(menu_pane, "All \"#{item}\"", nil, fp_submenu)
+
+                  FXMenuSeparator.new(menu_pane)
+                  info = FXMenuCommand.new(menu_pane, "Details...")
                   info.connect(SEL_COMMAND) {
-                  #@interface.showFindingDetails(item.data)}
+                    #@interface.showFindingDetails(item.data)}
                     notify(:show_finding_details, findings.first)
                   }
 
@@ -440,75 +434,75 @@ module Watobo#:nodoc: all
                   #puts "FINDING_CLASS"
                   # COPY SUBMENU
                   findings = []
-                      item.each do |c|
-                        c.each do |ft|
-                          f = self.getItemData(ft)
-                          findings << f if f.is_a? Watobo::Finding
-                        end
+                  item.each do |c|
+                    c.each do |ft|
+                      f = self.getItemData(ft)
+                      findings << f if f.is_a? Watobo::Finding
+                    end
 
-                      end
-                      
+                  end
+
                   fp_submenu = FXMenuPane.new(self) do |sub|
-                    
-                     target = FXMenuCommand.new(sub, "Copy URLs" )
+
+                    target = FXMenuCommand.new(sub, "Copy URLs")
                     target.connect(SEL_COMMAND) {
-                     
-                     urls = []
-                     findings.each do |f|
-                       proto = f.request.proto
-                       site = f.request.site
-                       path = f.request.path
-                       urls << "#{proto}://#{site}/#{path}"
-                     end
-                     types = [ FXWindow.stringType ]
-                     if acquireClipboard(types)
-                       @clipboard = urls.uniq.join("\n")
-                     end
+
+                      urls = []
+                      findings.each do |f|
+                        proto = f.request.proto
+                        site = f.request.site
+                        path = f.request.path
+                        urls << "#{proto}://#{site}/#{path}"
+                      end
+                      types = [FXWindow.stringType]
+                      if acquireClipboard(types)
+                        @clipboard = urls.uniq.join("\n")
+                      end
                     }
 
-                    target = FXMenuCommand.new(sub, "Set False Positive" )
+                    target = FXMenuCommand.new(sub, "Set False Positive")
                     target.connect(SEL_COMMAND) {
-                      
+
                       fcat = item.parent.text
                       fsite = item.parent.parent.text
-                      
+
                       notify(:set_false_positive, findings)
                       reload
-                       site_item = cat_item = class_item = nil
-                       site_item = self.findItem(fsite, nil,SEARCH_FORWARD|SEARCH_IGNORECASE)
-                       
-                       unless site_item.nil?
-                         self.expandTree(site_item)
-                         cat_item = self.findItem(fcat, site_item,SEARCH_FORWARD|SEARCH_IGNORECASE)
-                       end
-                        
-                        unless cat_item.nil?
-                          self.expandTree(cat_item)
-                       end
+                      site_item = cat_item = class_item = nil
+                      site_item = self.findItem(fsite, nil, SEARCH_FORWARD|SEARCH_IGNORECASE)
+
+                      unless site_item.nil?
+                        self.expandTree(site_item)
+                        cat_item = self.findItem(fcat, site_item, SEARCH_FORWARD|SEARCH_IGNORECASE)
+                      end
+
+                      unless cat_item.nil?
+                        self.expandTree(cat_item)
+                      end
 
                     }
-                    target = FXMenuCommand.new(sub, "Unset False Positive" )
+                    target = FXMenuCommand.new(sub, "Unset False Positive")
                     target.connect(SEL_COMMAND) {
                       fcat = item.parent.text
                       fsite = item.parent.parent.text
                       notify(:unset_false_positive, findings)
                       reload
                       site_item = cat_item = class_item = nil
-                       site_item = self.findItem(fsite, nil,SEARCH_FORWARD|SEARCH_IGNORECASE)
-                       
-                       unless site_item.nil?
-                         self.expandTree(site_item)
-                         cat_item = self.findItem(fcat, site_item,SEARCH_FORWARD|SEARCH_IGNORECASE)
-                       end
-                        
-                        unless cat_item.nil?
-                          self.expandTree(cat_item)
-                       end
+                      site_item = self.findItem(fsite, nil, SEARCH_FORWARD|SEARCH_IGNORECASE)
+
+                      unless site_item.nil?
+                        self.expandTree(site_item)
+                        cat_item = self.findItem(fcat, site_item, SEARCH_FORWARD|SEARCH_IGNORECASE)
+                      end
+
+                      unless cat_item.nil?
+                        self.expandTree(cat_item)
+                      end
                     }
 
                     FXMenuSeparator.new(sub)
-                    FXMenuCommand.new(sub, "Purge - NO UNDO!" ).connect(SEL_COMMAND) {
-                      
+                    FXMenuCommand.new(sub, "Purge - NO UNDO!").connect(SEL_COMMAND) {
+
                       puts "* purge findings #{findings.length}"
 
                       notify(:purge_findings, findings)
@@ -517,32 +511,32 @@ module Watobo#:nodoc: all
 
                   end
                   FXMenuCascade.new(menu_pane, "All \"#{item}\"", nil, fp_submenu)
-                  
-                    FXMenuSeparator.new(menu_pane)
-                  info = FXMenuCommand.new(menu_pane, "Details..." )
+
+                  FXMenuSeparator.new(menu_pane)
+                  info = FXMenuCommand.new(menu_pane, "Details...")
                   info.connect(SEL_COMMAND) {
-                  #@interface.showFindingDetails(item.data)}
+                    #@interface.showFindingDetails(item.data)}
                     notify(:show_finding_details, findings.first)
                   }
 
                 elsif data.is_a? Watobo::Finding then
-                  FXMenuCommand.new(menu_pane, "Copy URL" ).connect(SEL_COMMAND){
-                    types = [ FXWindow.stringType ]
-                     if acquireClipboard(types)
-                       @clipboard = item.data.request.url.to_s
-                     end
-                    
+                  FXMenuCommand.new(menu_pane, "Copy URL").connect(SEL_COMMAND) {
+                    types = [FXWindow.stringType]
+                    if acquireClipboard(types)
+                      @clipboard = item.data.request.url.to_s
+                    end
+
                   }
-                 # FXMenuSeparator.new(menu_pane)
-                  doManual = FXMenuCommand.new(menu_pane, "Manual Request.." )
+                  # FXMenuSeparator.new(menu_pane)
+                  doManual = FXMenuCommand.new(menu_pane, "Manual Request..")
                   doManual.connect(SEL_COMMAND) {
-                  # @interface.open_manual_request_editor(item.data)
+                    # @interface.open_manual_request_editor(item.data)
                     notify(:open_manual_request, item.data)
 
                   }
-                  info = FXMenuCommand.new(menu_pane, "Details..." )
+                  info = FXMenuCommand.new(menu_pane, "Details...")
                   info.connect(SEL_COMMAND) {
-                  #@interface.showFindingDetails(item.data)}
+                    #@interface.showFindingDetails(item.data)}
                     notify(:show_finding_details, item.data)
                   }
                 end
@@ -557,16 +551,16 @@ module Watobo#:nodoc: all
       end
 
       private
-      
+
       def expand_findings()
         self.each do |site|
           expandTree site
-           %w(Vulnerabilities Hints Info).each do |item|
-              f = self.findItem(item, site,SEARCH_FORWARD|SEARCH_IGNORECASE)
-              expandTree(f) unless site.nil?
-           end
+          %w(Vulnerabilities Hints Info).each do |item|
+            f = self.findItem(item, site, SEARCH_FORWARD|SEARCH_IGNORECASE)
+            expandTree(f) unless site.nil?
+          end
         end
-       
+
       end
 
       def notify(event, *args)
@@ -577,6 +571,6 @@ module Watobo#:nodoc: all
         end
       end
     end
-  # namespace end
+    # namespace end
   end
 end
