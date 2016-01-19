@@ -112,12 +112,16 @@ module Watobo#:nodoc: all
         tcp_socket.setsockopt( Socket::SOL_SOCKET, Socket::SO_KEEPALIVE, 1)
         tcp_socket.sync = true
         ctx = OpenSSL::SSL::SSLContext.new()
+        puts ctx.ciphers
 
         ctx.tmp_dh_callback = proc { |*args|
           OpenSSL::PKey::DH.new(128)
         }
 
         socket = OpenSSL::SSL::SSLSocket.new(tcp_socket, ctx)
+        # need hostname for SNI (Server Name Indication)
+        # http://en.wikipedia.org/wiki/Server_Name_Indication
+        socket.hostname = host
 
         socket.connect
         cert = socket.peer_cert
@@ -129,6 +133,7 @@ module Watobo#:nodoc: all
         socket.io.shutdown(2)
       rescue => bang
         puts bang
+        puts ">> #{host}:#{port}"
         cn = host
       ensure
         socket.close if socket.respond_to? :close

@@ -45,12 +45,14 @@ module Watobo#:nodoc: all
     
      def self.info
       i = []
-      i << "Watobo Version: " + Watobo.version
+      i << "Ruby Version: " + RUBY_VERSION
+      i << "Ruby Platform: " + RUBY_PLATFORM
       i << "FXRuby Version: " + Fox.fxrubyversion
       i << "Fox Version: " + Fox.fxversion
-      i << "Working Directory: " + Watobo.working_directory
-      i << "Active Checks Location: " + Watobo.active_module_path
-      i << "Passive Checks Location: " + Watobo.passive_module_path
+      i << "Watobo Version: " + Watobo.version
+      #i << "Working Directory: " + Watobo.working_directory
+      #i << "Active Checks Location: " + Watobo.active_module_path
+      #i << "Passive Checks Location: " + Watobo.passive_module_path
       i.join("\n")
   end
 

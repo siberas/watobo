@@ -194,6 +194,9 @@ module Watobo#:nodoc: all
               client_cert = Watobo::ClientCertStore.get(site)
               ssl_prefs[:client_certificate] = client_cert
             end
+            # need hostname for SNI (Server Name Indication)
+            # http://en.wikipedia.org/wiki/Server_Name_Indication
+            ssl_prefs[:hostname] = host
             socket = sslConnect(tcp_socket, ssl_prefs)
             # puts "SSLSocket " + (socket.nil? ? "NO" : "OK")
             return nil, request, [] if socket.nil?
@@ -679,6 +682,7 @@ module Watobo#:nodoc: all
         ctx = OpenSSL::SSL::SSLContext.new()
         ctx.ciphers = current_prefs[:ssl_cipher] if current_prefs.has_key? :ssl_cipher
 
+
         if current_prefs.has_key? :ssl_client_cert and current_prefs.has_key? :ssl_client_key
 
           ctx.cert = current_prefs[:ssl_client_cert]
@@ -707,7 +711,12 @@ module Watobo#:nodoc: all
         end
 
         socket = OpenSSL::SSL::SSLSocket.new(tcp_socket, ctx)
+
+        # need hostname for SNI (Server Name Indication)
+        # http://en.wikipedia.org/wiki/Server_Name_Indication
+        socket.hostname = current_prefs[:hostname] if current_prefs.has_key?(:hostname)
         socket.sync_close = true
+
 
         socket.connect
         #socket.setsockopt( Socket::SOL_SOCKET, Socket::SO_KEEPALIVE, 1)

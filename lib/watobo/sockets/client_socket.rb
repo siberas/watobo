@@ -205,7 +205,7 @@ module Watobo#:nodoc: all
           target = $1
           tport = $2
           # puts request.first
-          #print "\n* CONNECT: #{method} #{target} on port #{tport}\n"
+          print "\n* CONNECT: #{target} on port #{tport}\n"
           site = "#{target}:#{tport}"
           #puts "CONNECT #{site}"
 
@@ -262,6 +262,7 @@ module Watobo#:nodoc: all
 
             Watobo::HTTPSocket.read_header(session) do |line|
               request << line
+              puts line
             end
             return nil if request.empty?
             return nil if request.first.nil?

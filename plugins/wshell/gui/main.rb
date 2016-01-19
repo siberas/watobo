@@ -72,7 +72,7 @@ module Watobo#:nodoc: all
 
         def run_cmd
           Thread.new{
-            runOnUiThread do
+            Watobo::Gui.application.runOnUiThread do
               cmd = @cmd.text.strip
               unless cmd.empty?
                 if cmd =~ /^help$/i

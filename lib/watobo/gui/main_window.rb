@@ -775,7 +775,7 @@ module Watobo#:nodoc: all
             puts "!!! Could not create project :("
           ensure
             puts "* stop modal mode" if $DEBUG
-            runOnUiThread do
+            Watobo::Gui.application.runOnUiThread do
               getApp.stopModal
             end
           end
