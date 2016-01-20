@@ -107,12 +107,16 @@ module Watobo#:nodoc: all
 
     def self.get_ssl_cert_cn( host, port)
       cn = ""
+      # if target is an ip address we use the cn name of the certificate
+      # otherwise we return the hostname
+      return host unless host =~ /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/
+
       begin
         tcp_socket = TCPSocket.new( host, port )
         tcp_socket.setsockopt( Socket::SOL_SOCKET, Socket::SO_KEEPALIVE, 1)
         tcp_socket.sync = true
         ctx = OpenSSL::SSL::SSLContext.new()
-        puts ctx.ciphers
+       # puts ctx.ciphers
 
         ctx.tmp_dh_callback = proc { |*args|
           OpenSSL::PKey::DH.new(128)
@@ -126,10 +130,8 @@ module Watobo#:nodoc: all
         socket.connect
         cert = socket.peer_cert
 
-        if cert.subject.to_s =~ /cn=([^\/]*)/i
-        cn = $1
-        end
-        puts "Peer-Cert CN: #{cn}"
+        cn = $1 if cert.subject.to_s =~ /cn=([^\/]*)/i
+
         socket.io.shutdown(2)
       rescue => bang
         puts bang

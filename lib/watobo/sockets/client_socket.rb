@@ -205,7 +205,7 @@ module Watobo#:nodoc: all
           target = $1
           tport = $2
           # puts request.first
-          print "\n* CONNECT: #{target} on port #{tport}\n"
+         # print "\n* CONNECT: #{target} on port #{tport}\n"
           site = "#{target}:#{tport}"
           #puts "CONNECT #{site}"
 
@@ -216,7 +216,6 @@ module Watobo#:nodoc: all
           bscount = 0 # bad handshake counter
           #  puts "* wait for ssl handshake ..."
           begin
-          # site = "#{target}:#{tport}"
             unless @fake_certs.has_key? site
               puts "CREATE NEW CERTIFICATE FOR >> #{site} <<"
               cn = Watobo::HTTPSocket.get_ssl_cert_cn(target, tport)
@@ -262,7 +261,6 @@ module Watobo#:nodoc: all
 
             Watobo::HTTPSocket.read_header(session) do |line|
               request << line
-              puts line
             end
             return nil if request.empty?
             return nil if request.first.nil?
