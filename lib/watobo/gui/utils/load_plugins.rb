@@ -53,8 +53,9 @@ module Watobo#:nodoc: all
                   #
                   plugin_class = plugin.slice(0..0).upcase + plugin.slice(1..-1).downcase
                   class_constant = Watobo.class_eval("Watobo::Plugin::#{group_class}::#{plugin_class}")
-
-                  Watobo::Gui.add_plugin class_constant.new(Watobo::Gui.application, project)
+                  Watobo::Gui.application.runOnUiThread do
+                     Watobo::Gui.add_plugin class_constant.new(Watobo::Gui.application, project)
+                  end
                 rescue => bang
                   puts bang if $DEBUG
                   puts bang.backtrace if $DEBUG

@@ -89,7 +89,7 @@ module Watobo#:nodoc: all
           :save_finding => true
         }
         options.update opts
-        puts "[Project] add finding #{finding.fid}" if $DEBUG
+        puts "[Project] add finding #{finding.fid}" #if $DEBUG
 
         unless @findings.has_key?(finding.fid)
           begin

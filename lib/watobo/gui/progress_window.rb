@@ -1,5 +1,5 @@
 # @private 
-module Watobo#:nodoc: all
+module Watobo #:nodoc: all
   module Gui
     class ProgressWindow < FXTopWindow
       def increment(x)
@@ -37,13 +37,13 @@ module Watobo#:nodoc: all
       end
 
       def update_progress(settings={})
-          @total = settings[:total] unless settings[:total].nil?
-          @title = settings[:title] unless settings[:title].nil?
-          @task = settings[:task] unless settings[:task].nil?
-          @job = settings[:job] unless settings[:job].nil?
-          @increment += settings[:increment] unless settings[:increment].nil?
+        @total = settings[:total] unless settings[:total].nil?
+        @title = settings[:title] unless settings[:title].nil?
+        @task = settings[:task] unless settings[:task].nil?
+        @job = settings[:job] unless settings[:job].nil?
+        @increment += settings[:increment] unless settings[:increment].nil?
 
-          Watobo::Gui.application.runOnUiThread do
+        Watobo::Gui.application.runOnUiThread do
           @title_lbl.text = @title
           @task_lbl.text = @task
           @job_lbl.text = @job
@@ -55,7 +55,7 @@ module Watobo#:nodoc: all
       end
 
       def initialize(owner, opts={})
-        super( owner, 'Progress Bar', nil, nil, DECOR_BORDER, 0, 0, 300, 100, 0, 0, 0, 0, 0, 0)
+        super(owner, 'Progress Bar', nil, nil, DECOR_BORDER, 0, 0, 300, 100, 0, 0, 0, 0, 0, 0)
         frame = FXVerticalFrame.new(self, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_RAISED)
         @update_lock = Mutex.new
 
@@ -76,11 +76,12 @@ module Watobo#:nodoc: all
         @job = "-"
         @task = "-"
 
-        #add_update_timer(50)
+          #add_update_timer(50)
       end
 
-      def add_update_timer(ms)
-        @update_timer = FXApp.instance.addTimeout( ms, :repeat => true) {
+      # TODO: remove if unused
+      def add_update_timer_UNUSED(ms)
+        @update_timer = FXApp.instance.addTimeout(ms, :repeat => true) {
           @update_lock.synchronize do
             @title_lbl.text = @title
             @task_lbl.text = @task
@@ -89,7 +90,7 @@ module Watobo#:nodoc: all
             @pbar.increment(@increment)
             @increment = 0
             @pbar.total = @total
-          # @pbar.progress = settings[:progress] unless settings[:progress].nil?
+            # @pbar.progress = settings[:progress] unless settings[:progress].nil?
           end
         }
       end
