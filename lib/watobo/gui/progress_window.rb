@@ -37,12 +37,20 @@ module Watobo#:nodoc: all
       end
 
       def update_progress(settings={})
-        @update_lock.synchronize do
           @total = settings[:total] unless settings[:total].nil?
           @title = settings[:title] unless settings[:title].nil?
           @task = settings[:task] unless settings[:task].nil?
           @job = settings[:job] unless settings[:job].nil?
           @increment += settings[:increment] unless settings[:increment].nil?
+
+          Watobo::Gui.application.runOnUiThread do
+          @title_lbl.text = @title
+          @task_lbl.text = @task
+          @job_lbl.text = @job
+
+          @pbar.increment(@increment)
+          @increment = 0
+          @pbar.total = @total
         end
       end
 
@@ -68,7 +76,7 @@ module Watobo#:nodoc: all
         @job = "-"
         @task = "-"
 
-        add_update_timer(50)
+        #add_update_timer(50)
       end
 
       def add_update_timer(ms)

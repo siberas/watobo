@@ -1,5 +1,5 @@
 # @private
-module Watobo#:nodoc: all
+module Watobo #:nodoc: all
   module Plugin
     module Crawler
       def self.start_url
@@ -24,9 +24,11 @@ module Watobo#:nodoc: all
       end
 
       class Gui < Watobo::Plugin2
-        class PasswordMatchError < StandardError; end
+        class PasswordMatchError < StandardError;
+        end
 
-        class UsernameError < StandardError; end
+        class UsernameError < StandardError;
+        end
 
         icon_file "crawler.ico"
 
@@ -51,15 +53,15 @@ module Watobo#:nodoc: all
         end
 
         def initialize(owner, project=nil, chat=nil)
-          super(owner, "Crawler", project, :opts => DECOR_ALL, :width=>800, :height=>600)
+          super(owner, "Crawler", project, :opts => DECOR_ALL, :width => 800, :height => 600)
           @plugin_name = "Crawler"
           @project = project
           @status_lock = Mutex.new
           @crawl_status = {
-            :engine_status => CRAWL_NONE,
-            :page_size => 0,
-            :link_size => 0,
-            :skipped_domains => 0
+              :engine_status => CRAWL_NONE,
+              :page_size => 0,
+              :link_size => 0,
+              :skipped_domains => 0
           }
           @cookie_jar = nil
 
@@ -69,26 +71,26 @@ module Watobo#:nodoc: all
           #  FXLabel.new(frame, "http://")
           @url_txt = FXTextField.new(frame, 60, nil, 0, :opts => TEXTFIELD_NORMAL|LAYOUT_SIDE_RIGHT|LAYOUT_FILL_X)
 
-          @start_button = FXButton.new(frame, "start", :opts => BUTTON_DEFAULT|BUTTON_NORMAL )
+          @start_button = FXButton.new(frame, "start", :opts => BUTTON_DEFAULT|BUTTON_NORMAL)
           @start_button.disable
 
-          @url_txt.connect(SEL_COMMAND){ |sender, sel, item|
+          @url_txt.connect(SEL_COMMAND) { |sender, sel, item|
             if url_valid?
               # @start_button.setFocus()
               Watobo::Plugin::Crawler.start_url = start_url
             end
           }
 
-          @url_txt.connect(SEL_CHANGED){
+          @url_txt.connect(SEL_CHANGED) {
             update_url_state
           }
 
-          @start_button.connect(SEL_COMMAND){ |sender, sel, item|
+          @start_button.connect(SEL_COMMAND) { |sender, sel, item|
             case sender.text
-            when /start/i
-              start
-            when /cancel/i
-              cancel
+              when /start/i
+                start
+              when /cancel/i
+                cancel
             end
           }
 
@@ -103,14 +105,14 @@ module Watobo#:nodoc: all
             begin
               url = chat.request.url
               @url_txt.text = "#{url}"
-              chat.request.headers("Authorization"){ |h|
+              chat.request.headers("Authorization") { |h|
                 if h =~ /Basic (.*)/i
                   user, pw = Base64.decode64($1).strip.split(":")
-                  auth = { :username => user,
-                    :password => pw,
-                    :auth_type => :basic
+                  auth = {:username => user,
+                          :password => pw,
+                          :auth_type => :basic
                   }
-                @settings_tabbook.auth.set(auth)
+                  @settings_tabbook.auth.set(auth)
                 end
               }
               unless chat.request.cookies.empty?
@@ -119,11 +121,11 @@ module Watobo#:nodoc: all
 
                 chat.request.cookies.each do |c|
                   name, value = c.split("=")
-                  cprefs = { :domain => domain,
-                    :name => name,
-                    :value => value,
-                    :path => '/',
-                    :expires => (Date.today+1).to_s
+                  cprefs = {:domain => domain,
+                            :name => name,
+                            :value => value,
+                            :path => '/',
+                            :expires => (Date.today+1).to_s
                   }
                   cookie = Mechanize::Cookie.new cprefs
                   @cookie_jar << cookie
@@ -146,8 +148,8 @@ module Watobo#:nodoc: all
           #}
 
           stbk = @settings_tabbook
-          [ @crawler, stbk.auth].each do |i|
-            i.subscribe( :log ){ |msg|
+          [@crawler, stbk.auth].each do |i|
+            i.subscribe(:log) { |msg|
               @log_viewer.log(LOG_INFO, msg)
             }
           end
@@ -161,17 +163,17 @@ module Watobo#:nodoc: all
         def update_url_state
           if url_valid?
 
-          @start_button.enable
+            @start_button.enable
           else
-          @start_button.disable
-          # Watobo::Plugin::Crawler.start_url = nil
+            @start_button.disable
+            # Watobo::Plugin::Crawler.start_url = nil
           end
         end
 
         def remove_update_timer
           app = FXApp.instance
           if app.hasTimeout? @update_timer
-          app.removeTimeout @update_timer
+            app.removeTimeout @update_timer
           end
         end
 
@@ -188,14 +190,16 @@ module Watobo#:nodoc: all
           @status_frame.update_status Watobo::Crawler::Status.get
           es = Watobo::Crawler::Status.engine
           unless es.nil?
-            case es
-            when CRAWL_NONE
-              @start_button.text = "start"
-            when CRAWL_RUNNING
-              @start_button.text = "cancel"
+            Watobo::Gui.application.runOnUiThread do
+              case es
+                when CRAWL_NONE
+                  @start_button.text = "start"
+                when CRAWL_RUNNING
+                  @start_button.text = "cancel"
 
-            when CRAWL_PAUSED
-              @start_button.text = "start"
+                when CRAWL_PAUSED
+                  @start_button.text = "start"
+              end
             end
           end
         end
@@ -212,29 +216,29 @@ module Watobo#:nodoc: all
           auth = @settings_tabbook.auth.to_h
           # puts auth.to_yaml
           case auth[:auth_type]
-          when :basic
-            auth[:auth_uri] = start_url
-            unless auth[:password] == auth[:retype]
-              raise PasswordMatchError, "Passwords Don't Match!"
-            end
-            if auth[:username].empty?
-              raise UsernameError, "Username is empty!"
-            end
-          when :form
-            if auth.has_key? :form
-              begin
-                if auth[:form].buttons.length > 0
-                  auth[:form].click_button
-                #@crawler.send_form(form).
-                elsif auth[:form].respond_to? :submit
-                  puts "Submitting Form"
-                  p = auth[:form].submit()
-                #puts p.class
-                end
-              rescue => bang
-                puts bang
+            when :basic
+              auth[:auth_uri] = start_url
+              unless auth[:password] == auth[:retype]
+                raise PasswordMatchError, "Passwords Don't Match!"
               end
-            end
+              if auth[:username].empty?
+                raise UsernameError, "Username is empty!"
+              end
+            when :form
+              if auth.has_key? :form
+                begin
+                  if auth[:form].buttons.length > 0
+                    auth[:form].click_button
+                    #@crawler.send_form(form).
+                  elsif auth[:form].respond_to? :submit
+                    puts "Submitting Form"
+                    p = auth[:form].submit()
+                    #puts p.class
+                  end
+                rescue => bang
+                  puts bang
+                end
+              end
           end
           puts "---"
           auth
@@ -268,7 +272,7 @@ module Watobo#:nodoc: all
             return false
           rescue => bang
             puts bang if $DEBUG
-          return false
+            return false
           end
         end
 
@@ -289,18 +293,18 @@ module Watobo#:nodoc: all
 
             add_update_timer(1000)
 
-            Thread.new(@url_txt.text,prefs){|turl,tprefs|
+            Thread.new(@url_txt.text, prefs) { |turl, tprefs|
               @crawler.run(turl, tprefs)
             }
 
             @start_button.text = 'Cancel'
 
           rescue PasswordMatchError
-          #puts "Passwords Don't Match!"
-            FXMessageBox.information(self,MBOX_OK,"Password Error", "The provided passwords don't match!")
+            #puts "Passwords Don't Match!"
+            FXMessageBox.information(self, MBOX_OK, "Password Error", "The provided passwords don't match!")
           rescue UsernameError
-          #puts "Passwords Don't Match!"
-            FXMessageBox.information(self,MBOX_OK,"Username Error", "Need a valid username.")
+            #puts "Passwords Don't Match!"
+            FXMessageBox.information(self, MBOX_OK, "Username Error", "Need a valid username.")
           rescue => bang
             puts bang
           end
