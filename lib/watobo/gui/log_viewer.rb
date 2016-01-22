@@ -1,14 +1,15 @@
 # @private 
-module Watobo#:nodoc: all
+module Watobo #:nodoc: all
   module Gui
     class LogViewer < FXVerticalFrame
 
       include Watobo::Constants
+
       def purge_logs
         begin
           @log_text_lock.synchronize do
             @textbox.setText('')
-          # @textbox.makePositionVisible 0
+            # @textbox.makePositionVisible 0
           end
         rescue => bang
           puts "! Could not purge logs"
@@ -18,19 +19,34 @@ module Watobo#:nodoc: all
       end
 
       # LOG_INFO
-      def log(log_level, msg )
+      def log(log_level, msg)
 
         t = Time.now
         now = t.strftime("%m/%d/%Y @ %H:%M:%S")
 
         begin
           log_text = case log_level
-          when LOG_INFO
-            "#{now}: #{msg}\n"
-          else
-          ""
-          end
-          @log_queue << log_text
+                       when LOG_INFO
+                         "#{now}: #{msg}\n"
+                       else
+                         ""
+                     end
+          Thread.new() {
+            @log_text_lock.synchronize do
+              if @mode == :insert
+                Watobo::Gui.application.runOnUiThread do
+                  @textbox.insertText(0, msg)
+                end
+              else
+                Watobo::Gui.application.runOnUiThread do
+                  @textbox.appendText(msg)
+                end
+              end
+              Watobo::Gui.application.runOnUiThread do
+                @textbox.handle(self, FXSEL(SEL_UPDATE, 0), nil)
+              end
+            end
+          }
         rescue => bang
           puts bang
           puts bang.backtrace if $DEBUG
@@ -39,7 +55,7 @@ module Watobo#:nodoc: all
 
       def initialize(parent, mode = nil, opts)
         opts[:padding]=0
-        
+
         @mode = mode.nil? ? :inster : mode
 
         super(parent, opts)
@@ -48,33 +64,33 @@ module Watobo#:nodoc: all
 
         @log_text_lock = Mutex.new
 
-        @textbox = FXText.new(self,  nil, 0, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
+        @textbox = FXText.new(self, nil, 0, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
         @textbox.editable = false
-        start_update_timer
+        #start_update_timer
       end
 
       private
 
-      def start_update_timer
-        @timer = FXApp.instance.addTimeout( 150, :repeat => true) {
+      def start_update_timer_UNUSED
+        @timer = FXApp.instance.addTimeout(150, :repeat => true) {
           #print @log_queue.length
           if @log_queue.length > 0
             msg = @log_queue.deq
             if @mode == :insert
               @log_text_lock.synchronize do
-                 @textbox.insertText(0,msg)
-               end
+                @textbox.insertText(0, msg)
+              end
             else
               @log_text_lock.synchronize do
-                 @textbox.appendText(msg)
-               end
+                @textbox.appendText(msg)
+              end
             end
-             @textbox.handle(self, FXSEL(SEL_UPDATE, 0), nil)
+            @textbox.handle(self, FXSEL(SEL_UPDATE, 0), nil)
           end
-          }
+        }
 
       end
-     
+
     end
 
   end
