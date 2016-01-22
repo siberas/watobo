@@ -323,54 +323,7 @@ module Watobo#:nodoc: all
       end
 
     end
-    
 
-    def do_test_UNUSED(chat, &block)
-      # puts chat.request.site
-      tlist = []
-      @inner_pool = []
-      generateChecks(chat) do |check|
-        unless @@status == :stopped
-          @@pool_mutex.synchronize do
-            while  @@check_count > @@max_checks or @@login_in_progress
-              puts "[#{self.class.to_s.gsub(/Watobo::Modules::Active::/,'')}] do_test on chat [#{chat.id}]: waiting .. #{@@check_count}/#{@@max_checks}" if $DEBUG
-              @@pool_cv.wait(@@pool_mutex)
-            end
-            @@check_count += 1
-          end
-
-          @inner_pool << Thread.new(check) { |c|
-            begin
-
-              if c.respond_to? :call
-              request, response = c.call            
-              yield request, response if block_given?
-              
-              end
-            rescue => bang
-            # puts "!!!ERROR: running check in #{self.class}"
-              puts bang
-              puts bang.backtrace if $DEBUG
-              # raise
-            ensure
-
-              @@pool_mutex.synchronize do
-                @@check_count -= 1
-                notify(:check_finished, self, request, response)
-                #@inner_pool.delete Thread.current
-              end
-            @@pool_cv.signal
-
-            end
-          }
-         # puts "[#{self.class.to_s.gsub(/Watobo::Modules::Active::/,'')}] [#{chat.id}]: INNER POOL - #{@inner_pool.length} " 
-        end
-      end
-
-      @inner_pool.each {|t| t.join }
-      puts ">>>>  #{self.class} on chat[#{chat.id}] ... finished!\n"
-    end
-    
     def check_name
       info = self.class.instance_variable_get("@info")
       return nil if info.nil?

@@ -1,5 +1,5 @@
 # @private
-module Watobo#:nodoc: all
+module Watobo #:nodoc: all
   module Gui
     class ClientCertDialog < FXDialogBox
       class PEMFrame < FXVerticalFrame
@@ -14,12 +14,12 @@ module Watobo#:nodoc: all
             if File.exist?(@client_key_dt.value)
               client_cert[:ssl_client_key] = OpenSSL::PKey::RSA.new(File.read(@client_key_dt.value), @password_dt.value)
             end
-            
+
             client_cert[:password] = @password_dt.value
 
             client_cert[:certificate_file] = @client_cert_dt.value
             client_cert[:key_file] = @client_key_dt.value
-              client_cert[:type] = :pem
+            client_cert[:type] = :pem
 
             return client_cert
           rescue => bang
@@ -31,25 +31,25 @@ module Watobo#:nodoc: all
 
         def settings
           s = {
-            :certificate_file => @client_cert_dt.value,
-            :password => @password_dt.value,
-            :key_file => @client_key_dt.value
+              :certificate_file => @client_cert_dt.value,
+              :password => @password_dt.value,
+              :key_file => @client_key_dt.value
           }
         end
 
-      def update_fields(c)
-        unless c.nil? 
-          @client_cert_dt.value = c[:certificate_file]
-          @cert_path = File.dirname(c[:certificate_file]) + '/'
-          @client_key_dt.value = c[:key_file]
-          @password_dt.value = c[:password].nil? ? '' : c[:password]
-          @retype_dt.value = c[:password].nil? ? '' : c[:password]
-          @client_cert_txt.handle(self, FXSEL(SEL_UPDATE, 0), nil)
-          @client_key_txt.handle(self, FXSEL(SEL_UPDATE, 0), nil)
-          @password_txt.handle(self, FXSEL(SEL_UPDATE, 0), nil)
-          @retype_txt.handle(self, FXSEL(SEL_UPDATE, 0), nil)
+        def update_fields(c)
+          unless c.nil?
+            @client_cert_dt.value = c[:certificate_file]
+            @cert_path = File.dirname(c[:certificate_file]) + '/'
+            @client_key_dt.value = c[:key_file]
+            @password_dt.value = c[:password].nil? ? '' : c[:password]
+            @retype_dt.value = c[:password].nil? ? '' : c[:password]
+            @client_cert_txt.handle(self, FXSEL(SEL_UPDATE, 0), nil)
+            @client_key_txt.handle(self, FXSEL(SEL_UPDATE, 0), nil)
+            @password_txt.handle(self, FXSEL(SEL_UPDATE, 0), nil)
+            @retype_txt.handle(self, FXSEL(SEL_UPDATE, 0), nil)
+          end
         end
-      end
 
 
         def settings_valid?
@@ -57,19 +57,19 @@ module Watobo#:nodoc: all
             puts "* password is set"
             if @password_dt.value != @retype_dt.value
               FXMessageBox.information(self, MBOX_OK, "Passwords", "Passwords don't match!")
-            return false
+              return false
             end
-          password = @password_dt.value
+            password = @password_dt.value
           end
 
           unless File.exist?(@client_cert_dt.value)
             FXMessageBox.information(self, MBOX_OK, "File not found", "#{@client_cert_dt.value} does not exist!")
-          return false
+            return false
           end
 
           unless File.exist?(@client_key_dt.value)
             FXMessageBox.information(self, MBOX_OK, "File not found", "#{@client_key_dt.value} does not exist!")
-          return false
+            return false
 
           end
           # last but not least check if private key can be accessed
@@ -77,7 +77,7 @@ module Watobo#:nodoc: all
             key = OpenSSL::PKey::RSA.new(File.open(@client_key_dt.value), password)
           rescue => bang
             FXMessageBox.information(self, MBOX_OK, "Wrong Password", "Could not open private key file. Wrong password?")
-          return false
+            return false
           end
           true
         end
@@ -92,32 +92,32 @@ module Watobo#:nodoc: all
           matrix = FXMatrix.new(self, 3, :opts => MATRIX_BY_COLUMNS|LAYOUT_FILL_X|LAYOUT_FILL_Y)
 
           FXLabel.new(matrix, "Certificate File:", nil, LAYOUT_TOP|JUSTIFY_RIGHT)
-          @client_cert_txt = FXTextField.new(matrix,  25,
-        :target => @client_cert_dt, :selector => FXDataTarget::ID_VALUE,
-        :opts => TEXTFIELD_NORMAL|LAYOUT_SIDE_RIGHT)
+          @client_cert_txt = FXTextField.new(matrix, 25,
+                                             :target => @client_cert_dt, :selector => FXDataTarget::ID_VALUE,
+                                             :opts => TEXTFIELD_NORMAL|LAYOUT_SIDE_RIGHT)
 
-          FXButton.new(matrix, "Select").connect(SEL_COMMAND){ select_cert_file }
+          FXButton.new(matrix, "Select").connect(SEL_COMMAND) { select_cert_file }
 
           FXLabel.new(matrix, "Key File:", nil, LAYOUT_TOP|JUSTIFY_RIGHT)
           @client_key_txt = FXTextField.new(matrix, 25,
-        :target => @client_key_dt, :selector => FXDataTarget::ID_VALUE,
-        :opts => TEXTFIELD_NORMAL|LAYOUT_SIDE_RIGHT)
-          FXButton.new(matrix, "Select").connect(SEL_COMMAND){ select_key_file }
+                                            :target => @client_key_dt, :selector => FXDataTarget::ID_VALUE,
+                                            :opts => TEXTFIELD_NORMAL|LAYOUT_SIDE_RIGHT)
+          FXButton.new(matrix, "Select").connect(SEL_COMMAND) { select_key_file }
 
           #  matrix = FXMatrix.new(main_frame, 2, :opts => MATRIX_BY_COLUMNS|LAYOUT_FILL_X|LAYOUT_FILL_Y)
           FXLabel.new(matrix, "Password:", nil, LAYOUT_TOP|JUSTIFY_RIGHT)
           @password_txt = FXTextField.new(matrix, 25,
-        :target => @password_dt, :selector => FXDataTarget::ID_VALUE,
-        :opts => TEXTFIELD_NORMAL|LAYOUT_SIDE_RIGHT|TEXTFIELD_PASSWD)
+                                          :target => @password_dt, :selector => FXDataTarget::ID_VALUE,
+                                          :opts => TEXTFIELD_NORMAL|LAYOUT_SIDE_RIGHT|TEXTFIELD_PASSWD)
 
-          FXButton.new(matrix, "", :opts=>FRAME_NONE).disable
+          FXButton.new(matrix, "", :opts => FRAME_NONE).disable
 
           FXLabel.new(matrix, "Retype:", nil, LAYOUT_TOP|JUSTIFY_RIGHT)
           @retype_txt = FXTextField.new(matrix, 25,
-        :target => @retype_dt, :selector => FXDataTarget::ID_VALUE,
-        :opts => TEXTFIELD_NORMAL|LAYOUT_SIDE_RIGHT|TEXTFIELD_PASSWD)
+                                        :target => @retype_dt, :selector => FXDataTarget::ID_VALUE,
+                                        :opts => TEXTFIELD_NORMAL|LAYOUT_SIDE_RIGHT|TEXTFIELD_PASSWD)
 
-          FXButton.new(matrix, "", :opts=>FRAME_NONE).disable
+          FXButton.new(matrix, "", :opts => FRAME_NONE).disable
 
         end
 
@@ -156,13 +156,13 @@ module Watobo#:nodoc: all
           begin
             if File.exist?(@client_cert_dt.value)
               p12_data = nil
-              File.open(@client_cert_dt.value, "rb"){|fh|
+              File.open(@client_cert_dt.value, "rb") { |fh|
                 p12_data = fh.read
               }
-              p12 = OpenSSL::PKCS12.new( p12_data, password)
+              p12 = OpenSSL::PKCS12.new(p12_data, password)
               client_cert[:ssl_client_cert] = p12.certificate
               client_cert[:ssl_client_key] = p12.key
-              client_cert[:extra_chain_certs] =  p12.ca_certs
+              client_cert[:extra_chain_certs] = p12.ca_certs
               client_cert[:certificate_file] = @client_cert_dt.value
               client_cert[:password] = password
               client_cert[:type] = :pkcs12
@@ -176,32 +176,32 @@ module Watobo#:nodoc: all
           end
           return nil
         end
-      
+
         def update_fields(c)
-        unless c.nil? 
-          @client_cert_dt.value = c[:certificate_file]
-          @cert_path = File.dirname(c[:certificate_file]) + '/'
-          @password_dt.value = c[:password].nil? ? '' : c[:password]
-          @retype_dt.value = c[:password].nil? ? '' : c[:password]
-          @client_cert_txt.handle(self, FXSEL(SEL_UPDATE, 0), nil)
-          @password_txt.handle(self, FXSEL(SEL_UPDATE, 0), nil)
-          @retype_txt.handle(self, FXSEL(SEL_UPDATE, 0), nil)
+          unless c.nil?
+            @client_cert_dt.value = c[:certificate_file]
+            @cert_path = File.dirname(c[:certificate_file]) + '/'
+            @password_dt.value = c[:password].nil? ? '' : c[:password]
+            @retype_dt.value = c[:password].nil? ? '' : c[:password]
+            @client_cert_txt.handle(self, FXSEL(SEL_UPDATE, 0), nil)
+            @password_txt.handle(self, FXSEL(SEL_UPDATE, 0), nil)
+            @retype_txt.handle(self, FXSEL(SEL_UPDATE, 0), nil)
+          end
         end
-      end
 
         def settings_valid?
           unless @password_dt.value.empty?
             puts "* password is set"
             if @password_dt.value != @retype_dt.value
               FXMessageBox.information(self, MBOX_OK, "Passwords", "Passwords don't match!")
-            return false
+              return false
             end
-          password = @password_dt.value
+            password = @password_dt.value
           end
 
           unless File.exist?(@client_cert_dt.value)
             FXMessageBox.information(self, MBOX_OK, "File not found", "#{@client_cert_dt.value} does not exist!")
-          return false
+            return false
           end
 
           true
@@ -209,8 +209,8 @@ module Watobo#:nodoc: all
 
         def settings
           s = {
-            :certificate_file => @client_cert_dt.value,
-            :password => @password_dt.value
+              :certificate_file => @client_cert_dt.value,
+              :password => @password_dt.value
           }
         end
 
@@ -224,25 +224,25 @@ module Watobo#:nodoc: all
           matrix = FXMatrix.new(self, 3, :opts => MATRIX_BY_COLUMNS|LAYOUT_FILL_X|LAYOUT_FILL_Y)
 
           FXLabel.new(matrix, "PKCS12 File:", nil, LAYOUT_TOP|JUSTIFY_RIGHT)
-          @client_cert_txt = FXTextField.new(matrix,  25,
-        :target => @client_cert_dt, :selector => FXDataTarget::ID_VALUE,
-        :opts => TEXTFIELD_NORMAL|LAYOUT_SIDE_RIGHT)
+          @client_cert_txt = FXTextField.new(matrix, 25,
+                                             :target => @client_cert_dt, :selector => FXDataTarget::ID_VALUE,
+                                             :opts => TEXTFIELD_NORMAL|LAYOUT_SIDE_RIGHT)
 
-          FXButton.new(matrix, "Select").connect(SEL_COMMAND){ select_cert_file }
+          FXButton.new(matrix, "Select").connect(SEL_COMMAND) { select_cert_file }
 
           FXLabel.new(matrix, "Password:", nil, LAYOUT_TOP|JUSTIFY_RIGHT)
           @password_txt = FXTextField.new(matrix, 25,
-        :target => @password_dt, :selector => FXDataTarget::ID_VALUE,
-        :opts => TEXTFIELD_NORMAL|LAYOUT_SIDE_RIGHT|TEXTFIELD_PASSWD)
+                                          :target => @password_dt, :selector => FXDataTarget::ID_VALUE,
+                                          :opts => TEXTFIELD_NORMAL|LAYOUT_SIDE_RIGHT|TEXTFIELD_PASSWD)
 
-          FXButton.new(matrix, "", :opts=>FRAME_NONE).disable
+          FXButton.new(matrix, "", :opts => FRAME_NONE).disable
 
           FXLabel.new(matrix, "Retype:", nil, LAYOUT_TOP|JUSTIFY_RIGHT)
           @retype_txt = FXTextField.new(matrix, 25,
-        :target => @retype_dt, :selector => FXDataTarget::ID_VALUE,
-        :opts => TEXTFIELD_NORMAL|LAYOUT_SIDE_RIGHT|TEXTFIELD_PASSWD)
+                                        :target => @retype_dt, :selector => FXDataTarget::ID_VALUE,
+                                        :opts => TEXTFIELD_NORMAL|LAYOUT_SIDE_RIGHT|TEXTFIELD_PASSWD)
 
-          FXButton.new(matrix, "", :opts=>FRAME_NONE).disable
+          FXButton.new(matrix, "", :opts => FRAME_NONE).disable
 
         end
 
@@ -271,7 +271,7 @@ module Watobo#:nodoc: all
 
       def savePasswords?()
         return false
-      #@save_pws_cbt.checked?
+        #@save_pws_cbt.checked?
       end
 
       include Responder
@@ -282,7 +282,7 @@ module Watobo#:nodoc: all
         FXMAPFUNC(SEL_COMMAND, ID_ACCEPT, :onAccept)
 
         @password_policy = {
-          :save_passwords => false
+            :save_passwords => false
         }
 
         @cert_path = nil
@@ -301,8 +301,8 @@ module Watobo#:nodoc: all
 
         @scope_only_cb.connect(SEL_COMMAND) { updateSitesCombo() }
 
-        @sites_combo = FXComboBox.new(frame, 5,  @site_dt, FXDataTarget::ID_VALUE,
-        COMBOBOX_STATIC|FRAME_SUNKEN|FRAME_THICK|LAYOUT_SIDE_TOP|LAYOUT_FILL_X)
+        @sites_combo = FXComboBox.new(frame, 5, @site_dt, FXDataTarget::ID_VALUE,
+                                      COMBOBOX_STATIC|FRAME_SUNKEN|FRAME_THICK|LAYOUT_SIDE_TOP|LAYOUT_FILL_X)
 
         @sites_combo.numVisible = @sites_combo.numItems >= 20 ? 20 : @sites_combo.numItems
         @sites_combo.numColumns = 25
@@ -324,14 +324,14 @@ module Watobo#:nodoc: all
         @cert_settings << PKCS12Frame.new(@tabBook)
 
         buttons = FXHorizontalFrame.new(main_frame, :opts => LAYOUT_SIDE_BOTTOM|LAYOUT_FILL_X|PACK_UNIFORM_WIDTH,
-        :padLeft => 40, :padRight => 40, :padTop => 20, :padBottom => 20)
+                                        :padLeft => 40, :padRight => 40, :padTop => 20, :padBottom => 20)
 
         accept = FXButton.new(buttons, "&Accept", nil, self, ID_ACCEPT,
-        FRAME_RAISED|FRAME_THICK|LAYOUT_RIGHT|LAYOUT_CENTER_Y)
+                              FRAME_RAISED|FRAME_THICK|LAYOUT_RIGHT|LAYOUT_CENTER_Y)
         accept.enable
         # Cancel
         FXButton.new(buttons, "&Cancel", nil, self, ID_CANCEL,
-        FRAME_RAISED|FRAME_THICK|LAYOUT_RIGHT|LAYOUT_CENTER_Y)
+                     FRAME_RAISED|FRAME_THICK|LAYOUT_RIGHT|LAYOUT_CENTER_Y)
       end
 
       private
@@ -340,8 +340,8 @@ module Watobo#:nodoc: all
         @sites_combo.clearItems
         @sites_combo.appendItem(NO_SELECTION, nil)
         @site_dt.value = NO_SELECTION
-        Watobo::Chats.sites(:in_scope => @scope_only_cb.checked? ){ |site|
-        #puts "Site: #{site}"
+        Watobo::Chats.sites(:in_scope => @scope_only_cb.checked?) { |site|
+          #puts "Site: #{site}"
           @sites_combo.appendItem(site, site)
         }
         @sites_combo.numVisible = @sites_combo.numItems >= 20 ? 20 : @sites_combo.numItems
@@ -361,12 +361,6 @@ module Watobo#:nodoc: all
         end
       end
 
-      def updateFields_UNUSED()
-        # @sites_combo.handle(self, FXSEL(SEL_UPDATE, 1), nil)
-        @client_cert_txt.handle(self, FXSEL(SEL_UPDATE, 0), nil)
-        @client_key_txt.handle(self, FXSEL(SEL_UPDATE, 0), nil)
-      end
-
       def update_fields(sender, sel, item)
         @site_dt.value = item
         c = Watobo::ClientCertStore.get(item)
@@ -378,17 +372,16 @@ module Watobo#:nodoc: all
       end
 
       def onAccept(sender, sel, event)
-
         password = nil
         if @site_dt.value.empty? or @site_dt.value == NO_SELECTION
           FXMessageBox.information(self, MBOX_OK, "No Site Selected", "You must select a site from the drop down list.")
-        return 0
+          return 0
         end
 
         index = @tabBook.current
         unless @cert_settings[index].settings_valid?
           puts "Wrong settings"
-        return 0
+          return 0
         end
 
         Watobo::ClientCertStore.set(@site_dt.value, @cert_settings[index].cert)

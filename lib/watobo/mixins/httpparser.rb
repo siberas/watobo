@@ -736,26 +736,6 @@ end
         end
       end
 
-      def cookies_UNUSED
-        cookie_list=[]
-        self.headers.each do |line|
-          if line =~ /Cookie2?: (.*)/i then
-            clist = $1.split(";")
-            clist.each do |c|
-              # c.gsub!(/^[ ]+/,"")
-              # c.chomp!
-              cookie_list.push c.strip
-            end
-          end
-        end
-        return cookie_list
-      end
-
-      def data_UNUSED
-        return self.last.strip if self.last =~ /\=.*\&?/i
-        return ""
-      end
-
     end
 
    
