@@ -6,5 +6,5 @@ lambda{|response|
     out = "Could prettify response :(\n\n"
     out << bang.to_s
   end
-  out  
+  out
 }

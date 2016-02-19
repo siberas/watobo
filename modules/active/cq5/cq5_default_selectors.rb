@@ -61,7 +61,7 @@ module Watobo#:nodoc: all
 
                   status, test_request, test_response = fileExists?(test)
 
-                  if status == true and test_response.content_type != chat.response.content_type and test_response.status_code < 300
+                  if status == true and test_response.content_type != chat.response.content_type and test_response.status_code.to_i < 300
                     
                     addFinding(  test_request, test_response,
                       :test_item => "#{test_request.url}",
@@ -79,7 +79,7 @@ module Watobo#:nodoc: all
 
                   status, test_request, test_response = fileExists?(test)
 
-                  if status == true and test_response.content_type != chat.response.content_type and test_response.status_code < 300
+                  if status == true and test_response.content_type != chat.response.content_type and test_response.status_code.to_i < 300
                     
                     addFinding(  test_request, test_response,
                       :test_item => "#{test_request.url}",

@@ -28,6 +28,7 @@ module Watobo#:nodoc: all
                item = @work_queue.deq
                # not interested in jcr:content ... skip ... 
                next if item[:url] =~ /jcr%3acontent$/
+               puts item[:url]
               
                get_pages item
                file_info item

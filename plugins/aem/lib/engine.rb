@@ -104,7 +104,7 @@ module Watobo#:nodoc: all
           
           #puts "---\n"
  
-          if url =~ /#{pattern}/
+          if URI.parse(url).to_s =~ /#{pattern}/
             test = chat.copyRequest
             test.replaceFileExt('.pages.json')
             
@@ -113,7 +113,7 @@ module Watobo#:nodoc: all
             
             request, response = agent.doRequest test
             
-           # puts response
+            puts response
             
             unless response.content_type =~ /json/i
               puts "! .pages.json is filtered !"

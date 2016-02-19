@@ -91,6 +91,8 @@ module Watobo#:nodoc: all
         options.update opts
         puts "[Project] add finding #{finding.fid}" if $DEBUG
 
+
+        # only add finding if it (its fid) doesn't already exist
         unless @findings.has_key?(finding.fid)
           begin
             @findings[finding.fid] = finding

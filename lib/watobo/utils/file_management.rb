@@ -26,7 +26,14 @@ module Watobo#:nodoc: all
         settings = YAML.load_file(file)
       end
       return settings
-    end 
+    end
+
+    def Utils.saveChat(chat, filename)
+      return false if filename.nil?
+      return false if chat.nil?
+
+      Watobo::DataStore.save_chat(filename, chat)
+    end
     
     def Utils.saveChat_UNUSED(chat, filename)
       return false if filename.nil?

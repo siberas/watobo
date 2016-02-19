@@ -14,7 +14,7 @@ module Watobo#:nodoc: all
       return false unless finding.respond_to? :response
 
       finding_file = File.join("#{@findings_path}", "#{finding.id}-finding.mrs")
-      unless File.exists?(finding_file)
+      unless File.exist?(finding_file)
         save_finding(finding_file, finding)       
         return true
       end
@@ -46,7 +46,7 @@ module Watobo#:nodoc: all
     def update_finding(finding)
       finding_file = File.join("#{@findings_path}", "#{finding.id}-finding.mrs")
       
-      if File.exists?(finding_file) then
+      if File.exist?(finding_file) then
         save_finding(finding_file, finding)
       end
 
@@ -72,7 +72,7 @@ module Watobo#:nodoc: all
 
         file = File.join( path, "log_" + Time.now.to_f.to_s + ".mrs")
 
-        unless File.exists?(file)
+        unless File.exist?(file)
           File.open(file, "wb") { |fh|
             fh.print Marshal::dump(chat.to_h)
           }
@@ -90,7 +90,7 @@ module Watobo#:nodoc: all
       return false unless chat_valid? chat
       chat_file = File.join("#{@conversation_path}", "#{chat.id}-chat.mrs")
       
-      unless File.exists?(chat_file)
+      unless File.exist?(chat_file)
         File.open(chat_file, "wb") { |fh|
           fh.print Marshal::dump(chat.to_h)
         }
@@ -169,7 +169,7 @@ module Watobo#:nodoc: all
       @scanlog_path = File.expand_path(File.join(@session_path, Watobo::Conf::Datastore.scan_logs_dir))
 
       [ @conversation_path, @findings_path, @log_path, @scanlog_path ].each do |folder|
-        if not File.exists?(folder) then
+        if not File.exist?(folder) then
           puts "create path #{folder}"
           begin
             Dir.mkdir(folder)

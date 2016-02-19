@@ -1790,7 +1790,7 @@ module Watobo #:nodoc: all
             Watobo::Gui.application.runOnUiThread do
               addChat(chat)
             end
-          }
+         }
         }
 
         Watobo::Findings.subscribe(:new) { |f|
