@@ -1,5 +1,5 @@
 # @private
-module Watobo#:nodoc: all
+module Watobo #:nodoc: all
   module HTTPSocket
     class ClientSocket
       attr_accessor :port
@@ -7,6 +7,7 @@ module Watobo#:nodoc: all
       attr_accessor :host
       attr_accessor :site
       attr_accessor :ssl
+
       def write(data)
         @socket.write data
         @socket.flush
@@ -18,16 +19,16 @@ module Watobo#:nodoc: all
 
       def close
         begin
-        #if socket.class.to_s =~ /SSLSocket/
+          #if socket.class.to_s =~ /SSLSocket/
           if @socket.respond_to? :shutdown
             @socket.shutdown(Socket::SHUT_RDWR)
           end
           # finally close it
           if @socket.respond_to? :close
-          @socket.close
+            @socket.close
           elsif @socket.respond_to? :sysclose
             socket.io.shutdown(Socket::SHUT_RDWR)
-          @socket.sysclose
+            @socket.sysclose
           end
           return true
         rescue => bang
@@ -60,15 +61,15 @@ module Watobo#:nodoc: all
         begin
           unless @initial_request.nil?
             request = @initial_request.copy
-            
-        #puts "\n>> Request RAW:"
-        #puts request
-        #puts "\n>> Request RAW (HEX):"
-        #puts request.join.unpack("H*")[0]
-         
+
+            #puts "\n>> Request RAW:"
+            #puts request
+            #puts "\n>> Request RAW (HEX):"
+            #puts request.join.unpack("H*")[0]
+
             @initial_request = nil
             clean_request request
-          return request
+            return request
           end
 
           request = read_header
@@ -78,24 +79,24 @@ module Watobo#:nodoc: all
           @persistent = !request.connection_close?
 
           clen = request.content_length
-          if  clen > 0 then
+          if clen > 0 then
             body = ""
             Watobo::HTTPSocket.read_body(@socket) do |data|
               body << data
               break if body.length == clen
             end
-            
-          puts "* CLEN = #{clen} - read body (#{body.length})"
-          request << body
+
+            puts "* CLEN = #{clen} - read body (#{body.length})"
+            request << body
           end
         rescue => bang
           puts bang
         end
-        
+
         puts "\n>> Request RAW:"
         puts request
         puts "\n>> Request RAW (HEX):"
-        puts request.unpack("H*")[0]
+      #  puts request.unpack("H*")[0]
 
         clean_request request
 
@@ -116,7 +117,7 @@ module Watobo#:nodoc: all
         @initial_request = req
         @persistent = false
 
-      # TODO: Fake Certs Should be global accessable
+        # TODO: Fake Certs Should be global accessable
 
       end
 
@@ -141,9 +142,9 @@ module Watobo#:nodoc: all
         session = socket
 
         if Watobo::Interceptor::Proxy.transparent?
-          
 
-          ci = Watobo::Interceptor::Transparent.info({ 'host' => caddr, 'port' => cport } )
+
+          ci = Watobo::Interceptor::Transparent.info({'host' => caddr, 'port' => cport})
           unless ci.nil? or ci['target'].empty? or ci['cn'].empty?
             puts "SSL-REQUEST FROM #{caddr}:#{cport}"
 
@@ -185,8 +186,8 @@ module Watobo#:nodoc: all
           thn = nil
           request.each do |l|
             if l =~ /^Host: (.*)/
-            thn = $1.strip
-            #   puts ">> #{thn}"
+              thn = $1.strip
+              #   puts ">> #{thn}"
             end
           end
           # puts session.class
@@ -194,25 +195,25 @@ module Watobo#:nodoc: all
           # puts request.first
           # puts ">>"
           if session.is_a? OpenSSL::SSL::SSLSocket
-            request.first.gsub!(/(^[^[:space:]]{1,}) (.*) (HTTP.*)/i,"\\1 https://#{thn}\\2 \\3") unless request.first =~ /^[^[:space:]]{1,} http/
+            request.first.gsub!(/(^[^[:space:]]{1,}) (.*) (HTTP.*)/i, "\\1 https://#{thn}\\2 \\3") unless request.first =~ /^[^[:space:]]{1,} http/
           else
-            request.first.gsub!(/(^[^[:space:]]{1,}) (.*) (HTTP.*)/i,"\\1 http://#{thn}\\2 \\3") unless request.first =~ /^[^[:space:]]{1,} http/
+            request.first.gsub!(/(^[^[:space:]]{1,}) (.*) (HTTP.*)/i, "\\1 http://#{thn}\\2 \\3") unless request.first =~ /^[^[:space:]]{1,} http/
           end
-        #puts request.first
+          #puts request.first
         end
 
         if request.first =~ /^CONNECT (.*):(\d{1,5}) HTTP\/1\./ then
           target = $1
           tport = $2
           # puts request.first
-         # print "\n* CONNECT: #{target} on port #{tport}\n"
+          # print "\n* CONNECT: #{target} on port #{tport}\n"
           site = "#{target}:#{tport}"
           #puts "CONNECT #{site}"
 
           socket.print "HTTP/1.0 200 Connection established\r\n" +
-          #"Proxy-connection: Keep-alive\r\n" +
-          "Proxy-agent: WATOBO-Proxy/1.1\r\n" +
-          "\r\n"
+                           #"Proxy-connection: Keep-alive\r\n" +
+                           "Proxy-agent: WATOBO-Proxy/1.1\r\n" +
+                           "\r\n"
           bscount = 0 # bad handshake counter
           #  puts "* wait for ssl handshake ..."
           begin
@@ -222,16 +223,16 @@ module Watobo#:nodoc: all
               puts "CN=#{cn}"
 
               cert = {
-                :hostname => cn,
-                :type => 'server',
-                :user => 'watobo',
-                :email => 'root@localhost',
+                  :hostname => cn,
+                  :type => 'server',
+                  :user => 'watobo',
+                  :email => 'root@localhost',
               }
 
               cert_file, key_file = Watobo::CA.create_cert cert
               @fake_certs[site] = {
-                :cert => OpenSSL::X509::Certificate.new(File.read(cert_file)),
-                :key => OpenSSL::PKey::RSA.new(File.read(key_file))
+                  :cert => OpenSSL::X509::Certificate.new(File.read(cert_file)),
+                  :key => OpenSSL::PKey::RSA.new(File.read(key_file))
               }
             end
             ctx = OpenSSL::SSL::SSLContext.new()
@@ -249,7 +250,7 @@ module Watobo#:nodoc: all
             ctx.timeout = 10
 
             ssl_socket = OpenSSL::SSL::SSLSocket.new(socket, ctx)
-            ssl_socket.setsockopt( Socket::SOL_SOCKET, Socket::SO_KEEPALIVE, 1)
+            ssl_socket.setsockopt(Socket::SOL_SOCKET, Socket::SO_KEEPALIVE, 1)
             #  ssl_socket.sync_close = true
             ssl_socket.sync = true
             # puts ssl_socket.methods.sort
@@ -279,12 +280,12 @@ module Watobo#:nodoc: all
           end
 
         else
-        # puts "* create request object"
+          # puts "* create request object"
           request = Watobo::Request.new(request)
-        site = request.site
-        #puts request
+          site = request.site
+          #puts request
         end
-        
+
         #puts "CLIENT REQUEST:"
         #puts request
 
@@ -292,14 +293,14 @@ module Watobo#:nodoc: all
 
           unless request.nil?
             clen = request.content_length
-            if  clen > 0 then
+            if clen > 0 then
               body = ""
               Watobo::HTTPSocket.read_body(session) do |data|
                 body << data
                 break if body.length == clen
               end
-            
-            request << body unless body.empty?
+
+              request << body unless body.empty?
             end
             connection = ClientSocket.new(session, request)
           else
@@ -334,7 +335,9 @@ module Watobo#:nodoc: all
         request.remove_header "^If\-"
         request.remove_header "^Expect.*continue"
 
-      #  request.remove_header("^Accept-Encoding")
+        request.unzip!
+
+        #  request.remove_header("^Accept-Encoding")
       end
 
     end
@@ -345,6 +348,7 @@ module Watobo#:nodoc: all
       attr_accessor :host
       attr_accessor :site
       attr_accessor :ssl
+
       def write(data)
         @socket.write data
         @socket.flush
@@ -356,16 +360,16 @@ module Watobo#:nodoc: all
 
       def close
         begin
-        #if socket.class.to_s =~ /SSLSocket/
+          #if socket.class.to_s =~ /SSLSocket/
           if @socket.respond_to? :shutdown
             @socket.shutdown(Socket::SHUT_RDWR)
           end
           # finally close it
           if @socket.respond_to? :close
-          @socket.close
+            @socket.close
           elsif @socket.respond_to? :sysclose
             socket.io.shutdown(Socket::SHUT_RDWR)
-          @socket.sysclose
+            @socket.sysclose
           end
           return true
         rescue => bang
@@ -398,7 +402,7 @@ module Watobo#:nodoc: all
           unless @initial_request.nil?
             request = @initial_request.copy
             @initial_request = nil
-          return request
+            return request
           end
 
           request = read_header
@@ -406,13 +410,13 @@ module Watobo#:nodoc: all
           return nil if request.nil?
 
           clen = request.content_length
-          if  clen > 0 then
+          if clen > 0 then
             body = ""
             Watobo::HTTPSocket.read_body(@socket) do |data|
               body += data
               break if body.length == clen
             end
-          request << body
+            request << body
           end
         rescue => bang
           puts bang
@@ -432,7 +436,7 @@ module Watobo#:nodoc: all
         @ssl = false
         @initial_request = req
 
-      # TODO: Fake Certs Should be global accessable
+        # TODO: Fake Certs Should be global accessable
 
       end
 
@@ -456,7 +460,7 @@ module Watobo#:nodoc: all
 
         if Watobo::Interceptor::Proxy.transparent?
 
-          ci = Watobo::Interceptor::Transparent.info({ 'host' => caddr, 'port' => cport } )
+          ci = Watobo::Interceptor::Transparent.info({'host' => caddr, 'port' => cport})
           unless ci['target'].empty? or ci['cn'].empty?
             puts "SSL-REQUEST FROM #{caddr}:#{cport}"
 
@@ -499,8 +503,8 @@ module Watobo#:nodoc: all
           thn = nil
           request.each do |l|
             if l =~ /^Host: (.*)/
-            thn = $1.strip
-            #   puts ">> #{thn}"
+              thn = $1.strip
+              #   puts ">> #{thn}"
             end
           end
           # puts session.class
@@ -508,11 +512,11 @@ module Watobo#:nodoc: all
           # puts request.first
           # puts ">>"
           if session.is_a? OpenSSL::SSL::SSLSocket
-            request.first.gsub!(/(^[^[:space:]]{1,}) (.*) (HTTP.*)/i,"\\1 https://#{thn}\\2 \\3") unless request.first =~ /^[^[:space:]]{1,} http/
+            request.first.gsub!(/(^[^[:space:]]{1,}) (.*) (HTTP.*)/i, "\\1 https://#{thn}\\2 \\3") unless request.first =~ /^[^[:space:]]{1,} http/
           else
-            request.first.gsub!(/(^[^[:space:]]{1,}) (.*) (HTTP.*)/i,"\\1 http://#{thn}\\2 \\3") unless request.first =~ /^[^[:space:]]{1,} http/
+            request.first.gsub!(/(^[^[:space:]]{1,}) (.*) (HTTP.*)/i, "\\1 http://#{thn}\\2 \\3") unless request.first =~ /^[^[:space:]]{1,} http/
           end
-        #puts request.first
+          #puts request.first
         end
 
         if request.first =~ /^CONNECT (.*):(\d{1,5}) HTTP\/1\./ then
@@ -524,29 +528,29 @@ module Watobo#:nodoc: all
           #puts "CONNECT #{site}"
 
           socket.print "HTTP/1.0 200 Connection established\r\n" +
-          #"Proxy-connection: Keep-alive\r\n" +
-          "Proxy-agent: WATOBO-Proxy/1.1\r\n" +
-          "\r\n"
+                           #"Proxy-connection: Keep-alive\r\n" +
+                           "Proxy-agent: WATOBO-Proxy/1.1\r\n" +
+                           "\r\n"
           bscount = 0 # bad handshake counter
           #  puts "* wait for ssl handshake ..."
           begin
-          # site = "#{target}:#{tport}"
+            # site = "#{target}:#{tport}"
             unless @fake_certs.has_key? site
               puts "CREATE NEW CERTIFICATE FOR >> #{site} <<"
               cn = Watobo::HTTPSocket.get_ssl_cert_cn(target, tport)
               puts "CN=#{cn}"
 
               cert = {
-                :hostname => cn,
-                :type => 'server',
-                :user => 'watobo',
-                :email => 'root@localhost',
+                  :hostname => cn,
+                  :type => 'server',
+                  :user => 'watobo',
+                  :email => 'root@localhost',
               }
 
               cert_file, key_file = Watobo::CA.create_cert cert
               @fake_certs[site] = {
-                :cert => OpenSSL::X509::Certificate.new(File.read(cert_file)),
-                :key => OpenSSL::PKey::RSA.new(File.read(key_file))
+                  :cert => OpenSSL::X509::Certificate.new(File.read(cert_file)),
+                  :key => OpenSSL::PKey::RSA.new(File.read(key_file))
               }
             end
             ctx = OpenSSL::SSL::SSLContext.new()
@@ -564,7 +568,7 @@ module Watobo#:nodoc: all
             ctx.timeout = 10
 
             ssl_socket = OpenSSL::SSL::SSLSocket.new(socket, ctx)
-            ssl_socket.setsockopt( Socket::SOL_SOCKET, Socket::SO_KEEPALIVE, 1)
+            ssl_socket.setsockopt(Socket::SOL_SOCKET, Socket::SO_KEEPALIVE, 1)
             #  ssl_socket.sync_close = true
             ssl_socket.sync = true
             # puts ssl_socket.methods.sort
@@ -580,23 +584,23 @@ module Watobo#:nodoc: all
           session = ssl_session
           request = nil
         else
-        # puts "* create request object"
+          # puts "* create request object"
           request = Watobo::Request.new(request)
-        site = request.site
-        #puts request
+          site = request.site
+          #puts request
         end
 
         begin
 
           unless request.nil?
             clen = request.content_length
-            if  clen > 0 then
+            if clen > 0 then
               body = ""
               Watobo::HTTPSocket.read_body(session) do |data|
                 body += data
                 break if body.length == clen
               end
-            request << body unless body.empty?
+              request << body unless body.empty?
             end
             connection = ClientSocket.new(session, request)
           else

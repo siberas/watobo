@@ -1,12 +1,12 @@
 # @private 
-module Watobo#:nodoc: all
+module Watobo #:nodoc: all
   module Gui
     class InterceptEditor < FXVerticalFrame
-      
+
       include Watobo::Constants
       include Watobo::Interceptor
       include Watobo::Gui::Utils
-      
+
       def initialize(owner, opts)
 
         super(owner, opts)
@@ -57,7 +57,7 @@ module Watobo#:nodoc: all
         # :opts => FRAME_SUNKEN|FRAME_THICK|LAYOUT_FILL_X|LAYOUT_FILL_Y)
 
         @filter_text = FXComboBox.new(text_view_header, 20, @filter_dt, 0, FRAME_SUNKEN|FRAME_THICK|LAYOUT_SIDE_TOP|LAYOUT_FILL_X)
-        @filter_text.connect(SEL_COMMAND){
+        @filter_text.connect(SEL_COMMAND) {
           applyFilter()
           addFilterHistory()
         }
@@ -71,10 +71,10 @@ module Watobo#:nodoc: all
         #@mode_btn = FXButton.new(text_view_header, "Highlight", :opts=> MENUBUTTON_DOWN|FRAME_RAISED|FRAME_THICK|ICON_AFTER_TEXT|LAYOUT_RIGHT|LAYOUT_FILL_Y)
 
         reset_button = FXButton.new(text_view_header, "&Reset", nil, nil, 0, FRAME_RAISED|FRAME_THICK|LAYOUT_FILL_Y)
-        reset_button.connect(SEL_COMMAND){ resetTextbox() }
+        reset_button.connect(SEL_COMMAND) { resetTextbox() }
 
         #-----------------------
-        text_frame = FXVerticalFrame.new(self, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_SUNKEN|FRAME_THICK, :padding=>0)
+        text_frame = FXVerticalFrame.new(self, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_SUNKEN|FRAME_THICK, :padding => 0)
 
         @textbox_dt = FXDataTarget.new('')
 
@@ -104,13 +104,13 @@ module Watobo#:nodoc: all
               addDecoder(menu_pane, sender)
               addEncoder(menu_pane, sender)
               FXMenuSeparator.new(menu_pane)
-              target = FXMenuCheck.new(menu_pane, "word wrap" )
-              target.check = ( @textbox.textStyle & TEXT_WORDWRAP > 0 ) ? true : false
+              target = FXMenuCheck.new(menu_pane, "word wrap")
+              target.check = (@textbox.textStyle & TEXT_WORDWRAP > 0) ? true : false
               target.connect(SEL_COMMAND) { |tsender, tsel, titem|
                 if tsender.checked?
                   @textbox.textStyle |= TEXT_WORDWRAP
                 else
-                @textbox.textStyle ^= TEXT_WORDWRAP
+                  @textbox.textStyle ^= TEXT_WORDWRAP
                 end
               }
 
@@ -156,20 +156,20 @@ module Watobo#:nodoc: all
       def setText(text=nil)
         return false if text.nil?
         if text.is_a? Array
-        new_text = text.join
+          new_text = text.join
         else
           new_text = "#{text}"
         end
 
         @lock.synchronize do
-          @text  = new_text.strip.gsub(/\r/,'')
+          @text = new_text.strip.gsub(/\r/, '')
 
           unless @text.empty?
-          @textbox.setText @text
+            @textbox.setText @text
           end
         end
-      #  @textbox.handle(self, FXSEL(SEL_UPDATE, 0), nil)
-      #@textbox.update
+        #  @textbox.handle(self, FXSEL(SEL_UPDATE, 0), nil)
+        #@textbox.update
 
       end
 
@@ -186,17 +186,17 @@ module Watobo#:nodoc: all
 
         return nil
       end
-      
+
       def to_response(prefs={})
         begin
           return @textbox.to_response(prefs)
         rescue SyntaxError, LocalJumpError, NameError
-        #  puts bang
-        #  puts bang.backtrace if $DEBUG
+          #  puts bang
+          #  puts bang.backtrace if $DEBUG
           notify(:error, "#{$!}")
         rescue => bang
-        puts bang
-        notify(:error, "Could not parse request: #{$!}")
+          puts bang
+          notify(:error, "Could not parse request: #{$!}")
         end
 
         return nil
@@ -221,43 +221,43 @@ module Watobo#:nodoc: all
           @match_pos_label.text = "1/#{@textbox.numMatches}"
           #@match_pos_label.enable
           @match_pos_label.textColor = 'black'
-          @textbox.showMatch(0, :select_match => @auto_select_cbtn.checked? )
-        @nmatch_btn.enable
-        @pmatch_btn.enable
+          @textbox.showMatch(0, :select_match => @auto_select_cbtn.checked?)
+          @nmatch_btn.enable
+          @pmatch_btn.enable
         else
-        @nmatch_btn.disable
-        @pmatch_btn.disable
+          @nmatch_btn.disable
+          @pmatch_btn.disable
         end
-      #  puts "got #{matches.length} matches for pattern #{Regexp.quote(pattern)}"
+        #  puts "got #{matches.length} matches for pattern #{Regexp.quote(pattern)}"
       end
 
       def inputFieldHotkeyHandler(widget)
         @ctrl_pressed = false
 
         widget.connect(SEL_KEYPRESS) { |sender, sel, event|
-        # puts event.code
+          # puts event.code
           @ctrl_pressed = true if event.code == KEY_Control_L or event.code == KEY_Control_R
           #  @shift_pressed = true if @ctrl_pressed and ( event.code == KEY_Shift_L or event.code == KEY_Shift_R )
           if event.code == KEY_Return
             applyFilter()
             @textbox.setFocus()
             @textbox.setDefault()
-            @textbox.showMatch(0, :select_match => @auto_select_cbtn.checked? )
-          true # special handling of KEY_Return, because we don't want a linebreak in textbox.
+            @textbox.showMatch(0, :select_match => @auto_select_cbtn.checked?)
+            true # special handling of KEY_Return, because we don't want a linebreak in textbox.
           end
 
           if @ctrl_pressed
             case event.code
-            when KEY_w
-              @textbox.textStyle ^= TEXT_WORDWRAP
-            when KEY_n
-              @textbox.showNextMatch()
-              addFilterHistory()
-            when KEY_N
-              @textbox.showPrevMatch()
-              addFilterHistory()
-            when KEY_r
-              @textbox.reset_filter()
+              when KEY_w
+                @textbox.textStyle ^= TEXT_WORDWRAP
+              when KEY_n
+                @textbox.showNextMatch()
+                addFilterHistory()
+              when KEY_N
+                @textbox.showPrevMatch()
+                addFilterHistory()
+              when KEY_r
+                @textbox.reset_filter()
             end
           end
 
@@ -267,10 +267,10 @@ module Watobo#:nodoc: all
               FXMenuPane.new(self) do |menu_pane|
                 FXMenuCaption.new(menu_pane, "Hotkeys:")
                 FXMenuSeparator.new(menu_pane)
-                [ "<ctrl-r> - Reset Filter",
-                  "<ctrl-n> - Goto Next",
-                  "<ctrl-shift-n> - Goto Prev",
-                  "<ctrl-w> - Switch Wordwrap"
+                ["<ctrl-r> - Reset Filter",
+                 "<ctrl-n> - Goto Next",
+                 "<ctrl-shift-n> - Goto Prev",
+                 "<ctrl-w> - Switch Wordwrap"
                 ].each do |hk|
                   FXMenuCaption.new(menu_pane, hk).backColor = 'yellow'
                 end
@@ -282,9 +282,9 @@ module Watobo#:nodoc: all
               end
 
             end
-          true
+            true
           else
-          false
+            false
           end
         }
 
@@ -302,14 +302,14 @@ module Watobo#:nodoc: all
             FXMenuPane.new(self) do |menu_pane|
               FXMenuCaption.new(menu_pane, "Hotkeys:")
               FXMenuSeparator.new(menu_pane)
-              [ "<ctrl-r> - Reset Filter",
-                "<ctrl-n> - Goto Next",
-                "<ctrl-shift-n> - Goto Prev",
-                "<ctrl-w> - Switch Wordwrap",
-                "<ctrl-b> - Encode Base64",
-                "<ctrl-shift-b> - Decode Base64",
-                "<ctrl-u> - Encode URL",
-                "<ctrl-shift-u> - Decode URL",
+              ["<ctrl-r> - Reset Filter",
+               "<ctrl-n> - Goto Next",
+               "<ctrl-shift-n> - Goto Prev",
+               "<ctrl-w> - Switch Wordwrap",
+               "<ctrl-b> - Encode Base64",
+               "<ctrl-shift-b> - Decode Base64",
+               "<ctrl-u> - Encode URL",
+               "<ctrl-shift-u> - Decode URL",
               ].each do |hk|
                 FXMenuCaption.new(menu_pane, hk).backColor = 'yellow'
               end
@@ -327,52 +327,52 @@ module Watobo#:nodoc: all
           return true if event.code == KEY_Control_L or event.code == KEY_Control_R
           if event.code == KEY_Return
             notify(:hotkey_ctrl_enter)
-          true # special handling of KEY_Return, because we don't want a linebreak in textbox.
+            true # special handling of KEY_Return, because we don't want a linebreak in textbox.
           else
 
             case event.code
-            when KEY_w
-              @textbox.textStyle ^= TEXT_WORDWRAP
-            when KEY_n
-              @textbox.showNextMatch()
-              addFilterHistory()
-            when KEY_N
-              @textbox.showPrevMatch()
-              addFilterHistory()
-            when KEY_r
-              resetTextbox()
+              when KEY_w
+                @textbox.textStyle ^= TEXT_WORDWRAP
+              when KEY_n
+                @textbox.showNextMatch()
+                addFilterHistory()
+              when KEY_N
+                @textbox.showPrevMatch()
+                addFilterHistory()
+              when KEY_r
+                resetTextbox()
             end
 
             pos = @textbox.selStartPos
             len = @textbox.selEndPos - pos
 
             if len == 0 then
-            pos = @input_start
-            len = @input_len
+              pos = @input_start
+              len = @input_len
             end
 
             unless len==0
-              text = @textbox.extractText(pos,len)
+              text = @textbox.extractText(pos, len)
               rptxt = case event.code
-              when KEY_u
-                CGI::escape(text).strip
-              when KEY_b
-                Base64.encode64(text).strip
-              when KEY_U
-                CGI::unescape(text).strip
-              when KEY_B
-                Base64.decode64(text).strip
-              else
-              text
-              end
-            @textbox.replaceText(pos, len, rptxt,false)
-            @textbox.setSelection(pos,rptxt.length)
+                        when KEY_u
+                          CGI::escape(text).strip
+                        when KEY_b
+                          Base64.encode64(text).strip
+                        when KEY_U
+                          CGI::unescape(text).strip
+                        when KEY_B
+                          Base64.decode64(text).strip
+                        else
+                          text
+                      end
+              @textbox.replaceText(pos, len, rptxt, false)
+              @textbox.setSelection(pos, rptxt.length)
             end
-          false
+            false
           end
         else
           @ctrl_pressed = true if event.code == KEY_Control_L or event.code == KEY_Control_R
-        false
+          false
         end
       end
 
@@ -410,10 +410,11 @@ module Watobo#:nodoc: all
       include Watobo
       include Watobo::Interceptor
       include Watobo::Gui::Icons
+
       def execute
         create
         show(PLACEMENT_SCREEN)
-      # getApp().runModalFor(self)
+        # getApp().runModalFor(self)
       end
 
       # this method is obsolet! Use addRequest() instead
@@ -430,17 +431,17 @@ module Watobo#:nodoc: all
         puts "* [Interceptor] addRequest"
 
         new_request = {
-          :request => request,
-          :thread => thread
+            :request => request,
+            :thread => thread
         }
 
         @request_lock.synchronize do
-        #   enable_buttons()
+          #   enable_buttons()
           @request_queue << new_request
 
         end
 
-      # enable_buttons()
+        # enable_buttons()
 
       end
 
@@ -453,8 +454,8 @@ module Watobo#:nodoc: all
         #  puts response
 
         new_response = {
-          :response => response,
-          :thread => thread
+            :response => response,
+            :thread => thread
         }
 
         @response_lock.synchronize do
@@ -466,9 +467,9 @@ module Watobo#:nodoc: all
       def initialize(owner, opts)
         # Invoke base class initialize function first
 
-        super( owner, 'Interceptor', nil, nil, 
-        #      DECOR_ALL|DECOR_TITLE|DECOR_BORDER|DECOR_RESIZE, 0, 0, 600, 400, 0, 0, 0, 0, 0, 0)
-               DECOR_ALL, 0, 0, 600, 400, 0, 0, 0, 0, 0, 0)
+        super(owner, 'Interceptor', nil, nil,
+              #      DECOR_ALL|DECOR_TITLE|DECOR_BORDER|DECOR_RESIZE, 0, 0, 600, 400, 0, 0, 0, 0, 0, 0)
+              DECOR_ALL, 0, 0, 600, 400, 0, 0, 0, 0, 0, 0)
 
         self.decorations = DECOR_ALL
 
@@ -484,46 +485,46 @@ module Watobo#:nodoc: all
 
         @request_lock = Mutex.new
         @response_lock = Mutex.new
-        
+
         @request_box_available = true
         @response_box_available = true
 
         # initial frame setup
         mr_splitter = FXSplitter.new(self, LAYOUT_FILL_X|LAYOUT_FILL_Y|SPLITTER_VERTICAL|SPLITTER_REVERSED|SPLITTER_TRACKING)
 
-        top_frame = FXVerticalFrame.new(mr_splitter, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y||LAYOUT_FIX_HEIGHT|LAYOUT_BOTTOM,:height => 500)
+        top_frame = FXVerticalFrame.new(mr_splitter, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y||LAYOUT_FIX_HEIGHT|LAYOUT_BOTTOM, :height => 500)
         top_splitter = FXSplitter.new(top_frame, LAYOUT_FILL_X|SPLITTER_HORIZONTAL|LAYOUT_FILL_Y|SPLITTER_TRACKING)
 
         #log_frame = FXVerticalFrame.new(mr_splitter, :opts => LAYOUT_FILL_X|LAYOUT_SIDE_BOTTOM,:height => 100)
 
         filter_frame = FXVerticalFrame.new(top_splitter, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y||LAYOUT_FIX_HEIGHT|LAYOUT_BOTTOM)
-         gbframe = FXGroupBox.new(filter_frame, "Intercept", LAYOUT_SIDE_RIGHT|FRAME_GROOVE|LAYOUT_FILL_X, 0, 0, 0, 0)
+        gbframe = FXGroupBox.new(filter_frame, "Intercept", LAYOUT_SIDE_RIGHT|FRAME_GROOVE|LAYOUT_FILL_X, 0, 0, 0, 0)
         frame = FXVerticalFrame.new(gbframe, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
-      #  FXLabel.new(filter_frame, "Intercept:" )
+        #  FXLabel.new(filter_frame, "Intercept:" )
         @intercept_request = FXCheckButton.new(frame, "Requests", nil, 0,
-        ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
+                                               ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
         @intercept_request.connect(SEL_COMMAND, method(:onInterceptChanged))
 
         @intercept_response = FXCheckButton.new(frame, "Response", nil, 0,
-        ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
+                                                ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
         @intercept_response.connect(SEL_COMMAND, method(:onInterceptChanged))
         @filter_options_btn = FXButton.new(frame, "Options", nil, nil, 0, FRAME_RAISED|FRAME_THICK|LAYOUT_LEFT)
         @filter_options_btn.connect(SEL_COMMAND, method(:onBtnFilterOptions))
-        
+
         gbframe = FXGroupBox.new(filter_frame, "Rewrite", LAYOUT_SIDE_RIGHT|FRAME_GROOVE|LAYOUT_FILL_X, 0, 0, 0, 0)
         frame = FXVerticalFrame.new(gbframe, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
         #FXLabel.new(filter_frame, "Rewrite:" )
         @rewrite_request = FXCheckButton.new(frame, "Requests", nil, 0,
-        ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
+                                             ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
         @rewrite_request.connect(SEL_COMMAND, method(:onInterceptChanged))
 
         @rewrite_response = FXCheckButton.new(frame, "Response", nil, 0,
-        ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
+                                              ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
         @rewrite_response.connect(SEL_COMMAND, method(:onInterceptChanged))
 
- @rewrite_options_btn = FXButton.new(frame, "Options", nil, nil, 0, FRAME_RAISED|FRAME_THICK|LAYOUT_LEFT)
-        @rewrite_options_btn.connect(SEL_COMMAND){ open_rewrite_options_dialog }
-       
+        @rewrite_options_btn = FXButton.new(frame, "Options", nil, nil, 0, FRAME_RAISED|FRAME_THICK|LAYOUT_LEFT)
+        @rewrite_options_btn.connect(SEL_COMMAND) { open_rewrite_options_dialog }
+
         #@intercept_request.checkState = false
         #@intercept_response.checkState = false
         if Watobo::Interceptor.active?
@@ -539,10 +540,10 @@ module Watobo#:nodoc: all
         button_frame = FXHorizontalFrame.new(view_frame, LAYOUT_FILL_X)
         @tabBook.connect(SEL_COMMAND) { |sender, sel, item|
           case item
-          when 0
-            enable_buttons if @request_list.length > 0
-          when 1
-            enable_buttons if @response_list.length > 0
+            when 0
+              enable_buttons if @request_list.length > 0
+            when 1
+              enable_buttons if @response_list.length > 0
           end
 
         }
@@ -550,14 +551,14 @@ module Watobo#:nodoc: all
         request_frame_outer = FXVerticalFrame.new(@tabBook, LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_RAISED)
         # request_frame = FXVerticalFrame.new(request_frame_outer, LAYOUT_FILL_X|LAYOUT_FILL_Y)
 
-       # @requestbox = Watobo::Gui::InterceptEditor.new(request_frame_outer, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
+        # @requestbox = Watobo::Gui::InterceptEditor.new(request_frame_outer, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
         @requestbox = Watobo::Gui::RequestBuilder.new(request_frame_outer, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
 
         @response_tab = FXTabItem.new(@tabBook, "Response (0)", nil)
         response_frame_outer = FXVerticalFrame.new(@tabBook, LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_RAISED)
         #response_frame = FXVerticalFrame.new(response_frame_outer, LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding=>0)
         # @responsebox = Watobo::Gui::RequestEditor.new(response_frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y )
-       
+
         #@responsebox = Watobo::Gui::InterceptEditor.new(response_frame_outer, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
         @responsebox = Watobo::Gui::RequestBuilder.new(response_frame_outer, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
         # @responsebox.editable = true
@@ -577,8 +578,8 @@ module Watobo#:nodoc: all
         disable_buttons()
 
         # start an update timer
-        @update_timer = FXApp.instance.addTimeout( 50, :repeat => true) {
-          
+        @update_timer = FXApp.instance.addTimeout(50, :repeat => true) {
+
           @request_lock.synchronize do
             unless @request_queue.empty?
               @request_list.concat @request_queue
@@ -592,7 +593,7 @@ module Watobo#:nodoc: all
             end
 
           end
-          
+
           @response_lock.synchronize do
             unless @response_queue.empty?
               @response_list.concat @response_queue
@@ -601,7 +602,7 @@ module Watobo#:nodoc: all
             end
 
             if @response_list.length > 0 and @response_box_available
-             # @responsebox.setText @response_list.first[:response]
+              # @responsebox.setText @response_list.first[:response]
               @responsebox.setRequest @response_list.first[:response]
               @response_box_available = false
             end
@@ -640,11 +641,11 @@ module Watobo#:nodoc: all
                 request[:request].concat @requestbox.parseRequest
                 @requestbox.clear
                 @request_box_available = true
-                Watobo.print_debug( self.class.to_s, "release thread #{request[:thread]}")
+                Watobo.print_debug(self.class.to_s, "release thread #{request[:thread]}")
                 request[:thread].run
                 @request_list.shift
                 @request_tab.text = "Request (#{@request_list.length})"
-              #getNextRequest()
+                #getNextRequest()
               else
                 puts "* [INTERCEPTOR] NOTHING TO RELEASE"
               end
@@ -669,7 +670,7 @@ module Watobo#:nodoc: all
                 @response_box_available = true
                 @response_list.shift
                 @response_tab.text = "Response (#{@response_list.length})"
-              # getNextResponse()
+                # getNextResponse()
               end
             end
           rescue => bang
@@ -684,54 +685,54 @@ module Watobo#:nodoc: all
       def onDrop(sender, sel, ptr)
         if @tabBook.current == 0 then
           @request_lock.synchronize do
-          request = @request_list.first
-          if request
-            request[:request].clear
-            request[:thread].kill
-          @request_list.shift
-          @requestbox.clear
-          @request_box_available = true
-          end
-          @request_tab.text = "Request (#{@request_list.length})"
+            request = @request_list.first
+            if request
+              request[:request].clear
+              request[:thread].kill
+              @request_list.shift
+              @requestbox.clear
+              @request_box_available = true
+            end
+            @request_tab.text = "Request (#{@request_list.length})"
           end
           #getNextRequest()
         else
           @response_lock.synchronize do
-          response = @response_list.first
-          if response
-            response[:response].clear
-            response[:thread].kill
-          @response_list.shift
-          @responsebox.clear
-          @response_box_available = true
+            response = @response_list.first
+            if response
+              response[:response].clear
+              response[:thread].kill
+              @response_list.shift
+              @responsebox.clear
+              @response_box_available = true
+            end
+            @response_tab.text = "Response (#{@response_list.length})"
+            # getNextResponse()
           end
-           @response_tab.text = "Response (#{@response_list.length})"
-         # getNextResponse()
-end
         end
       end
 
       def onDiscard(sender, sel, ptr)
         if @tabBook.current == 0 then
           @request_lock.synchronize do
-          request = @request_list.first
-          request[:thread].run if request
-          @request_list.shift
-          @requestbox.clear
-          @request_box_available = true
-          @request_tab.text = "Request (#{@request_list.length})"
-          
+            request = @request_list.first
+            request[:thread].run if request
+            @request_list.shift
+            @requestbox.clear
+            @request_box_available = true
+            @request_tab.text = "Request (#{@request_list.length})"
+
           end
           #getNextRequest()
         else
           @response_lock.synchronize do
-          response = @response_list.first
-          response[:thread].run if response
-          @response_list.shift
-          @responsebox.clear
-          @response_box_available = true
-          @response_tab.text = "Response (#{@response_list.length})"
-          #getNextResponse()
+            response = @response_list.first
+            response[:thread].run if response
+            @response_list.shift
+            @responsebox.clear
+            @response_box_available = true
+            @response_tab.text = "Response (#{@response_list.length})"
+            #getNextResponse()
           end
         end
       end
@@ -757,7 +758,7 @@ end
         releaseAll()
         #getApp().stopModal(self, 1)
         puts "_"
-        
+
         self.hide()
       end
 
@@ -796,42 +797,42 @@ end
 
       def onBtnFilterOptions(sender, sel, ptr)
 
-        dlg = Watobo::Gui::InterceptorFilterSettingsDialog.new( self,
-        :request_filter_settings => Interceptor.proxy.getRequestFilter(),
-        :response_filter_settings => Interceptor.proxy.getResponseFilter()
+        dlg = Watobo::Gui::InterceptorFilterSettingsDialog.new(self,
+                                                               :request_filter_settings => Interceptor.proxy.getRequestFilter(),
+                                                               :response_filter_settings => Interceptor.proxy.getResponseFilter()
         )
         if dlg.execute != 0 then
-        # TODO: Apply interceptor settings
-        Interceptor.proxy.setRequestFilter(dlg.getRequestFilter)
-        Interceptor.proxy.setResponseFilter(dlg.getResponseFilter)
+          # TODO: Apply interceptor settings
+          Interceptor.proxy.setRequestFilter(dlg.getRequestFilter)
+          Interceptor.proxy.setResponseFilter(dlg.getResponseFilter)
         end
 
       end
-      
+
       def open_rewrite_options_dialog
-        dlg = Watobo::Gui::RewriteRulesDialog.new( self )
+        dlg = Watobo::Gui::RewriteRulesDialog.new(self)
         if dlg.execute != 0 then
-        # TODO: Apply interceptor settings
-        Interceptor::RequestCarver.set_carving_rules dlg.request_rules
-        Interceptor::ResponseCarver.set_carving_rules dlg.response_rules
+          # TODO: Apply interceptor settings
+          Interceptor::RequestCarver.set_carving_rules dlg.request_rules
+          Interceptor::ResponseCarver.set_carving_rules dlg.response_rules
         end
       end
 
       def onInterceptChanged(sender, sel, ptr)
         begin
-         # unless @interceptor.nil? then
-            mode = @intercept_response.checked? ? INTERCEPT_RESPONSE : 0
-            mode |= @intercept_request.checked? ? INTERCEPT_REQUEST : 0
-            #Watobo::Interceptor.intercept_mode = @intercept_response.checked? ? INTERCEPT_RESPONSE : 0
-           # Watobo::Interceptor.intercept_mode |= @intercept_request.checked? ? INTERCEPT_REQUEST : 0
+          # unless @interceptor.nil? then
+          mode = @intercept_response.checked? ? INTERCEPT_RESPONSE : 0
+          mode |= @intercept_request.checked? ? INTERCEPT_REQUEST : 0
+          #Watobo::Interceptor.intercept_mode = @intercept_response.checked? ? INTERCEPT_RESPONSE : 0
+          # Watobo::Interceptor.intercept_mode |= @intercept_request.checked? ? INTERCEPT_REQUEST : 0
           #puts Watobo::Interceptor.intercept_mode
-         # puts "New Proxy Mode: #{mode}"
+          # puts "New Proxy Mode: #{mode}"
           Watobo::Interceptor.intercept_mode = mode
-          
+
           mode = @rewrite_request.checked? ? REWRITE_REQUEST : 0
           mode |= @rewrite_response.checked? ? REWRITE_RESPONSE : 0
           Watobo::Interceptor.rewrite_mode = mode
-         # end
+            # end
         rescue => bang
           puts bang
           puts bang.backtrace if $DEBUG
@@ -844,7 +845,7 @@ end
 
       include Responder
       include Watobo::Interceptor
-      
+
       def getRequestFilter()
         @request_filter
       end
@@ -853,12 +854,12 @@ end
         @response_filter
       end
 
-      def initialize(owner, settings = {} )
+      def initialize(owner, settings = {})
         super(owner, "Interceptor Settings", DECOR_ALL, :width => 300, :height => 425)
 
-        @request_filter = { }
+        @request_filter = {}
 
-        @response_filter = { }
+        @response_filter = {}
 
         @request_filter.update settings[:request_filter_settings]
         @response_filter.update settings[:response_filter_settings]
@@ -884,16 +885,16 @@ end
         initResponseFilterFrame()
         updateResponseFilterFrame()
 
-        @finishButton = FXButton.new(buttons_frame, "Accept" ,  nil, nil, :opts => BUTTON_NORMAL|LAYOUT_RIGHT)
+        @finishButton = FXButton.new(buttons_frame, "Accept", nil, nil, :opts => BUTTON_NORMAL|LAYOUT_RIGHT)
         @finishButton.enable
         @finishButton.connect(SEL_COMMAND) do |sender, sel, item|
-        #self.handle(self, FXSEL(SEL_COMMAND, ID_CANCEL), nil)
+          #self.handle(self, FXSEL(SEL_COMMAND, ID_CANCEL), nil)
           self.handle(self, FXSEL(SEL_COMMAND, ID_ACCEPT), nil)
         end
 
-        @cancelButton = FXButton.new(buttons_frame, "Cancel" ,
-        :target => self, :selector => FXDialogBox::ID_CANCEL,
-        :opts => BUTTON_NORMAL|LAYOUT_RIGHT)
+        @cancelButton = FXButton.new(buttons_frame, "Cancel",
+                                     :target => self, :selector => FXDialogBox::ID_CANCEL,
+                                     :opts => BUTTON_NORMAL|LAYOUT_RIGHT)
       end
 
       private
@@ -913,7 +914,7 @@ end
         @response_filter[:content_type_filter] = @content_type_filter_dt.value
         @response_filter[:negate_content_type_filter] = @neg_ctype_filter_cb.checked?
 
-        @response_filter[:response_code_filter] =  @rcode_filter_dt.value
+        @response_filter[:response_code_filter] = @rcode_filter_dt.value
         @response_filter[:negate_response_code_filter] = @neg_rcode_filter_cb.checked?
 
         getApp().stopModal(self, 1)
@@ -931,8 +932,8 @@ end
       def updateResponseFilterFrame()
         @content_type_filter.handle(self, FXSEL(SEL_UPDATE, 0), nil)
         @rcode_filter.handle(self, FXSEL(SEL_UPDATE, 0), nil)
-      # @neg_rcode_filter_cb.handle(self, FXSEL(SEL_UPDATE, 0), nil)
-      # @neg_ctype_filter_cb.handle(self, FXSEL(SEL_UPDATE, 0), nil)
+        # @neg_rcode_filter_cb.handle(self, FXSEL(SEL_UPDATE, 0), nil)
+        # @neg_ctype_filter_cb.handle(self, FXSEL(SEL_UPDATE, 0), nil)
       end
 
       def initResponseFilterFrame()
@@ -1027,7 +1028,7 @@ end
         @neg_ftype_filter_cb.checkState = @request_filter[:negate_file_type_filter]
       end
     end
-  #
+    #
   end
 end
 
@@ -1042,13 +1043,13 @@ if __FILE__ == $0
 
     # Create and show the main window
     def create
-      super                  # Create the windows
+      super # Create the windows
       show(PLACEMENT_SCREEN) # Make the main window appear
 
     end
   end
   #   application = FXApp.new('LayoutTester', 'FoxTest')
   TestGui.new($application)
-$application.create
-$application.run
+  $application.create
+  $application.run
 end

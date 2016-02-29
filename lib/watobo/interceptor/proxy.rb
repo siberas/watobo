@@ -157,7 +157,7 @@ module Watobo #:nodoc: all
             #  new_session.sync = true
             new_sender = Watobo::Session.new(@target)
             Thread.new(new_sender, new_session) { |sender, session|
-              # puts "* got new connection"
+              puts "* got new request from client"
               c_sock = Watobo::HTTPSocket::ClientSocket.connect(session)
 
               #puts "ClientSocket: #{c_sock}"
@@ -375,29 +375,32 @@ module Watobo #:nodoc: all
                   resp_data = resp.join
                   c_sock.write resp_data
 
-                    # puts "---"
-                    # puts resp_data.unpack("H*")[0]
-                    # puts "==="
+                  chat = Chat.new(request.copy, resp.copy, :source => CHAT_SOURCE_INTERCEPT)
+                  Watobo::Chats.add chat
 
                 rescue Errno::ECONNRESET
                   print "x"
                     #  puts "!!! ERROR (Reset): reading body"
                     #  puts "* last data seen on socket: #{buf}"
                     #return
+                  c_sock.close
+                  Thread.exit
                 rescue Errno::ECONNABORTED
                   print "x"
                     #return
+                  c_sock.close
+                  Thread.exit
                 rescue => bang
                   puts "!!! Error (???) in Client Communication:"
                   puts bang
                   puts bang.class
                   puts bang.backtrace #if $DEBUG
                   #return
+                  c_sock.close
+                  Thread.exit
                 end
 
-                chat = Chat.new(request.copy, resp.copy, :source => CHAT_SOURCE_INTERCEPT)
 
-                Watobo::Chats.add chat
 
                 # TODO: place check into ClientSocket, because headers must be checked and changed too
                 # e.g. if c_sock.open?
@@ -405,7 +408,7 @@ module Watobo #:nodoc: all
                   c_sock.close
                   Thread.exit
                 end
-                print "o"
+
                 max_loop += 1
 
               end

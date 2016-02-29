@@ -127,6 +127,7 @@ module Watobo #:nodoc: all
       self.extend Watobo::Mixin::Parser::Url
       self.extend Watobo::Mixin::Parser::Web10
       self.extend Watobo::Mixin::Shaper::Web10
+      self.extend Watobo::Mixin::Shaper::HttpResponse
 
       @url = Watobo::HTTP::Url.new(self)
       ct = content_type
