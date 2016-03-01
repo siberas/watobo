@@ -44,13 +44,15 @@ module Watobo #:nodoc: all
         @increment += settings[:increment] unless settings[:increment].nil?
 
         Watobo::Gui.application.runOnUiThread do
-          @title_lbl.text = @title
-          @task_lbl.text = @task
-          @job_lbl.text = @job
+          @update_lock.synchronize do
+            @title_lbl.text = @title
+            @task_lbl.text = @task
+            @job_lbl.text = @job
 
-          @pbar.increment(@increment)
-          @increment = 0
-          @pbar.total = @total
+            @pbar.increment(@increment)
+            @increment = 0
+            @pbar.total = @total
+          end
         end
       end
 
@@ -76,23 +78,7 @@ module Watobo #:nodoc: all
         @job = "-"
         @task = "-"
 
-          #add_update_timer(50)
-      end
-
-      # TODO: remove if unused
-      def add_update_timer_UNUSED(ms)
-        @update_timer = FXApp.instance.addTimeout(ms, :repeat => true) {
-          @update_lock.synchronize do
-            @title_lbl.text = @title
-            @task_lbl.text = @task
-            @job_lbl.text = @job
-
-            @pbar.increment(@increment)
-            @increment = 0
-            @pbar.total = @total
-            # @pbar.progress = settings[:progress] unless settings[:progress].nil?
-          end
-        }
+        #add_update_timer(50)
       end
 
     end

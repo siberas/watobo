@@ -273,12 +273,20 @@ module Watobo #:nodoc: all
 
 
       def start_update_timer
-        @timer = FXApp.instance.addTimeout(50, :repeat => true) {
-          unless @scanner.nil?
-            progress = @scanner.progress
-            progress.each do |m, info|
-              @scan_progress_frame.progress_bars[m].progress info[:progress]
+        #@timer = FXApp.instance.addTimeout(250, :repeat => true) {
+        Thread.new {
+          loop do
+            sleep 0.5
 
+            Watobo::Gui.application.runOnUiThread do
+
+              unless @scanner.nil?
+                progress = @scanner.progress
+                progress.each do |m, info|
+                  @scan_progress_frame.progress_bars[m].progress info[:progress]
+
+                end
+              end
             end
           end
         }

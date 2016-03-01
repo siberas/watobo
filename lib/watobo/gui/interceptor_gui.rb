@@ -578,37 +578,44 @@ module Watobo #:nodoc: all
         disable_buttons()
 
         # start an update timer
-        @update_timer = FXApp.instance.addTimeout(50, :repeat => true) {
+        # @update_timer = FXApp.instance.addTimeout(250, :repeat => true) {
+        Thread.new {
+          loop do
+            sleep 0.5
 
-          @request_lock.synchronize do
-            unless @request_queue.empty?
-              @request_list.concat @request_queue
-              @request_queue.clear
-              @request_tab.text = "Request (#{@request_list.length})"
+            Watobo::Gui.application.runOnUiThread do
+
+              @request_lock.synchronize do
+                unless @request_queue.empty?
+                  @request_list.concat @request_queue
+                  @request_queue.clear
+                  @request_tab.text = "Request (#{@request_list.length})"
+                end
+
+                if @request_list.length > 0 and @request_box_available
+                  @requestbox.setRequest @request_list.first[:request]
+                  @request_box_available = false
+                end
+
+              end
+
+              @response_lock.synchronize do
+                unless @response_queue.empty?
+                  @response_list.concat @response_queue
+                  @response_queue.clear
+                  @response_tab.text = "Response (#{@response_list.length})"
+                end
+
+                if @response_list.length > 0 and @response_box_available
+                  # @responsebox.setText @response_list.first[:response]
+                  @responsebox.setRequest @response_list.first[:response]
+                  @response_box_available = false
+                end
+
+              end
+              update_buttons
             end
-
-            if @request_list.length > 0 and @request_box_available
-              @requestbox.setRequest @request_list.first[:request]
-              @request_box_available = false
-            end
-
           end
-
-          @response_lock.synchronize do
-            unless @response_queue.empty?
-              @response_list.concat @response_queue
-              @response_queue.clear
-              @response_tab.text = "Response (#{@response_list.length})"
-            end
-
-            if @response_list.length > 0 and @response_box_available
-              # @responsebox.setText @response_list.first[:response]
-              @responsebox.setRequest @response_list.first[:response]
-              @response_box_available = false
-            end
-
-          end
-          update_buttons
         }
 
       end

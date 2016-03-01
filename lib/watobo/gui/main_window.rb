@@ -40,38 +40,45 @@ module Watobo #:nodoc: all
       private
 
       def add_queue_timer(ms)
-        @update_timer = FXApp.instance.addTimeout(ms, :repeat => true) {
-          #@finding_lock.synchronize do
-          #  @finding_queue.each do |f|
-          #    addFinding(f)
-          #  end
-          #  @finding_queue.clear
-          #end
+        #@update_timer = FXApp.instance.addTimeout(ms, :repeat => true) {
+        Thread.new {
+          loop do
+            sleep 0.5
 
-          unless @scanner.nil?
-            if @scanner.finished?
-              @scan_running = false
-              @status_lock.synchronize do
-                @new_status = SCAN_FINISHED
+            Watobo::Gui.application.runOnUiThread do
+
+              #@finding_lock.synchronize do
+              #  @finding_queue.each do |f|
+              #    addFinding(f)
+              #  end
+              #  @finding_queue.clear
+              #end
+
+              unless @scanner.nil?
+                if @scanner.finished?
+                  @scan_running = false
+                  @status_lock.synchronize do
+                    @new_status = SCAN_FINISHED
+                  end
+                  @scanner = nil
+                end
               end
-              @scanner = nil
+
+              #@chat_lock.synchronize do
+              #  @chat_queue.each do |c|
+              #    addChat(c)
+              #  end
+              #  @chat_queue.clear
+              #end
+
+              @status_lock.synchronize do
+                unless @new_status.nil?
+                  update_status(@new_status)
+                end
+
+              end
             end
           end
-
-          #@chat_lock.synchronize do
-          #  @chat_queue.each do |c|
-          #    addChat(c)
-          #  end
-          #  @chat_queue.clear
-          #end
-
-          @status_lock.synchronize do
-            unless @new_status.nil?
-              update_status(@new_status)
-            end
-
-          end
-
         }
       end
 
@@ -1786,11 +1793,11 @@ module Watobo #:nodoc: all
           #@chat_lock.synchronize do
           #  @chat_queue << c
           #end
-          Thread.new(c){ |chat|
+          Thread.new(c) { |chat|
             Watobo::Gui.application.runOnUiThread do
               addChat(chat)
             end
-         }
+          }
         }
 
         Watobo::Findings.subscribe(:new) { |f|
@@ -1798,7 +1805,7 @@ module Watobo #:nodoc: all
           #@finding_lock.synchronize do
           #@finding_queue << f
           #end
-          Thread.new(f){ |finding|
+          Thread.new(f) { |finding|
             Watobo::Gui.application.runOnUiThread do
               addFinding(finding)
             end

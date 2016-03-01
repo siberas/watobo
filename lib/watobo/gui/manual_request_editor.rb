@@ -551,53 +551,60 @@ module Watobo #:nodoc: all
       private
 
       def add_update_timer(ms)
-        @update_timer = FXApp.instance.addTimeout(ms, :repeat => true) {
-          unless @scanner.nil?
-            @scan_status_lock.synchronize do
+        # @update_timer = FXApp.instance.addTimeout(ms, :repeat => true) {
+        Thread.new {
+          loop do
+            sleep 0.5
 
-              if @pbar.total > 0
-                @pbar.progress = @scanner.sum_progress
+            Watobo::Gui.application.runOnUiThread do
+
+              unless @scanner.nil?
+                @scan_status_lock.synchronize do
+
+                  if @pbar.total > 0
+                    @pbar.progress = @scanner.sum_progress
+                  end
+
+                  if @scanner.finished?
+                    @scanner = nil
+                    logger("Scan Finished!")
+                    @pbar.progress = 0
+                    @pbar.total = 0
+                    @pbar.barColor = 'grey' #FXRGB(255,0,0)
+                    @btn_quickscan.text = "QuickScan"
+                  end
+                end
               end
 
-              if @scanner.finished?
-                @scanner = nil
-                logger("Scan Finished!")
-                @pbar.progress = 0
-                @pbar.total = 0
-                @pbar.barColor = 'grey' #FXRGB(255,0,0)
-                @btn_quickscan.text = "QuickScan"
+              while @chat_queue.size > 0 do
+                request, response = @chat_queue.pop
+
+                unless request.nil? then
+                  unless response.nil?
+                    @response_viewer.setText response
+                    @current_chat = Watobo::Chat.new(request, response, :source => CHAT_SOURCE_MANUAL, :run_passive_checks => false)
+
+                    Watobo::Chats.add(@current_chat) if @logChat.checked? == true
+
+                    @request_viewer.setText request
+                    @last_request = request
+
+                    @response_viewer.setText(response, :filter => true)
+                    @responseMD5.text = response.contentMD5
+
+                    addHistoryItem(@current_chat, @req_builder.rawRequest)
+
+                    @history_pos_dt.value = @history.length
+                    @history_pos.handle(self, FXSEL(SEL_UPDATE, 0), nil)
+                  end
+                else
+                  logger("ERROR: #{@current_chat.response.first}") if @current_chat.respond_to? :response
+                  @responseMD5.text = "- N/A -"
+                end
+
               end
             end
           end
-
-          while @chat_queue.size > 0 do
-            request, response = @chat_queue.pop
-
-            unless request.nil? then
-              unless response.nil?
-                @response_viewer.setText response
-                @current_chat = Watobo::Chat.new(request, response, :source => CHAT_SOURCE_MANUAL, :run_passive_checks => false)
-
-                Watobo::Chats.add(@current_chat) if @logChat.checked? == true
-
-                @request_viewer.setText request
-                @last_request = request
-
-                @response_viewer.setText(response, :filter => true)
-                @responseMD5.text = response.contentMD5
-
-                addHistoryItem(@current_chat, @req_builder.rawRequest)
-
-                @history_pos_dt.value = @history.length
-                @history_pos.handle(self, FXSEL(SEL_UPDATE, 0), nil)
-              end
-            else
-              logger("ERROR: #{@current_chat.response.first}") if @current_chat.respond_to? :response
-              @responseMD5.text = "- N/A -"
-            end
-
-          end
-
         }
       end
 
@@ -682,9 +689,14 @@ module Watobo #:nodoc: all
 
       def simulatePressSendBtn()
         @btn_send.state = STATE_DOWN
-        getApp().addTimeout(250, :repeat => false) do
-          @btn_send.state = STATE_UP
-        end
+        #getApp().addTimeout(250, :repeat => false) do
+        Thread.new {
+          sleep 1
+          Watobo::Gui.application.runOnUiThread do
+            @btn_send.state = STATE_UP
+          end
+        }
+        #end
       end
 
       def hide()

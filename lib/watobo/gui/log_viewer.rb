@@ -72,20 +72,28 @@ module Watobo #:nodoc: all
       private
 
       def start_update_timer_UNUSED
-        @timer = FXApp.instance.addTimeout(150, :repeat => true) {
-          #print @log_queue.length
-          if @log_queue.length > 0
-            msg = @log_queue.deq
-            if @mode == :insert
-              @log_text_lock.synchronize do
-                @textbox.insertText(0, msg)
-              end
-            else
-              @log_text_lock.synchronize do
-                @textbox.appendText(msg)
+        # @timer = FXApp.instance.addTimeout(300, :repeat => true) {
+        Thread.new {
+          loop do
+            sleep 0.5
+
+            Watobo::Gui.application.runOnUiThread do
+
+              #print @log_queue.length
+              if @log_queue.length > 0
+                msg = @log_queue.deq
+                if @mode == :insert
+                  @log_text_lock.synchronize do
+                    @textbox.insertText(0, msg)
+                  end
+                else
+                  @log_text_lock.synchronize do
+                    @textbox.appendText(msg)
+                  end
+                end
+                @textbox.handle(self, FXSEL(SEL_UPDATE, 0), nil)
               end
             end
-            @textbox.handle(self, FXSEL(SEL_UPDATE, 0), nil)
           end
         }
 

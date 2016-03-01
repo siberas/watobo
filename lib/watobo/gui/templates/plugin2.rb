@@ -1,5 +1,5 @@
 # @private 
-module Watobo#:nodoc: all
+module Watobo #:nodoc: all
   class Plugin2 < FXDialogBox
     attr :plugin_name
     # attr :icon
@@ -8,6 +8,7 @@ module Watobo#:nodoc: all
     include Watobo::Gui::Icons
 
     @icon_file = nil
+
     def self.get_icon
       @icon_file
     end
@@ -20,12 +21,12 @@ module Watobo#:nodoc: all
       dummy.pop
       file = dummy.join(":")
 
-      @icon_file = File.join(File.dirname(file), "..","icons", icon_file)
+      @icon_file = File.join(File.dirname(file), "..", "icons", icon_file)
     end
 
     def load_icon
       icon = self.class.get_icon
-     # puts "* loading icon > #{icon}"
+      # puts "* loading icon > #{icon}"
       self.icon = Watobo::Gui.load_icon(icon) unless icon.nil?
     end
 
@@ -60,7 +61,7 @@ module Watobo#:nodoc: all
     end
 
     def initialize(owner, title, project, opts)
-      super(owner, title, :opts => DECOR_ALL,:width=>800, :height=>600)
+      super(owner, title, :opts => DECOR_ALL, :width => 800, :height => 600)
 
       @icon = nil
       load_icon()
@@ -70,7 +71,7 @@ module Watobo#:nodoc: all
 
       @log_messages = []
 
-      add_update_timer(50)
+      add_update_timer()
 
     end
 
@@ -80,13 +81,21 @@ module Watobo#:nodoc: all
 
     end
 
-    def add_update_timer(ms)
-      @update_timer = FXApp.instance.addTimeout( ms, :repeat => true) {
-        @update_lock.synchronize do
-          on_update_timer()
+    def add_update_timer()
+      #@update_timer = FXApp.instance.addTimeout( ms, :repeat => true) {
+      Thread.new {
+        loop do
+          sleep 0.5
+
+          Watobo::Gui.application.runOnUiThread do
+
+            @update_lock.synchronize do
+              on_update_timer()
+            end
+          end
         end
       }
     end
-    
+
   end
 end
