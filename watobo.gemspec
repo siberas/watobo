@@ -38,10 +38,6 @@ spec = Gem::Specification.new do |s|
   %w( README.md CHANGELOG.md .yardopts).each do |fn|
      files << fn if File.exist?(fn)
   end
-  
-  #files << "README.md"
-  #files << "CHANGELOG.md"
-  #files << ".yardopts"
 
   s.files = files
 end
