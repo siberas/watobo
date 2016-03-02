@@ -17,12 +17,12 @@ spec = Gem::Specification.new do |s|
   s.executables = [ 'watobo_gui.rb', 'watobo', 'nfq_server.rb' ]
   s.authors = 'Andreas Schmidt'
 
-  # s.add_dependency( "selenium-webdriver", ">=0.1" )
-  # s.add_dependency( "savon")
-  s.add_dependency( "json" )
-  s.add_dependency( "mechanize")
-  s.add_dependency( "nokogiri")
-  s.add_dependency( "fxruby")
+  s.required_ruby_version     = '>= 2.2.2'
+  s.required_rubygems_version = '>= 1.8.11'
+
+  s.add_dependency 'mechanize', '2.7.4'
+  s.add_dependency 'fxruby', '1.6.29'
+  s.add_dependency 'bundler', '>= 1.11.0', '< 2.0'
 
   files = []
 
