@@ -132,20 +132,12 @@ module Watobo #:nodoc: all
     end
 
     def update_timer(ms=250, &block)
-      # update_timer = FXApp.instance.addTimeout( ms, :repeat => true) {
-      Thread.new {
-        loop do
-          sleep 0.5
-
-          Watobo::Gui.application.runOnUiThread do
-
+      Watobo.save_thread{
             @timer_lock.synchronize do
               if block_given?
                 block.call if block.respond_to? :call
               end
             end
-          end
-        end
       }
     end
 

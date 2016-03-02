@@ -190,7 +190,7 @@ module Watobo #:nodoc: all
           @status_frame.update_status Watobo::Crawler::Status.get
           es = Watobo::Crawler::Status.engine
           unless es.nil?
-            Watobo::Gui.application.runOnUiThread do
+           # Watobo::Gui.application.runOnUiThread do
               case es
                 when CRAWL_NONE
                   @start_button.text = "start"
@@ -200,7 +200,7 @@ module Watobo #:nodoc: all
                 when CRAWL_PAUSED
                   @start_button.text = "start"
               end
-            end
+            #end
           end
         end
 

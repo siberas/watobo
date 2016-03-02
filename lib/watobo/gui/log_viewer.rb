@@ -27,26 +27,12 @@ module Watobo #:nodoc: all
         begin
           log_text = case log_level
                        when LOG_INFO
-                         "#{now}: #{msg}\n"
+                         "INFO - #{now}: #{msg}\n"
                        else
-                         ""
+                         "UNDEF - #{now}: #{msg}\n"
                      end
-          Thread.new() {
-            @log_text_lock.synchronize do
-              if @mode == :insert
-                Watobo::Gui.application.runOnUiThread do
-                  @textbox.insertText(0, msg)
-                end
-              else
-                Watobo::Gui.application.runOnUiThread do
-                  @textbox.appendText(msg)
-                end
-              end
-              Watobo::Gui.application.runOnUiThread do
-                @textbox.handle(self, FXSEL(SEL_UPDATE, 0), nil)
-              end
-            end
-          }
+          @log_queue << log_text
+
         rescue => bang
           puts bang
           puts bang.backtrace if $DEBUG
@@ -66,34 +52,28 @@ module Watobo #:nodoc: all
 
         @textbox = FXText.new(self, nil, 0, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
         @textbox.editable = false
-        #start_update_timer
+
+        start_update_timer
       end
 
       private
 
-      def start_update_timer_UNUSED
-        # @timer = FXApp.instance.addTimeout(300, :repeat => true) {
-        Thread.new {
-          loop do
-            sleep 0.5
+      def start_update_timer
+        Watobo.save_thread {
 
-            Watobo::Gui.application.runOnUiThread do
-
-              #print @log_queue.length
-              if @log_queue.length > 0
-                msg = @log_queue.deq
-                if @mode == :insert
-                  @log_text_lock.synchronize do
-                    @textbox.insertText(0, msg)
-                  end
-                else
-                  @log_text_lock.synchronize do
-                    @textbox.appendText(msg)
-                  end
-                end
-                @textbox.handle(self, FXSEL(SEL_UPDATE, 0), nil)
+          #print @log_queue.length
+          if @log_queue.length > 0
+            msg = @log_queue.deq
+            if @mode == :insert
+              @log_text_lock.synchronize do
+                @textbox.insertText(0, msg)
+              end
+            else
+              @log_text_lock.synchronize do
+                @textbox.appendText(msg)
               end
             end
+            @textbox.handle(self, FXSEL(SEL_UPDATE, 0), nil)
           end
         }
 

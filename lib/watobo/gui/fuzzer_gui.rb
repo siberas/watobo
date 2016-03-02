@@ -370,44 +370,37 @@ module Watobo #:nodoc: all
       end
 
       def start_update_timer
-        #@timer = FXApp.instance.addTimeout( 1000, :repeat => true) {
-        Thread.new {
-          loop do
-            sleep 0.5
+        Watobo.save_thread {
 
-            Watobo::Gui.application.runOnUiThread do
+          #print @log_queue.length
+          while @log_queue.length > 0
+            response = @log_queue.deq
 
-              #print @log_queue.length
-              while @log_queue.length > 0
-                response = @log_queue.deq
+            if response.respond_to? :status
+              @count_total += 1
+              @count_text.text = "Total: #{@count_total}"
 
-                if response.respond_to? :status
-                  @count_total += 1
-                  @count_text.text = "Total: #{@count_total}"
-
-                  cstatus = response.status
-                  count_item = nil
-                  @response_code_tbl.getNumRows.times do |i|
-                    rc_item = @response_code_tbl.getItem(i, 0)
-                    count_item = @response_code_tbl.getItem(i, 1) if rc_item.text == response.status
-                    break unless count_item.nil?
-                  end
-
-                  if count_item.nil?
-                    lastRowIndex = @response_code_tbl.getNumRows
-                    @response_code_tbl.appendRows(1)
-                    @response_code_tbl.setItemText(lastRowIndex, 0, cstatus)
-                    @response_code_tbl.setItemText(lastRowIndex, 1, "1")
-                    count_item = @response_code_tbl.getItem(lastRowIndex, 1)
-                  else
-                    c = count_item.text.to_i
-                    count_item.text = (c + 1).to_s
-                  end
-                  @count_text.handle(self, FXSEL(SEL_UPDATE, 0), nil)
-                end
-
+              cstatus = response.status
+              count_item = nil
+              @response_code_tbl.getNumRows.times do |i|
+                rc_item = @response_code_tbl.getItem(i, 0)
+                count_item = @response_code_tbl.getItem(i, 1) if rc_item.text == response.status
+                break unless count_item.nil?
               end
+
+              if count_item.nil?
+                lastRowIndex = @response_code_tbl.getNumRows
+                @response_code_tbl.appendRows(1)
+                @response_code_tbl.setItemText(lastRowIndex, 0, cstatus)
+                @response_code_tbl.setItemText(lastRowIndex, 1, "1")
+                count_item = @response_code_tbl.getItem(lastRowIndex, 1)
+              else
+                c = count_item.text.to_i
+                count_item.text = (c + 1).to_s
+              end
+              @count_text.handle(self, FXSEL(SEL_UPDATE, 0), nil)
             end
+
           end
         }
 
@@ -1234,13 +1227,7 @@ module Watobo #:nodoc: all
       end
 
       def add_update_timer(ms)
-        # @update_timer = FXApp.instance.addTimeout(ms, :repeat => true) {
-        Thread.new {
-          loop do
-            sleep 0.5
-
-            Watobo::Gui.application.runOnUiThread do
-
+       Watobo.save_thread{
               unless @scanner.nil?
                 @scan_status_lock.synchronize do
 
@@ -1264,8 +1251,6 @@ module Watobo #:nodoc: all
                 end
 
               end
-            end
-          end
         }
       end
     end

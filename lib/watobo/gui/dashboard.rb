@@ -112,17 +112,17 @@ module Watobo #:nodoc: all
     class ProjectInfo < FXVerticalFrame
       def update()
         if Watobo.project then
-          Watobo::Gui.application.runOnUiThread do
-            @project_name.text = Watobo.project.settings[:project_name]
-            @session_name.text = Watobo.project.settings[:session_name]
-            @project_path.text = Watobo.project.settings[:project_path]
-            @session_path.text = Watobo.project.settings[:session_path]
 
-            @number_active_checks.text = Watobo::ActiveModules.length.to_s
-            @number_passive_checks = Watobo::PassiveModules.length.to_s
-            @number_total_chats.text = Watobo::Chats.length.to_s
-          end
+          @project_name.text = Watobo.project.settings[:project_name]
+          @session_name.text = Watobo.project.settings[:session_name]
+          @project_path.text = Watobo.project.settings[:project_path]
+          @session_path.text = Watobo.project.settings[:session_path]
+
+          @number_active_checks.text = Watobo::ActiveModules.length.to_s
+          @number_passive_checks = Watobo::PassiveModules.length.to_s
+          @number_total_chats.text = Watobo::Chats.length.to_s
         end
+
 
       end
 
@@ -273,20 +273,12 @@ module Watobo #:nodoc: all
 
 
       def start_update_timer
-        #@timer = FXApp.instance.addTimeout(250, :repeat => true) {
-        Thread.new {
-          loop do
-            sleep 0.5
+        Watobo.save_thread {
+          unless @scanner.nil?
+            progress = @scanner.progress
+            progress.each do |m, info|
+              @scan_progress_frame.progress_bars[m].progress info[:progress]
 
-            Watobo::Gui.application.runOnUiThread do
-
-              unless @scanner.nil?
-                progress = @scanner.progress
-                progress.each do |m, info|
-                  @scan_progress_frame.progress_bars[m].progress info[:progress]
-
-                end
-              end
             end
           end
         }

@@ -4,7 +4,9 @@ begin
   require 'fox16/colors'
   require 'watobo/patch_fxruby_setfocus'
   print "[OK]\n"
-rescue LoadError
+rescue LoadError => bang
+  puts bang
+  puts bang.backtrace
   print "[FAILED]\n"
   puts "!!! Seems like FXRuby is not installed !!!"
   puts "please check the installation tutorial at http://watobo.sourceforge.net"
@@ -15,7 +17,7 @@ end
     begin
       require 'selenium-webdriver'
     rescue LoadError
-      puts "To use the Preview-Featur of WATOBO on your platform (#{RUBY_PLATFORM}) you first must install the 'selenium-webdriver' gem."
+      puts "To use the Preview-Feature of WATOBO on your platform (#{RUBY_PLATFORM}) you first must install the 'selenium-webdriver' gem."
       puts "Simply enter the command 'gem install selenium-webdriver'"
       puts "Press a key to continue or CTRL-C to abort."
       gets
@@ -116,6 +118,7 @@ Watobo::Gui.create_application
 require 'watobo/gui/utils/init_icons'
 #require 'watobo/gui/mixins/subscriber'
 require 'watobo/gui/mixins/gui_settings'
+require 'watobo/gui/fxsave_thread'
 
 gui_path = File.expand_path(File.join(File.dirname(__FILE__), "gui"))
 

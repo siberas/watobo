@@ -176,6 +176,9 @@ module Watobo#:nodoc: all
       end
 
       def highlightPattern(pattern)
+        puts pattern.length
+        puts pattern
+        begin
         @cur_match_pos = 0
         @simple_text_view.max_len = 0
 
@@ -188,6 +191,9 @@ module Watobo#:nodoc: all
         @simple_text_view.makeMatchVisible(0)
 
         @match_pos_label.text = "1/#{@simple_text_view.numMatches()}" if @simple_text_view.numMatches() > 0
+        rescue => bang
+          puts bang
+        end
 
       end
 

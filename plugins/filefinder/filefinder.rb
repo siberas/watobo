@@ -547,30 +547,22 @@ module Watobo #:nodoc: all
 
 
         def start_update_timer
-          #@timer = FXApp.instance.addTimeout( 250, :repeat => true) {
-          Thread.new {
-            loop do
-              sleep 0.5
+          Watobo.save_thread {
+            unless @scanner.nil?
+              sum = @scanner.sum_progress
 
-              Watobo::Gui.application.runOnUiThread do
+              @speed.text = "Checks per second: #{sum - @pbar.progress}"
+              @pbar.progress = sum
 
-                unless @scanner.nil?
-                  sum = @scanner.sum_progress
-
-                  @speed.text = "Checks per second: #{sum - @pbar.progress}"
-                  @pbar.progress = sum
-
-                  if @scanner.finished?
-                    msg = "Scan Finished!"
-                    @log_viewer.log(LOG_INFO, msg)
-                    Watobo.log(msg, :sender => "Catalog")
-                    @scanner = nil
-                    reset_pbar()
-                    @start_button.text = "Start"
-                    @speed.text = "Checks per second: -"
-                    @speed.disable
-                  end
-                end
+              if @scanner.finished?
+                msg = "Scan Finished!"
+                @log_viewer.log(LOG_INFO, msg)
+                Watobo.log(msg, :sender => "Catalog")
+                @scanner = nil
+                reset_pbar()
+                @start_button.text = "Start"
+                @speed.text = "Checks per second: -"
+                @speed.disable
               end
             end
           }

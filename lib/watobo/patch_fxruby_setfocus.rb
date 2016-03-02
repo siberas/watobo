@@ -24,4 +24,3 @@ class Fox::FXTextField
     end
   end
 end
-

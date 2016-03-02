@@ -47,6 +47,11 @@ module Watobo#:nodoc: all
           request = new_details[:chat].request
           response = new_details[:chat].response
           new_details[:chat_id] = new_details[:chat].id
+
+          # shorten pattern here because of crash in FXRex:match with large patterns
+          new_details[:proof_pattern] = new_details[:proof_pattern].length > 128 ? new_details[:proof_pattern][0..127] : new_details[:proof_pattern]
+          new_details[:check_pattern] = new_details[:check_pattern].length > 128 ? new_details[:check_pattern][0..127] : new_details[:check_pattern]
+
           new_details.delete(:chat)
 
           new_finding = Watobo::Finding.new(request, response, new_details)

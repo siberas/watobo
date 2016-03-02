@@ -578,13 +578,7 @@ module Watobo #:nodoc: all
         disable_buttons()
 
         # start an update timer
-        # @update_timer = FXApp.instance.addTimeout(250, :repeat => true) {
-        Thread.new {
-          loop do
-            sleep 0.5
-
-            Watobo::Gui.application.runOnUiThread do
-
+        Watobo.save_thread{
               @request_lock.synchronize do
                 unless @request_queue.empty?
                   @request_list.concat @request_queue
@@ -614,8 +608,6 @@ module Watobo #:nodoc: all
 
               end
               update_buttons
-            end
-          end
         }
 
       end
@@ -757,15 +749,9 @@ module Watobo #:nodoc: all
       #    end
 
       def onClose(sender, sel, ptr)
-        puts "* closing Interceptor UI"
-        puts "+ stop intercepting"
         Watobo::Interceptor.intercept_mode = INTERCEPT_NONE
         Watobo::Interceptor.rewrite_mode = REWRITE_NONE
-        puts "+ release all interceptions"
         releaseAll()
-        #getApp().stopModal(self, 1)
-        puts "_"
-
         self.hide()
       end
 

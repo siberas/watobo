@@ -40,19 +40,7 @@ module Watobo #:nodoc: all
       private
 
       def add_queue_timer(ms)
-        #@update_timer = FXApp.instance.addTimeout(ms, :repeat => true) {
-        Thread.new {
-          loop do
-            sleep 0.5
-
-            Watobo::Gui.application.runOnUiThread do
-
-              #@finding_lock.synchronize do
-              #  @finding_queue.each do |f|
-              #    addFinding(f)
-              #  end
-              #  @finding_queue.clear
-              #end
+        @update_timer = Watobo.save_thread(ms) {
 
               unless @scanner.nil?
                 if @scanner.finished?
@@ -64,21 +52,11 @@ module Watobo #:nodoc: all
                 end
               end
 
-              #@chat_lock.synchronize do
-              #  @chat_queue.each do |c|
-              #    addChat(c)
-              #  end
-              #  @chat_queue.clear
-              #end
-
               @status_lock.synchronize do
                 unless @new_status.nil?
                   update_status(@new_status)
                 end
-
               end
-            end
-          end
         }
       end
 
@@ -781,7 +759,8 @@ module Watobo #:nodoc: all
             puts "!!! Could not create project :("
           ensure
             puts "* stop modal mode" if $DEBUG
-            Watobo::Gui.application.runOnUiThread do
+           # Watobo::Gui.application.runOnUiThread do
+            FXApp.instance.addChore do
               getApp.stopModal
             end
           end
@@ -1793,23 +1772,20 @@ module Watobo #:nodoc: all
           #@chat_lock.synchronize do
           #  @chat_queue << c
           #end
-          Thread.new(c) { |chat|
-            Watobo::Gui.application.runOnUiThread do
-              addChat(chat)
+
+            FXApp.instance.addChore do
+              addChat(c)
             end
-          }
+
         }
 
         Watobo::Findings.subscribe(:new) { |f|
 
-          #@finding_lock.synchronize do
-          #@finding_queue << f
-          #end
-          Thread.new(f) { |finding|
-            Watobo::Gui.application.runOnUiThread do
-              addFinding(finding)
+
+            FXApp.instance.addChore do
+              addFinding(f)
             end
-          }
+
         }
 
 

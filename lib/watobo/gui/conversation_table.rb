@@ -367,18 +367,10 @@ module Watobo #:nodoc: all
 
       def start_update_timer
         @last_row_count = 0
-        #@timer = FXApp.instance.addTimeout(150, :repeat => true) {
-        Thread.new {
-          loop do
-            sleep 0.5
-
-            Watobo::Gui.application.runOnUiThread do
-
-              if self.getNumRows != @last_row_count
-                scrollDown if @autoscroll == true
-                @last_row_count = self.getNumRows
-              end
-            end
+        Watobo.save_thread {
+          if self.getNumRows != @last_row_count
+            scrollDown if @autoscroll == true
+            @last_row_count = self.getNumRows
           end
         }
 

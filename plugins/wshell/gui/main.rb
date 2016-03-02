@@ -1,5 +1,5 @@
 # @private 
-module Watobo#:nodoc: all
+module Watobo #:nodoc: all
   module Plugin
     class WShell
       class Gui < Watobo::PluginGui
@@ -20,7 +20,7 @@ module Watobo#:nodoc: all
           hs_green.style = FXText::STYLE_BOLD
 
           hs_red = FXHiliteStyle.new
-          hs_red.normalForeColor = FXRGBA(255,0,0,255) 
+          hs_red.normalForeColor = FXRGBA(255, 0, 0, 255)
           #hs_red.normalBackColor = FXRGBA(255,0,0,1)   
           hs_red.style = FXText::STYLE_BOLD
 
@@ -30,8 +30,8 @@ module Watobo#:nodoc: all
           @output.editable = false
           @output.styled = true
           #@font = FXFont.new(getApp(), "courier", 12, FONTWEIGHT_BOLD)
-          @output.setFont(FXFont.new(getApp(), "courier", 10,  FONTSLANT_ITALIC, FONTENCODING_DEFAULT))
-          @output.hiliteStyles = [ hs_green, hs_red ]
+          @output.setFont(FXFont.new(getApp(), "courier", 10, FONTSLANT_ITALIC, FONTENCODING_DEFAULT))
+          @output.hiliteStyles = [hs_green, hs_red]
 
           @output.appendStyledText Watobo::Plugin::WShell::HELP_TEXT, 1
 
@@ -39,7 +39,7 @@ module Watobo#:nodoc: all
 
           cmd_frame = FXHorizontalFrame.new(frame, :opts => LAYOUT_FILL_X)
           @cmd = FXTextField.new(cmd_frame, 25, nil, 0, :opts => TEXTFIELD_NORMAL|LAYOUT_FILL_X|LAYOUT_LEFT)
-          @cmd.connect(SEL_COMMAND){ run_cmd }
+          @cmd.connect(SEL_COMMAND) { run_cmd }
 
           @cmd.connect(SEL_KEYPRESS) do |sender, sel, event|
             fin = false
@@ -60,7 +60,7 @@ module Watobo#:nodoc: all
 
           @cmd_btn = FXButton.new(cmd_frame, "run")
 
-          @cmd_btn.connect(SEL_COMMAND){ run_cmd }
+          @cmd_btn.connect(SEL_COMMAND) { run_cmd }
 
         end
 
@@ -71,49 +71,47 @@ module Watobo#:nodoc: all
         end
 
         def run_cmd
-          Thread.new{
-            Watobo::Gui.application.runOnUiThread do
-              cmd = @cmd.text.strip
-              unless cmd.empty?
-                if cmd =~ /^help$/i
-                  #  @output.appendText(Watobo::Plugin::WShell.help)
-                  @output.appendStyledText Watobo::Plugin::WShell::HELP_TEXT, 2
-                  @cmd.text = ''
-                else
-                  @output.appendStyledText ">> #{cmd}\n", 2
-                  @cmd.enabled = false
-                  @cmd.backColor = @cmd.parent.backColor
-                  begin
-                    @history << cmd unless @history.include? cmd
-                    @history.shift if @history.length > 20
-                    # set history_pos to length, because it will be reduced before it will be
-                    # displayes
-                    @history_pos = @history.length
 
-#                    command = "out = StringIO.new; out << #{cmd}; out.string"
-                    command = cmd
-                    r = eval(command)
-                    @output.appendStyledText "---\n#{r}\n---\n", 1
+          cmd = @cmd.text.strip
+          unless cmd.empty?
+            if cmd =~ /^help$/i
+              #  @output.appendText(Watobo::Plugin::WShell.help)
+              @output.appendStyledText Watobo::Plugin::WShell::HELP_TEXT, 2
+              @cmd.text = ''
+            else
+              @output.appendStyledText ">> #{cmd}\n", 2
+              @cmd.enabled = false
+              @cmd.backColor = @cmd.parent.backColor
+              begin
+                @history << cmd unless @history.include? cmd
+                @history.shift if @history.length > 20
+                # set history_pos to length, because it will be reduced before it will be
+                # displayes
+                @history_pos = @history.length
 
-                  rescue SyntaxError, LocalJumpError, NameError => e
-                    @output.appendStyledText ">> #{e}\n", 2
-                  rescue => bang
-                    puts bang.backtrace
-                    @output.appendStyledText ">> #{bang}\n#{bang.backtrace}", 2
+                #                    command = "out = StringIO.new; out << #{cmd}; out.string"
+                command = cmd
+                r = eval(command)
+                @output.appendStyledText "---\n#{r}\n---\n", 1
 
-                  end
-                  @output.makePositionVisible @output.length-1
-
-                  @cmd.enabled = true
-                  @cmd.backColor = FXColor::White
-                  @cmd.text = ''
-                  @cmd.setFocus
-                end
+              rescue SyntaxError, LocalJumpError, NameError => e
+                @output.appendStyledText ">> #{e}\n", 2
+              rescue => bang
+                puts bang.backtrace
+                @output.appendStyledText ">> #{bang}\n#{bang.backtrace}", 2
 
               end
+              @output.makePositionVisible @output.length-1
 
+              @cmd.enabled = true
+              @cmd.backColor = FXColor::White
+              @cmd.text = ''
+              @cmd.setFocus
             end
-          }
+
+          end
+
+
         end
 
       end
