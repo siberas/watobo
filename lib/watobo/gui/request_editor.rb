@@ -417,7 +417,8 @@ module Watobo #:nodoc: all
                  "<ctrl-b> - Encode Base64",
                  "<ctrl-shift-b> - Decode Base64",
                  "<ctrl-u> - Encode URL",
-                 "<ctrl-shift-u> - Decode URL"
+                 "<ctrl-shift-u> - Decode URL",
+                 "<ctrl-j> - Prettify JSON"
                 ].each do |hk|
                   FXMenuCaption.new(menu_pane, hk)
                 end
@@ -439,6 +440,14 @@ module Watobo #:nodoc: all
               notify(:hotkey_ctrl_s) if event.code == KEY_s
               pos = @textbox.selStartPos
               len = @textbox.selEndPos - pos
+
+              # if nothing is selected we asssume that conversion/beautifying should be
+              # performed on full body
+              if len==0
+                pos = @textbox.text.index("\n\n") + 2
+                len = @textbox.text.length - pos
+              end
+
               unless len==0
                 text = @textbox.extractText(pos, len)
                 rptxt = case event.code
@@ -454,6 +463,12 @@ module Watobo #:nodoc: all
                             CGI::unescape(text)
                           when KEY_B
                             Base64.decode64(text)
+                          when KEY_j
+                            begin
+                              jb = JSON.parse(text)
+                              out = JSON.pretty_generate jb
+                            end
+                            out
                           else
                             text
                         end
