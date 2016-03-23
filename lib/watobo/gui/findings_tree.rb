@@ -163,8 +163,16 @@ module Watobo #:nodoc: all
 
             sub_tree = self.findItem(finding_type, site, SEARCH_FORWARD|SEARCH_IGNORECASE|SEARCH_NOWRAP)
             if sub_tree and sub_tree.parent == site and finding.details[:class]
+              class_item = nil
 
-              class_item = self.findItem(finding.details[:class], sub_tree, SEARCH_FORWARD|SEARCH_IGNORECASE|SEARCH_NOWRAP|SEARCH_PREFIX)
+              # don't use findItem here because of nested collisions
+              sub_tree.each do |c|
+               if c.text =~ /^#{finding.details[:class]}/
+                 class_item = c
+               end
+              end
+              #class_item = self.findItem(finding.details[:class], sub_tree, SEARCH_FORWARD|SEARCH_IGNORECASE|SEARCH_NOWRAP|SEARCH_PREFIX)
+
               if not class_item or class_item.parent != sub_tree
                 class_item = self.appendItem(sub_tree, finding.details[:class], icon, icon)
                 self.setItemData(class_item, :finding_class)
