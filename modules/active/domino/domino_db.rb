@@ -59,9 +59,9 @@ module Watobo #:nodoc: all
 
                   #test_request,test_response = doRequest(test,:default => true)
                   #if test_response.status =~ /ok/i then
-                  status, test_request, test_response = fileExists?(test, :default => true)
+                  fexist, test_request, test_response = fileExists?(test, :default => true)
 
-                  if status == true
+                  if fexist and test_response.status =~ /200/
                     # test_chat = Chat.new(test, test_response, chat.id)
                     if test_response.join =~ /(names\.nsf\?Login)/ # if default db found, check for content
                       addFinding(test_request, test_response,

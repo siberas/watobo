@@ -1,6 +1,6 @@
 # @private 
-module Watobo#:nodoc: all
-  class ActiveCheck  < Watobo::Session    # Base Class for Passive Checks
+module Watobo #:nodoc: all
+  class ActiveCheck < Watobo::Session # Base Class for Passive Checks
     include Watobo::CheckInfoMixin
 
     attr :info
@@ -15,38 +15,38 @@ module Watobo#:nodoc: all
 
     @@status = :running # :running, :paused, :canceled
     @@lock = Mutex.new
-    
-     @info = {
-        :check_name => '',    # name of check which briefly describes functionality, will be used for tree and progress views
-        :check_group => 'Misc',   # groupname of check, will be used to group checks, e.g. :Generic, SAP, :Enumeration
-        :description => '',   # description of checkfunction
+
+    @info = {
+        :check_name => '', # name of check which briefly describes functionality, will be used for tree and progress views
+        :check_group => 'Misc', # groupname of check, will be used to group checks, e.g. :Generic, SAP, :Enumeration
+        :description => '', # description of checkfunction
         :author => "not modified", # author of check
-        :version => "unversioned",   # check version
-        :target => nil               # reserved
+        :version => "unversioned", # check version
+        :target => nil # reserved
 
-      }
+    }
 
-      @finding = {
-        :title => 'untitled',          # [String] title name, used for finding tree
-        :check_pattern => nil,         # [String] regex of vulnerability check if possible, will be used for highlighting
-        :proof_pattern => nil,         # [String] regex of finding proof if possible, will be used for highlighting
-        :threat => '',        # threat of vulnerability, e.g. loss of information
-        :measure => '',       # measure
-        :class => "undefined",# [String] vulnerability class, e.g. Stored XSS, SQL-Injection, ...
-        :subclass => nil,     # reserved
-        :type => FINDING_TYPE_UNDEFINED,         # FINDING_TYPE_HINT, FINDING_TYPE_INFO, FINDING_TYPE_VULN
-        :chat => nil,         # related chat must be linked
-        :rating=> VULN_RATING_UNDEFINED,  #
-        :cvss => "n/a",       # CVSS Base Vector
-        :icon => nil,     # Icon Type
-        :timestamp => nil         # timestamp
-      }
-    
+    @finding = {
+        :title => 'untitled', # [String] title name, used for finding tree
+        :check_pattern => nil, # [String] regex of vulnerability check if possible, will be used for highlighting
+        :proof_pattern => nil, # [String] regex of finding proof if possible, will be used for highlighting
+        :threat => '', # threat of vulnerability, e.g. loss of information
+        :measure => '', # measure
+        :class => "undefined", # [String] vulnerability class, e.g. Stored XSS, SQL-Injection, ...
+        :subclass => nil, # reserved
+        :type => FINDING_TYPE_UNDEFINED, # FINDING_TYPE_HINT, FINDING_TYPE_INFO, FINDING_TYPE_VULN
+        :chat => nil, # related chat must be linked
+        :rating => VULN_RATING_UNDEFINED, #
+        :cvss => "n/a", # CVSS Base Vector
+        :icon => nil, # Icon Type
+        :timestamp => nil # timestamp
+    }
+
     def self.inherited(subclass)
-        subclass.instance_variable_set("@info", YAML.load(YAML.dump(@info)))
-        subclass.instance_variable_set("@finding", YAML.load(YAML.dump(@finding)))
+      subclass.instance_variable_set("@info", YAML.load(YAML.dump(@info)))
+      subclass.instance_variable_set("@finding", YAML.load(YAML.dump(@finding)))
     end
-           
+
     def addFinding(request, response, details)
       @@lock.synchronize {
 
@@ -66,16 +66,16 @@ module Watobo#:nodoc: all
         id_string << request.path
         id_string << new_details[:test_item] if new_details[:test_item]
         id_string << new_details[:class] if new_details[:class]
-        id_string << new_details[:title]  if new_details[:title]
+        id_string << new_details[:title] if new_details[:title]
 
         if id_string == '' then
-        id_string = (Time.now.to_i + rand(10000)).to_s
+          id_string = (Time.now.to_i + rand(10000)).to_s
         end
         #
         unless new_details.has_key? :fid
-         new_details[:fid] = Digest::MD5.hexdigest(id_string)        
+          new_details[:fid] = Digest::MD5.hexdigest(id_string)
         end
-       
+
         puts new_details[:fid] if $DEBUG
 
         new_details[:module] = self.class.to_s
@@ -85,9 +85,9 @@ module Watobo#:nodoc: all
         new_details.delete(:chat)
 
         new_finding = Watobo::Finding.new(request, response, new_details)
-      #  puts new_finding
+        #  puts new_finding
         Watobo::Findings.add new_finding
-       # notify(:new_finding, new_finding)
+        # notify(:new_finding, new_finding)
       }
     end
 
@@ -121,10 +121,10 @@ module Watobo#:nodoc: all
           end
         end
       rescue => bang
-      puts "! settings 'excluded_parms' missing !"
-      #  puts @project.settings.to_yaml
-      puts bang
-      puts bang.backtrace if $DEBUG
+        puts "! settings 'excluded_parms' missing !"
+        #  puts @project.settings.to_yaml
+        puts bang
+        puts bang.backtrace if $DEBUG
       end
       return pnames
     end
@@ -134,12 +134,12 @@ module Watobo#:nodoc: all
       return pnames unless @settings.has_key? :excluded_parms
       return pnames unless @settings[:excluded_parms].is_a? Array
       begin
-      pnames.select!{|p| !@settings[:excluded_parms].include? p }        
+        pnames.select! { |p| !@settings[:excluded_parms].include? p }
       rescue => bang
-      #puts "! settings 'excluded_parms' missing !"
-      #  puts @project.settings.to_yaml
-      puts bang
-      puts bang.backtrace if $DEBUG
+        #puts "! settings 'excluded_parms' missing !"
+        #  puts @project.settings.to_yaml
+        puts bang
+        puts bang.backtrace if $DEBUG
       end
       return pnames
     end
@@ -178,8 +178,8 @@ module Watobo#:nodoc: all
         return true if @inner_pool.size > 0
         return false
       rescue => bang
-      p bang
-      p bang.backtrace
+        p bang
+        p bang.backtrace
       end
     end
 
@@ -198,11 +198,11 @@ module Watobo#:nodoc: all
 
     def continue_UNUSED()
       @@pool.each do |thr|
-      #  puts "Stopping #{thr}"
+        #  puts "Stopping #{thr}"
         begin
           thr.run if not thr.run?
         rescue
-        puts "could not continue thread #{thr}"
+          puts "could not continue thread #{thr}"
         end
       end
     end
@@ -212,16 +212,16 @@ module Watobo#:nodoc: all
       @inner_pool.each do |thr|
         begin
           if thr.alive?
-          puts "Stopping #{thr}" if $DEBUG
+            puts "Stopping #{thr}" if $DEBUG
 
-          Thread.kill( thr ) #.kill if not thr.kill?
+            Thread.kill(thr) #.kill if not thr.kill?
 
           end
           @inner_pool.delete(thr)
         rescue => bang
-        puts "could not kill thread #{thr}"
-        puts bang
-        puts bang.backtrace if $DEBUG
+          puts "could not kill thread #{thr}"
+          puts bang
+          puts bang.backtrace if $DEBUG
         end
       end
       @inner_pool_cv.signal
@@ -238,11 +238,11 @@ module Watobo#:nodoc: all
         t_request, t_response = doRequest(request, prefs)
         #puts t_response.status
         status = t_response.status
-        return false if status.empty?
+        return false, t_request, t_response if status.empty?
         return true, t_request, t_response if status =~ /^403/
         return false, t_request, t_response if status =~ /^40\d/
         if status =~ /^50\d/
-         # puts "* ignore server errors #{Watobo::Conf::Scanner.ignore_server_errors.class}"
+          # puts "* ignore server errors #{Watobo::Conf::Scanner.ignore_server_errors.class}"
           return false, t_request, t_response if Watobo::Conf::Scanner.ignore_server_errors
         end
 
@@ -250,28 +250,22 @@ module Watobo#:nodoc: all
 
         if @settings.has_key? :custom_error_patterns
           @settings[:custom_error_patterns].each do |pat|
-          # puts pat
             t_response.headers.each do |hl|
-              return false if hl =~ /#{pat}/
+              return false, t_request, t_response if hl =~ /#{pat}/
             end
-            # puts t_response.body.class
+
             unless t_response.body.nil?
-              #  puts "* check body"
-              #  puts t_response.body
-              return false if t_response.body =~ /#{pat}/
+              return false, t_request, t_response if t_response.body =~ /#{pat}/
             end
           end
         end
-        # if t_request.path_ext != ""
-        #TODO: Check for custom error pages
-        # end
 
         return true, t_request, t_response
       rescue => bang
       end
       return false, nil, nil
     end
-    
+
     def log_console(msg)
       puts "[#{self}] #{msg}"
     end
@@ -284,9 +278,9 @@ module Watobo#:nodoc: all
 
     def run_checks_UNUSED(chat, opts={})
       begin
-      # reset() # reset variables first
+        # reset() # reset variables first
         @@status = :running
-        check_opts = { :run_passive_checks => false}
+        check_opts = {:run_passive_checks => false}
         check_opts.update opts
         @settings.update opts
 
@@ -294,31 +288,31 @@ module Watobo#:nodoc: all
         #  puts @session.to_yaml
 
         @@proxy = opts[:proxy] if opts[:proxy]
-     #   @@max_checks = opts[:max_parallel_checks] if opts.has_key? :max_parallel_checks
-     @@max_checks = Watobo::Conf::Scanner.max_parallel_checks
+        #   @@max_checks = opts[:max_parallel_checks] if opts.has_key? :max_parallel_checks
+        @@max_checks = Watobo::Conf::Scanner.max_parallel_checks
 
         do_test(chat) { |request, response|
           begin
-           
+
             if request and response then
               if check_opts[:run_passive_checks] then
 
-              nc = Watobo::Chat.new(request, response, :id => 0)
-              #   @project.runPassiveModules(nc)
+                nc = Watobo::Chat.new(request, response, :id => 0)
+                #   @project.runPassiveModules(nc)
 
               end
 
             end
           rescue => bang
-          puts bang
-          puts bang.backtrace if $DEBUG
+            puts bang
+            puts bang.backtrace if $DEBUG
           end
 
         }
 
       rescue => bang
-      puts bang
-      puts bang.backtrace if $DEBUG
+        puts bang
+        puts bang.backtrace if $DEBUG
 
       end
 
@@ -333,7 +327,7 @@ module Watobo#:nodoc: all
     def initialize(session_name=nil, prefs={})
       #@project = project
       super(session_name, prefs)
-      
+
       @enabled = true
       # @status = "ready"
       @counters = Hash.new
@@ -359,7 +353,6 @@ module Watobo#:nodoc: all
       @checks_cv = ConditionVariable.new
       @checks_mutex = Mutex.new
 
-     
 
     end
   end
