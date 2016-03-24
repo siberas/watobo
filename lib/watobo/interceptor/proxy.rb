@@ -725,7 +725,6 @@ module Watobo #:nodoc: all
 
           @pass_through_hosts.each do |p|
             if request.host =~ /#{p}/
-             # puts "* skip blacklisted -> #{request.host}"
               c_sock.write response.join
               pass_through(s_sock, c_sock, clen)
               return true
