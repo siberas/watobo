@@ -157,7 +157,7 @@ module Watobo #:nodoc: all
             #  new_session.sync = true
             new_sender = Watobo::Session.new(@target)
             Thread.new(new_sender, new_session) { |sender, session|
-              puts "* got new request from client"
+              #puts "* got new request from client"
               c_sock = Watobo::HTTPSocket::ClientSocket.connect(session)
 
               #puts "ClientSocket: #{c_sock}"
@@ -200,10 +200,10 @@ module Watobo #:nodoc: all
                   #break
                 end
 
-                if request.host =~ /safebrowsing.*google\.com/
-                  c_sock.close
-                  Thread.exit
-                end
+                #if request.host =~ /safebrowsing.*google\.com/
+                #  c_sock.close
+                #  Thread.exit
+                #end
 
                 # check if preview is requested
                 if request.host =='watobo.localhost' or request.first =~ /WATOBOPreview/ then
@@ -380,14 +380,14 @@ module Watobo #:nodoc: all
 
                 rescue Errno::ECONNRESET
                   print "x"
-                    #  puts "!!! ERROR (Reset): reading body"
-                    #  puts "* last data seen on socket: #{buf}"
-                    #return
+                  #  puts "!!! ERROR (Reset): reading body"
+                  #  puts "* last data seen on socket: #{buf}"
+                  #return
                   c_sock.close
                   Thread.exit
                 rescue Errno::ECONNABORTED
                   print "x"
-                    #return
+                  #return
                   c_sock.close
                   Thread.exit
                 rescue => bang
@@ -399,7 +399,6 @@ module Watobo #:nodoc: all
                   c_sock.close
                   Thread.exit
                 end
-
 
 
                 # TODO: place check into ClientSocket, because headers must be checked and changed too
@@ -424,6 +423,7 @@ module Watobo #:nodoc: all
 
       def initialize(settings=nil)
         @event_dispatcher_listeners = Hash.new
+        @pass_through_hosts = ['safebrowsing.*google\.com', 'download.cdn.mozilla.net', 'shavar.services.mozilla.com']
         begin
 
           puts
@@ -705,6 +705,7 @@ module Watobo #:nodoc: all
           reason = nil
           clen = response.content_length
 
+
           # no pass-through necessary if request method is HEAD
           return false if request.method =~ /^head/i
 
@@ -720,6 +721,15 @@ module Watobo #:nodoc: all
             reason = []
             reason.push "---> WATOBO: PASS_THROUGH <---"
             reason.push "Reason: Content-Length > #{@contentLength} (#{response.content_length})"
+          end
+
+          @pass_through_hosts.each do |p|
+            if request.host =~ /#{p}/
+             # puts "* skip blacklisted -> #{request.host}"
+              c_sock.write response.join
+              pass_through(s_sock, c_sock, clen)
+              return true
+            end
           end
 
           return false if reason.nil?

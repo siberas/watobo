@@ -44,14 +44,11 @@ module Watobo #:nodoc: all
           def generateChecks(chat)
             begin
               if (chat.request.content_type =~ /xml/) and chat.request.has_body?
-                puts "XXE-TEST"
                 # first we do a request with an
                 base = chat.copyRequest
                 base_request, base_response = doRequest(base)
                 return unless base_response.has_body?
-                puts " *create entity packets ..."
                 create_entity_packets(chat.request.body).each do |packet|
-                  puts packet
                   checker = proc {
                     begin
                       test_request = nil
@@ -83,6 +80,7 @@ module Watobo #:nodoc: all
               end
             rescue => bang
               puts bang
+              puts bang.backtrace if $DEBUG
             end
           end
 
