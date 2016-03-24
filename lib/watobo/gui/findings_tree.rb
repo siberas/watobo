@@ -167,7 +167,7 @@ module Watobo #:nodoc: all
 
               # don't use findItem here because of nested collisions
               sub_tree.each do |c|
-               if c.text =~ /^#{finding.details[:class]}/
+               if c.text =~ /^#{Regexp.quote(finding.details[:class])}/
                  class_item = c
                end
               end
