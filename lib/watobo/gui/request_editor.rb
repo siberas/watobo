@@ -444,8 +444,11 @@ module Watobo #:nodoc: all
               # if nothing is selected we asssume that conversion/beautifying should be
               # performed on full body
               if len==0
-                pos = @textbox.text.index("\n\n") + 2
-                len = @textbox.text.length - pos
+                i = @textbox.text.index("\n\n")
+                unless i.nil?
+                  pos = i + 2
+                  len = @textbox.text.length - pos
+                end
               end
 
               unless len==0

@@ -88,9 +88,12 @@ module Watobo#:nodoc: all
       def leaf_nodes(&block)
 
         nodes = []
+        return nodes unless @root.has_body?
         begin
           doc = Nokogiri::XML(@root.body.strip)
-          prefix = doc.children.first.namespace.prefix
+          #ns = doc.children.first.namespace
+          #prefix = ns.nil? ? '' : ns.prefix
+
           # check if doc has a body element
           start = doc
           doc.traverse { |node|
