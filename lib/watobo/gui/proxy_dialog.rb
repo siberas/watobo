@@ -357,7 +357,7 @@ module Watobo#:nodoc: all
           @proxyTable.removeRows(row,1)
           @proxyTable.killSelection(true)
           @delProxyButton.disable
-          @acceptBtn.disable
+          #@acceptBtn.disable
          # @proxy_label.text = ''
         end
       end
