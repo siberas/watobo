@@ -326,6 +326,7 @@ module Watobo #:nodoc: all
     class RequestEditor < SimpleTextView
       def initialize(owner, opts)
         super(owner, opts)
+        @keystate = true
 
         @textbox.textStyle -= TEXT_WORDWRAP
 
@@ -406,9 +407,15 @@ module Watobo #:nodoc: all
         @ctrl_pressed = false
 
         @textbox.connect(SEL_KEYPRESS) do |sender, sel, event|
-          @ctrl_pressed = true if event.code == KEY_Control_L or event.code == KEY_Control_R
+          @keystate = false
+          if event.code == KEY_Control_L or event.code == KEY_Control_R
+            @ctrl_pressed = true
+            @keystate = true
+          elsif event.code == KEY_Alt_R
+          @ctrl_pressed = false
+          @keystate = true
           #  @shift_pressed = true if @ctrl_pressed and ( event.code == KEY_Shift_L or event.code == KEY_Shift_R )
-          if event.code == KEY_F1
+          elsif event.code == KEY_F1
             unless event.moved?
               FXMenuPane.new(self) do |menu_pane|
                 FXMenuCaption.new(menu_pane, "Hotkeys:")
@@ -430,11 +437,10 @@ module Watobo #:nodoc: all
               end
 
             end
-          end
-          if @ctrl_pressed
+          elsif @ctrl_pressed
             if event.code == KEY_Return
               notify(:hotkey_ctrl_enter)
-              true # special handling of KEY_Return, because we don't want a linebreak in textbox.
+              @keystate = true # special handling of KEY_Return, because we don't want a linebreak in textbox.
             else
               notify(:hotkey_ctrl_f) if event.code == KEY_f
               notify(:hotkey_ctrl_s) if event.code == KEY_s
@@ -479,18 +485,20 @@ module Watobo #:nodoc: all
                 @textbox.replaceText(pos, len, text)
                 @textbox.setSelection(pos, text.length)
               end
-              false
+              @keystate = false
             end
           else
             #puts "%04x" % event.code
-            false
+            @keystate = false
           end
+          @keystate
         end
 
         @textbox.connect(SEL_KEYRELEASE) do |sender, sel, event|
           @ctrl_pressed = false if event.code == KEY_Control_L or event.code == KEY_Control_R
-          false
+
         end
+
 
       end
 
