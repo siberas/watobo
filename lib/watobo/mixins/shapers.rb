@@ -161,15 +161,6 @@ module Watobo #:nodoc: all
           self.pop if self[-2].strip.empty?
         end
 
-        def set_header_UNUSED(header, value)
-          self.each do |h|
-            break if h.strip.empty?
-            if h =~ /^#{header}:/
-              h.replace "#{header}: #{value}\r\n"
-            end
-          end
-        end
-
         def set_body(content)
           if self[-2].strip.empty?
             self.pop

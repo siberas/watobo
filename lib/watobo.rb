@@ -23,6 +23,7 @@ require 'drb'
 require 'nokogiri'
 require 'stringio'
 require 'mechanize'
+require 'jwt'
 
 require 'watobo/constants'
 require 'watobo/utils'
