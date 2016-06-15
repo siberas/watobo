@@ -23,6 +23,7 @@ module Watobo#:nodoc: all
       def parameters(&block)
         parms = []
         json_str = @root.body.to_s
+        return parms if json_str.empty?
         
         begin
         JSON.parse(json_str).each do |k,v|

@@ -14,8 +14,9 @@ module Watobo#:nodoc: all
         err_count = 0          
         begin
           b64string = self.force_encoding('ASCII-8BIT')
-          rs = Base64.strict_decode64(b64string)
-          #rs = Base64.decode64(b64string)
+          #rs = Base64.strict_decode64(b64string)
+          # using regular decode64 because of JWT (JSON Web Tokens) decoding
+          rs = Base64.decode64(b64string)
           return rs
         rescue
           #b64string.gsub!(/.$/,'')
