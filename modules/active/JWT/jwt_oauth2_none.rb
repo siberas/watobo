@@ -4,7 +4,7 @@ module Watobo #:nodoc: all
     module Active
       module Jwt
 
-        class Jwt_none < Watobo::ActiveCheck
+        class Jwt_oauth2_none < Watobo::ActiveCheck
           @@tested_directories = Hash.new
 
           threat =<<'EOF'
@@ -17,19 +17,19 @@ EOF
 EOD
 
 
-          measure = "Only accept allowed algorithms"
+          measure = 'Only accept secure algorithms.'
 
           @info.update(
-              :check_name => 'JWT None Cipher', # name of check which briefly describes functionality, will be used for tree and progress views
-              :check_group => "JWT",
-              :description => "Checks if none algorithm is supported by the application.", # description of checkfunction
-              :author => "Andreas Schmidt", # author of check
-              :version => "1.0" # check version
+              :check_name => 'OAuth2 Anonymous JWT', # name of check which briefly describes functionality, will be used for tree and progress views
+              :check_group => 'JWT',
+              :description => 'Checks if anonymous token (without signature) is supported by the application.', # description of checkfunction
+              :author => 'Andreas Schmidt', # author of check
+              :version => '1.0' # check version
           )
 
           @finding.update(
               :threat => threat, # thread of vulnerability, e.g. loss of information
-              :class => "JWT - Null Algorith", # vulnerability class, e.g. Stored XSS, SQL-Injection, ...
+              :class => "JWT - None", # vulnerability class, e.g. Stored XSS, SQL-Injection, ...
               :type => FINDING_TYPE_VULN, # FINDING_TYPE_HINT, FINDING_TYPE_INFO, FINDING_TYPE_VULN
               :rating => VULN_RATING_CRITICAL,
               :measure => measure,
