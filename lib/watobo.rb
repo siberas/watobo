@@ -1,7 +1,13 @@
 #!/usr/bin/ruby
 #Encoding: UTF-8
 require 'rubygems'
-require 'bundler/setup'
+begin
+  require 'bundler/setup'
+rescue LoadError
+  puts "You will need bundler to run watobo!"
+  puts "please run\n gem install bundler\n bundle install\n"
+  exit
+end
 require 'yaml'
 require 'json'
 require 'thread'
