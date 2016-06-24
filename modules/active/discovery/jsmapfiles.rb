@@ -55,7 +55,7 @@ module Watobo #:nodoc: all
                              :test_item => file,
                              :proof_pattern => "#{test_response.status}",
                              :chat => chat,
-                             :title => "#{new_file}"
+                             :title => "[ #{test_response.status_code} ] - #{new_file}"
                   #:debug => true
                   )
                 end
