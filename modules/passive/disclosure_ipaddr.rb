@@ -44,7 +44,7 @@ module Watobo #:nodoc: all
                 data << body
               end
             end
-            
+
             data.scan(/#{@pattern}/) { |match|
               ip_addr = match.first
               octets = ip_addr.split('.')

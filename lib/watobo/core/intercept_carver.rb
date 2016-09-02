@@ -101,7 +101,7 @@ module Watobo#:nodoc: all
             puts "REWRITE"
             puts "Location: #{location}"
             puts "Pattern: #{pattern}"
-            puts "Content: #{content}"
+           # puts "Content: #{content}"
             rewrite(item, location, pattern, content)
           else
             true
@@ -138,11 +138,9 @@ module Watobo#:nodoc: all
       end      
       
       def self.shape(response, flags)
-        puts "Shape, Baby shape, ..."
-      
        @rules.each do |r|
          res = r.apply( response, flags )
-         puts "#{r.action_name} (#{r.action.class}) >> #{res.class}"
+         puts "[rewrite] #{r.action_name} (#{r.action.class}) >> #{res.class}"
        end
       end
       

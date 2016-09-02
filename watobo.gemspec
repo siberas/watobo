@@ -9,6 +9,7 @@ raise 'no version defined' unless watobo_version =~ /^\d/
 spec = Gem::Specification.new do |s|
   s.name = 'watobo'
   s.version = watobo_version
+  s.licenses = ['GPLv2']
   s.summary = 'WATOBO - Web Application Toolbox'
   s.description ="WATOBO is intended to enable security professionals to perform efficient (semi-automated ) web application security audits. It works like a local web proxy."
   s.homepage = "http://watobo.sourceforge.net"
@@ -22,6 +23,7 @@ spec = Gem::Specification.new do |s|
 
   s.add_dependency 'mechanize', '2.7.4'
   s.add_dependency 'fxruby', '1.6.29'
+  s.add_dependency 'jwt', '1.5.4'
   s.add_dependency 'bundler', '>= 1.11.0', '< 2.0'
 
   files = []

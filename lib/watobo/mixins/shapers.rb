@@ -171,8 +171,8 @@ module Watobo #:nodoc: all
         end
 
         def rewrite_body(pattern, content)
-          if self[-2].strip.empty?
-            puts "rewrite_body ... #{pattern} - #{content}"
+          if self.has_body?
+            #puts "rewrite_body ... #{pattern} - #{content}"
             b = self.pop
             b.gsub!(/#{pattern}/i, content)
             self << b
