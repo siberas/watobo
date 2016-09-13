@@ -57,6 +57,7 @@ module Watobo#:nodoc: all
     # needs a scan_name (STRING) as its destination which will be created
     # if the scan name does not exist.
     def add_scan_log(chat, scan_name = nil)
+      #puts "* add_scan_log"
       return false unless chat.respond_to? :request
       return false unless chat.respond_to? :response
       begin
