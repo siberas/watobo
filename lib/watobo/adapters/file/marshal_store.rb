@@ -52,6 +52,49 @@ module Watobo#:nodoc: all
 
     end
 
+    def open_scan(scan_name, &block)
+      begin
+
+        return false if scan_name.nil?
+        return false if scan_name.empty?
+
+        scan_name_clean = scan_name.gsub(/[:\\\/\.]*/, '_')
+        # puts ">> scan_name"
+        path = File.join(@scanlog_path, scan_name_clean)
+
+        return nil unless File.exist? path
+
+
+        return scan_chats
+      rescue => bang
+        puts bang
+        puts bang.backtrace if $DEBUG
+      end
+      return nil
+
+    end
+
+    def list_scans
+      Dir["#{@scanlog_path}/*"].map{ |x| File.basename(x) }.sort
+    end
+
+    def each_scan(scan_name, &block)
+      scan_dir = File.join(@scanlog_path, scan_name)
+      return nil unless File.exist? scan_dir
+      list = get_file_list(scan_dir, "log_*")
+      list.each do |fname|
+        #puts
+        chat = nil
+        if fname =~ /\.mrs$/
+          chat = Watobo::Utils.loadChatMarshal(fname)
+        elsif fname =~ /\.yml$/
+          chat = Watobo::Utils.loadChatYAML(fname) unless list.include?(fname.gsub(/yml$/,'mrs'))
+        end
+        next if chat.nil?
+        yield chat if block_given?
+      end
+    end
+
     # add_scan_log
     # adds a chat to a specific log store, e.g. if you want to log scan results.
     # needs a scan_name (STRING) as its destination which will be created
@@ -65,16 +108,16 @@ module Watobo#:nodoc: all
         return false if scan_name.nil?
         return false if scan_name.empty?
         
-        scan_name_clean = scan_name.gsub(/[:\\\/\.]*/,"_")
+        scan_name_clean = scan_name.gsub(/[:\\\/\.]*/, '_')
         # puts ">> scan_name"
         path = File.join(@scanlog_path, scan_name_clean)
 
         Dir.mkdir path unless File.exist? path
 
-        file = File.join( path, "log_" + Time.now.to_f.to_s + ".mrs")
+        file = File.join( path, 'log_' + Time.now.to_f.to_s + '.mrs')
 
         unless File.exist?(file)
-          File.open(file, "wb") { |fh|
+          File.open(file, 'wb') { |fh|
             fh.print Marshal::dump(chat.to_h)
           }
         end

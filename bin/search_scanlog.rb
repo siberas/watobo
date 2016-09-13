@@ -23,3 +23,6 @@ puts Watobo::Conf::General.workspace_path
 
 ds = Watobo::DataStore.connect(OPTS[:project], OPTS[:session])
 
+puts "\nScanList:"
+puts ds.list_scans
+
