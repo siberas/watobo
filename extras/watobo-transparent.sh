@@ -1,7 +1,7 @@
 #!/bin/bash
 # configure your interfaces here
-INT_IN=wlan0
-INT_OUT=eth0
+INT_IN=wlx28107b494758
+INT_OUT=eno16777736
 
 echo "= Interface Configuration ="
 echo "Incoming Interface: $INT_IN"
@@ -18,11 +18,14 @@ iptables -P INPUT ACCEPT
 iptables -P FORWARD ACCEPT
 iptables -P OUTPUT ACCEPT
 
-echo "Restarting DHCP ..."
-/etc/init.d/dhcp3-server restart
+#echo "Restarting DHCP ..."
+#/etc/init.d/dhcp3-server restart
 
-echo "Restarting DNS ..."
-/etc/init.d/bind9 restart
+#echo "Restarting DNS ..."
+#/etc/init.d/bind9 restart
+
+echo "Restarting DNSMASQ ..."
+/etc/init.d/dnsmasq restart
 
 echo "Enable IP Forwarding ..."
 echo 1 > /proc/sys/net/ipv4/ip_forward

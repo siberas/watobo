@@ -10,9 +10,11 @@ module Watobo#:nodoc: all
     @nfq_present = false
 
     begin
-      require "nfqueue"
+      require 'nfqueue'
       @nfq_present = true
-    rescue LoadError
+    rescue LoadError => bang
+	puts bang
+	puts bang.backtrace
       puts "NFQUEUE not available on this system"
     end
 

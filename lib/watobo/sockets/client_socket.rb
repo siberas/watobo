@@ -160,6 +160,7 @@ module Watobo #:nodoc: all
             rescue OpenSSL::SSL::SSLError => e
               puts ">> SSLError"
               puts e
+              #puts session.methods.sort
               return nil, session
             rescue => bang
               puts bang
@@ -246,6 +247,13 @@ module Watobo #:nodoc: all
             ctx.tmp_dh_callback = proc { |*args|
               @dh_key
             }
+
+          if ctx.respond_to? :tmp_ecdh_callback
+            ctx.tmp_ecdh_callback = ->(*args){
+              called = true
+              OpenSSL::PKey::EC.new 'prime256v1'
+            }
+          end
 
             ctx.verify_mode = OpenSSL::SSL::VERIFY_NONE
             ctx.timeout = 10

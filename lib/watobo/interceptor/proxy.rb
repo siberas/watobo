@@ -160,8 +160,9 @@ module Watobo #:nodoc: all
               #puts "* got new request from client"
               c_sock = Watobo::HTTPSocket::ClientSocket.connect(session)
 
-              #puts "ClientSocket: #{c_sock}"
+              puts "ClientSocket: #{c_sock}"
               Thread.exit if c_sock.nil?
+              Thread.exit unless c_sock.respond_to? :close
 
               #
               # loop for reusing client connections
@@ -171,8 +172,10 @@ module Watobo #:nodoc: all
                 flags = []
                 begin
 
-                  # puts "#{c_sock} - read request"
+                  puts "#{c_sock} - read request"
                   request = c_sock.request
+
+                  puts request
 
                   #if request.is_multipart?
                   #  puts request

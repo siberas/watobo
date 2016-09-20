@@ -12,8 +12,8 @@ module Watobo#:nodoc: all
       unless File.exist? dh_filename
         #puts "* no dh key file found"
         File.open(dh_filename,"w") do |fh|
-          print "* creating SSL key (DH 1024) ... "
-          fh.write OpenSSL::PKey::DH.new(1024).to_pem
+          print "* creating SSL key (DH 2048) ... "
+          fh.write OpenSSL::PKey::DH.new(2048).to_pem
           print " DONE\r\n"
         end
       end
@@ -48,8 +48,8 @@ module Watobo#:nodoc: all
       :ca_rsa_key_length => 2048,
 
       :cert_days => 365, # one year
-      :cert_key_length_min => 1024,
-      :cert_key_length_max => 2048,
+      :cert_key_length_min => 2048,
+      :cert_key_length_max => 4096,
 
       :crl_file => File.join(@crl_dir, "#{@hostname}.crl"),
       :crl_pem_file => File.join(@crl_dir, "#{@hostname}.pem"),
@@ -72,6 +72,12 @@ module Watobo#:nodoc: all
       #print "Generating CA keypair ..."
       #puts " - rsa_key_length: " + @ca_config[:ca_rsa_key_length].to_s
       keypair = OpenSSL::PKey::RSA.new(@ca_config[:ca_rsa_key_length])
+
+      #
+      #keypair = OpenSSL::PKey::EC.new('secp256k1')
+      #keypair.generate_key
+      #puts keypair.class
+
       #puts "done!"
 
       #print "Create Certificate ..."
@@ -103,11 +109,11 @@ module Watobo#:nodoc: all
       cert.add_extension ef.create_extension("authorityKeyIdentifier",
       "keyid:always,issuer:always")
      # puts "Sign Certificate ..."
-      cert.sign keypair, OpenSSL::Digest::SHA1.new
+      cert.sign keypair, OpenSSL::Digest::SHA256.new
 
       cb = proc do @ca_config[:password] end
-      keypair_export = keypair.export OpenSSL::Cipher::DES.new(:EDE3, :CBC),
-      &cb
+      #keypair_export = keypair.export OpenSSL::Cipher::DES.new(:EDE3, :CBC), &cb
+      keypair_export = keypair.export OpenSSL::Cipher::DES.new(:EDE3, :CBC), &cb
 
       #puts "Writing keypair to #{@ca_config[:keypair_file]}"
       begin
@@ -169,7 +175,7 @@ module Watobo#:nodoc: all
 
       if not File.exists?(keypair_file) then
         #puts "Generating RSA keypair" if $DEBUG
-        keypair = OpenSSL::PKey::RSA.new 1024
+        keypair = OpenSSL::PKey::RSA.new 2048
        # puts keypair.to_pem.class
 
         if cert_config[:password].nil? then
@@ -325,7 +331,8 @@ module Watobo#:nodoc: all
         "OCSP;" << @ca_config[:ocsp_location])
       end
      # cert.extensions = ex
-      cert.sign ca_keypair, OpenSSL::Digest::SHA1.new
+      # cert.sign ca_keypair, OpenSSL::Digest::SHA1.new
+      cert.sign ca_keypair, OpenSSL::Digest::SHA256.new
 
       #  backup_cert_file = @ca_config[:backup_certs_dir] + "/cert_#{cert.serial}.pem"
       #  puts "Writing backup cert to #{backup_cert_file}" if $DEBUG
@@ -376,7 +383,8 @@ module Watobo#:nodoc: all
       req.version = 0
       req.subject = name
       req.public_key = keypair.public_key
-      req.sign keypair, OpenSSL::Digest::MD5.new
+      #req.sign keypair, OpenSSL::Digest::MD5.new
+      req.sign keypair, OpenSSL::Digest::SHA256.new
 
       File.open csr_file, "w" do |f|
         f << req.to_pem
