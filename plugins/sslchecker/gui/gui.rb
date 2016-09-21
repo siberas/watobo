@@ -158,7 +158,7 @@ module Watobo#:nodoc: all
           @controller.subscribe(:save_table){
             filename = FXFileDialog.getSaveFilename(self, "Save file", nil, "All Files (*)")
             unless filename.empty?
-        if File.exists?(filename)
+        if File.exist?(filename)
         response = FXMessageBox.question(self, MBOX_YES_NO, 'File exists', 'Overwrite existing file?') 
         return 0 if response != MBOX_CLICKED_YES
         end

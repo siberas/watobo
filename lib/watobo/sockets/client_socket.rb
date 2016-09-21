@@ -86,16 +86,16 @@ module Watobo #:nodoc: all
               break if body.length == clen
             end
 
-            puts "* CLEN = #{clen} - read body (#{body.length})"
+            #puts "* CLEN = #{clen} - read body (#{body.length})"
             request << body
           end
         rescue => bang
           puts bang
         end
 
-        puts "\n>> Request RAW:"
-        puts request
-        puts "\n>> Request RAW (HEX):"
+        #puts "\n>> Request RAW:"
+        #puts request
+        #puts "\n>> Request RAW (HEX):"
       #  puts request.unpack("H*")[0]
 
         clean_request request
@@ -146,7 +146,7 @@ module Watobo #:nodoc: all
 
           ci = Watobo::Interceptor::Transparent.info({'host' => caddr, 'port' => cport})
           unless ci.nil? or ci['target'].empty? or ci['cn'].empty?
-            puts "SSL-REQUEST FROM #{caddr}:#{cport}"
+            #puts "SSL-REQUEST FROM #{caddr}:#{cport}"
 
             ctx = Watobo::CertStore.acquire_ssl_ctx ci['target'], ci['cn']
 

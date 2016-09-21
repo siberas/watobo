@@ -349,7 +349,7 @@ module Watobo #:nodoc: all
                 eh.connect(SEL_COMMAND) {
                   insf = FXFileDialog.getOpenFilename(self, "Select file to insert", nil)
                   if insf != "" then
-                    if File.exists?(insf) then
+                    if File.exist?(insf) then
                       # puts "Inserting #{insf}"
                       sender.insertText(cpos, "%%File.read('#{insf}')%%")
                     end

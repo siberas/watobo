@@ -34,7 +34,7 @@ module Watobo#:nodoc: all
       def add_handler        
          handler_filename = FXFileDialog.getOpenFilename(self, "Select handler file", @handler_path, "*.rb\n*")
           if handler_filename != "" then
-            if File.exists?(handler_filename) then
+            if File.exist?(handler_filename) then
               @handler_file = handler_filename
               @handler_path = File.dirname(handler_filename) + "/"
               load_handler(handler_filename)

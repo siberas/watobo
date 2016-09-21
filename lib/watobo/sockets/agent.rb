@@ -41,14 +41,10 @@ module Watobo#:nodoc: all
       def connected?
         !@connection.nil?
       end
-      
-      
 
-     
-
+      #
       # sendHTTPRequest
       def send(request, prefs={})
-#Watobo.print_debug("huhule", "#{prefs.to_yaml}", "gagagag")
         begin
           @lasterror = nil
           response_header = nil
@@ -64,9 +60,11 @@ module Watobo#:nodoc: all
 
           #---------------------------------------
           request.removeHeader("^Proxy-Connection") #if not use_proxy
-          #request.removeHeader("^Connection") #if not use_proxy
+          #
+          # #request.removeHeader("^Connection") #if not use_proxy
           request.removeHeader("^Accept-Encoding")
-          # If-Modified-Since: Tue, 28 Oct 2008 11:06:43 GMT
+          #
+          # # If-Modified-Since: Tue, 28 Oct 2008 11:06:43 GMT
           # If-None-Match: W/"3975-1225192003000"
           request.removeHeader("^If-")
           #  puts
@@ -147,7 +145,8 @@ module Watobo#:nodoc: all
               end
               socket = sslConnect(tcp_socket, ssl_prefs)
             end
-            #puts socket.class
+
+            #
             # remove URI before sending request but cache it for restoring request
             uri_cache = nil
             uri_cache = request.removeURI #if proxy.nil?
@@ -197,7 +196,6 @@ module Watobo#:nodoc: all
 
         rescue Errno::ECONNREFUSED
           response = error_response "connection refused (#{host}:#{port})"
-          puts response
           socket = nil
         rescue Errno::ECONNRESET
           response = error_response "connection reset (#{host}:#{port})"
@@ -227,12 +225,11 @@ module Watobo#:nodoc: all
           puts bang
           puts bang.backtrace if $DEBUG
         end
-        puts response
+        #puts response
         return socket, request, response
       end
 
       def sidCache()
-        #puts @project
         @session[:valid_sids]
       end
 
@@ -240,14 +237,12 @@ module Watobo#:nodoc: all
         @session[:valid_sids] = new_cache if new_cache.is_a? Hash
       end
 
-      # +++ doRequest(request)  +++
+      # doRequest(request)
       # + function:
       #
       def doRequest(request, opts={} )
         begin
           @session.update opts
-        #  puts "[doRequest] #{@session.to_yaml}"
-          # puts "#[#{self.class}]" + @session[:csrf_requests].first.object_id.to_s
           unless @session[:csrf_requests].empty? or @session[:csrf_patterns].empty?
             csrf_cache = Hash.new
             @session[:csrf_requests].each do |req|
@@ -285,11 +280,9 @@ module Watobo#:nodoc: all
 
           update_sids(request.host, response.headers) if @session[:update_sids] == true
           
-          if @session[:follow_redirect]
- # puts response.status
-  if response.status =~ /^302/
-    response.extend Watobo::Mixin::Parser::Web10
-    request.extend Watobo::Mixin::Shaper::Web10
+          if @session[:follow_redirect] and response.status =~ /^302/
+              response.extend Watobo::Mixin::Parser::Web10
+              request.extend Watobo::Mixin::Shaper::Web10
 
     loc_header = response.headers("Location:").first
     new_location = loc_header.gsub(/^[^:]*:/,'').strip
@@ -314,7 +307,7 @@ module Watobo#:nodoc: all
       return request, response
     end
   end
-end
+
 
           readHTTPBody(socket, response, request, opts)
 
@@ -653,13 +646,6 @@ end
         er.fix_content_length
         er
       end
-      
-      
-
-      #     def read_response(socket)
-
-      #       return response
-      #    end
 
      
       def updateCSRFCache(csrf_cache, request, response)

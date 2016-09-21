@@ -14,7 +14,7 @@ module Watobo#:nodoc: all
       return false unless finding.respond_to? :response
 
       finding_file = File.join("#{@findings_path}", "#{finding.id}-finding.yml")
-      if not File.exists?(finding_file) then
+      if not File.exist?(finding_file) then
 
         finding_data = {
           :request => finding.request.map{|x| x.inspect},
@@ -48,7 +48,7 @@ module Watobo#:nodoc: all
       }
       finding_data[:details].update(finding.details)
 
-      if File.exists?(finding_file) then
+      if File.exist?(finding_file) then
         fh = File.new(finding_file, "w+b")
         fh.print YAML.dump(finding_data)
       fh.close
@@ -102,7 +102,7 @@ module Watobo#:nodoc: all
       }
 
       chat_data.update(chat.settings)
-      if not File.exists?(chat_file) then
+      if not File.exist?(chat_file) then
         File.open(chat_file, "w") { |fh|
           YAML.dump(chat_data, fh)
         }
@@ -168,7 +168,7 @@ module Watobo#:nodoc: all
       @scanlog_path = File.expand_path(File.join(@session_path, Watobo::Conf::Datastore.scan_logs_dir))
 
       [ @conversation_path, @findings_path, @log_path, @scanlog_path ].each do |folder|
-        if not File.exists?(folder) then
+        if not File.exist?(folder) then
           puts "create path #{folder}"
           begin
             Dir.mkdir(folder)

@@ -985,9 +985,7 @@ module Watobo#:nodoc: all
         end
         break if line.strip.empty?
       end
-      #  Watobo::HTTPSocket.read_body(tcp_socket, :max_bytes => clen){ |d|
-      #puts d
-      #  }
+
       return response_header
     end
 
@@ -995,9 +993,6 @@ module Watobo#:nodoc: all
     # doProxyAuth
     #
     def doProxyAuth(tcp_socket, orig_request, proxy)
-      # puts "DO PROXY AUTH"
-      # puts proxy.to_yaml
-      response_headers = nil
       case proxy.auth_type
       when AUTH_TYPE_NTLM
         return proxyAuthNTLM(tcp_socket, orig_request, proxy)
@@ -1010,8 +1005,7 @@ module Watobo#:nodoc: all
     #    doProxyRequest
     ################################################
     def doProxyRequest(request, proxy, prefs={})
-      #puts "DO PROXY REQUEST"
-      # puts prefs.to_yaml
+
       begin
         tcp_socket = nil
         site = request.site
@@ -1157,8 +1151,6 @@ module Watobo#:nodoc: all
       return false if socket.nil?
       begin
         if socket.respond_to? :sysclose
-          #socket.io.shutdown(2)
-          #  puts "sysclose"
           socket.sysclose
         elsif socket.respond_to? :shutdown
           socket.shutdown(2)

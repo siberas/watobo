@@ -917,7 +917,7 @@ module Watobo #:nodoc: all
 
         session_settings = {}
 
-#        if File.exists?(session_file) then
+#        if File.exist?(session_file) then
 #        session_settings = Watobo::Utils.load_settings(session_file)
 #updateistory(session_file)
 
@@ -938,7 +938,7 @@ module Watobo #:nodoc: all
         startProject(project)
 =begin
       project_file = File.expand_path(File.join(File.dirname(session_file), "..", session_settings[:project_name] + ".wps"))
-      if File.exists?(project_file) then
+      if File.exist?(project_file) then
       project_settings = Watobo::Utils.load_settings(project_file)
       if not project_settings.is_a? Hash then
       project_settings = Hash.new

@@ -66,7 +66,7 @@ module Watobo#:nodoc: all
         @genType = "File-Input"
         @filename = ""
         @numRequests = 0
-        if File.exists?(filename) then
+        if File.exist?(filename) then
           @filename = filename
           File.open(filename) do |fh|
             fh.each_line do |l|

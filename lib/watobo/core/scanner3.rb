@@ -437,7 +437,7 @@ module Watobo #:nodoc: all
     end
 
     def login
-      puts "do relogin"
+      #puts "do relogin"
       login_chats = Watobo::Conf::Scanner.login_chat_ids.uniq.map { |id| Watobo::Chats.get_by_id(id) }
       #  puts "running #{login_chats.length} login requests"
       #  puts login_chats.first.class

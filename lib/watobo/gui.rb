@@ -96,7 +96,7 @@ module Watobo#:nodoc: all
     def self.check_first_run
        # file = File.join(File.expand_path(File.dirname(__FILE__)), "..", "..", "disclaimer.chk")
        file = File.join(Watobo.working_directory, "disclaimer.chk")
-       unless File.exists?(file)
+       unless File.exist?(file)
           first_start_info = Watobo::Gui::AboutWatobo.new(@main_window)
          if first_start_info.execute != 0 then
             File.new(file, "w")

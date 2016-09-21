@@ -591,7 +591,7 @@ module Watobo #:nodoc: all
       def selectFile(sender, sel, ptr)
         filename = FXFileDialog.getOpenFilename(self, "Select Source File", @source_file.value)
         if filename != "" then
-          if File.exists?(filename) then
+          if File.exist?(filename) then
             @source_file.value = filename
             @sourceFileText.handle(self, FXSEL(SEL_UPDATE, 0), nil)
           end
@@ -904,7 +904,7 @@ module Watobo #:nodoc: all
       def selectLogDirectory(sender, sel, item)
         workspace_dt = FXFileDialog.getOpenDirectory(self, "Select Log Directory", @log_dir_dt.value)
         if workspace_dt != "" then
-          if File.exists?(workspace_dt) then
+          if File.exist?(workspace_dt) then
             @log_dir_dt.value = workspace_dt
             @log_dir_text.handle(self, FXSEL(SEL_UPDATE, 0), nil)
           end
@@ -917,7 +917,7 @@ module Watobo #:nodoc: all
           # path = @project.settings[:session_path]+"/"
           filename = FXFileDialog.getSaveFilename(self, "Save file", nil, "All Files (*)")
           if filename != ""
-            if File.exists?(filename)
+            if File.exist?(filename)
               response = FXMessageBox.question(self, MBOX_YES_NO, "File exists", "Overwrite existing file?")
               return 0 if response != MBOX_CLICKED_YES
 

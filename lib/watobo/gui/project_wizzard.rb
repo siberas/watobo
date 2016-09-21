@@ -21,7 +21,7 @@ module Watobo#:nodoc: all
       def open_select_workspace_dt_dialog(sender, sel, ptr)
         workspace_dt = FXFileDialog.getOpenDirectory(self, "Select Workspace Directory", @workspace_dt.value)
         if workspace_dt != "" then
-          if File.exists?(workspace_dt) then
+          if File.exist?(workspace_dt) then
             @workspace_dt.value = workspace_dt
             @workspace_text.handle(self, FXSEL(SEL_UPDATE, 0), nil)
             updateProjectList(@workspace_dt.value)
@@ -34,7 +34,7 @@ module Watobo#:nodoc: all
       def updateProjectList(workspace_dt)
         @projectList.clearItems
         
-        if File.exists?(workspace_dt) then
+        if File.exist?(workspace_dt) then
           Dir.foreach(workspace_dt) do |file|
             #puts file
             if not file =~ /^\.{1,2}/ and File.ftype(File.join(workspace_dt,file)) == 'directory' then
@@ -108,9 +108,9 @@ module Watobo#:nodoc: all
         begin
           if @new_session_name.value != '' then
             @session_name = @new_session_name.value 
-            if File.exists?(@selected_project_path) then
+            if File.exist?(@selected_project_path) then
               new_folder = File.join(@selected_project_path, @new_session_name.value)
-              if File.exists?(new_folder) then
+              if File.exist?(new_folder) then
                 puts "! folder already exists"
               else
                 Dir.mkdir(new_folder)
@@ -140,9 +140,9 @@ module Watobo#:nodoc: all
         begin
           if @new_project_name.value != '' then
             @project_name = @new_project_name.value
-            if File.exists?(@workspace_dt.value) then
+            if File.exist?(@workspace_dt.value) then
               new_folder = File.join(@workspace_dt.value, @new_project_name.value)
-              if File.exists?(new_folder) then
+              if File.exist?(new_folder) then
                 puts "! folder already exists"
               else
                 Dir.mkdir(new_folder)
@@ -210,7 +210,7 @@ module Watobo#:nodoc: all
         @session_name = ''
         
         if workspace_path then
-          if File.exists?(workspace_path) then
+          if File.exist?(workspace_path) then
             @workspace_dt.value = workspace_path 
             
           else

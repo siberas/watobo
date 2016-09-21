@@ -106,7 +106,7 @@ module Watobo#:nodoc: all
       def selectScanlogDirectory(sender, sel, item)
         workspace_dt = FXFileDialog.getOpenDirectory(self, "Select Scanlog Directory", @scanlog_name_dt.value)
         if workspace_dt != "" then
-          if File.exists?(workspace_dt) then
+          if File.exist?(workspace_dt) then
             @scanlog_name_dt.value = workspace_dt
             @scanlog_name_text.handle(self, FXSEL(SEL_UPDATE, 0), nil)
           end

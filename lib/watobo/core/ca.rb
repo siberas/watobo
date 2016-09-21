@@ -21,11 +21,11 @@ module Watobo#:nodoc: all
     end
     
     def self.ca_ready?
-      return false unless File.exists? @ca_config[:CA_dir]
-      return false unless File.exists? @ca_config[:private_dir]
-      return false unless File.exists?  @ca_config[:fake_certs_dir]
-      return false unless File.exists?  @ca_config[:crl_dir]
-      return false unless File.exists?  @ca_config[:csr_dir]
+      return false unless File.exist? @ca_config[:CA_dir]
+      return false unless File.exist? @ca_config[:private_dir]
+      return false unless File.exist?  @ca_config[:fake_certs_dir]
+      return false unless File.exist?  @ca_config[:crl_dir]
+      return false unless File.exist?  @ca_config[:csr_dir]
       return true
     end
 
@@ -173,7 +173,7 @@ module Watobo#:nodoc: all
        # puts "directory exists"
       end
 
-      if not File.exists?(keypair_file) then
+      if not File.exist?(keypair_file) then
         #puts "Generating RSA keypair" if $DEBUG
         keypair = OpenSSL::PKey::RSA.new 2048
        # puts keypair.to_pem.class
@@ -373,7 +373,7 @@ module Watobo#:nodoc: all
 
       name = OpenSSL::X509::Name.new(name)
 
-      if File.exists? keypair_file then
+      if File.exist? keypair_file then
         keypair = OpenSSL::PKey::RSA.new(File.read(keypair_file), cert_config[:password])
       else
         keypair = create_key(cert_config)

@@ -8,7 +8,7 @@ module Watobo#:nodoc: all
          def open_select_workspace_dir_dialog(sender, sel, ptr)
             workspace_dir = FXFileDialog.getOpenDirectory(self, "Select Workspace Directory", @workspace_dir.value)
             if workspace_dir != "" then
-               if File.exists?(workspace_dir) then
+               if File.exist?(workspace_dir) then
                   @workspace_dir.value = workspace_dir
                   @workspace_dir.handle(self, FXSEL(SEL_UPDATE, 0), nil)
                   updateProjectList(@workspace_dir.value)
@@ -25,7 +25,7 @@ module Watobo#:nodoc: all
             @workspace_dir = FXDataTarget.new('')
 
             if prefs[:workspace_dir] then
-               if File.exists?(prefs[:workspace_dir]) then
+               if File.exist?(prefs[:workspace_dir]) then
                   @workspace_dir.value = prefs[:workspace_dir]
                end
             end

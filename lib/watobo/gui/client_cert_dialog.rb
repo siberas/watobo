@@ -126,7 +126,7 @@ module Watobo #:nodoc: all
         def select_cert_file()
           cert_filename = FXFileDialog.getOpenFilename(self, "Select Certificate File", @cert_path, "*.pem,*.cer\n*")
           if cert_filename != "" then
-            if File.exists?(cert_filename) then
+            if File.exist?(cert_filename) then
               @client_cert_dt.value = cert_filename
               @client_cert_txt.handle(self, FXSEL(SEL_UPDATE, 0), nil)
               @cert_path = File.dirname(cert_filename) + '/'
@@ -138,7 +138,7 @@ module Watobo #:nodoc: all
 
           key_filename = FXFileDialog.getOpenFilename(self, "Select Key File", @cert_path, "*.key\n*")
           if key_filename != "" then
-            if File.exists?(key_filename) then
+            if File.exist?(key_filename) then
               @client_key_dt.value = key_filename
               @client_key_txt.handle(self, FXSEL(SEL_UPDATE, 0), nil)
               @cert_path = File.dirname(key_filename) + '/'
@@ -251,7 +251,7 @@ module Watobo #:nodoc: all
         def select_cert_file()
           cert_filename = FXFileDialog.getOpenFilename(self, "Select Certificate File", @cert_path, "*.p12,*.pfx\n*")
           if cert_filename != "" then
-            if File.exists?(cert_filename) then
+            if File.exist?(cert_filename) then
               @client_cert_dt.value = cert_filename
               @client_cert_txt.handle(self, FXSEL(SEL_UPDATE, 0), nil)
               @cert_path = File.dirname(cert_filename)
@@ -353,7 +353,7 @@ module Watobo #:nodoc: all
       def select_cert_file()
         cert_filename = FXFileDialog.getOpenFilename(self, "Select Certificate File", @cert_path)
         if cert_filename != "" then
-          if File.exists?(cert_filename) then
+          if File.exist?(cert_filename) then
             @client_cert_dt.value = cert_filename
             @client_cert_txt.handle(self, FXSEL(SEL_UPDATE, 0), nil)
             @cert_path = File.dirname(cert_filename)

@@ -6,7 +6,7 @@ module Watobo#:nodoc: all
       begin
         request = []
         response = []
-        if File.exists?(file) then
+        if File.exist?(file) then
           puts "LoadChatMarshal: #{file}" if $DEBUG 
           settings = {}
           File.open(file,"rb") { |fh|
@@ -43,7 +43,7 @@ module Watobo#:nodoc: all
     # loadChat returns a chat object imported from a yaml file
     def Utils.loadChatYAML(file)
       begin
-        if File.exists?(file) then
+        if File.exist?(file) then
           puts "LoadChatYAML: #{file}" if $DEBUG 
           cdata  = YAML.load(File.open(file,"rb").read)
           return nil unless cdata
@@ -99,7 +99,7 @@ module Watobo#:nodoc: all
     
     def Utils.loadFindingMarshal(file)
       puts "LoadFindingMarshal: #{file}" if $DEBUG 
-      if File.exists?(file) then
+      if File.exist?(file) then
         begin
         fdata  = nil
         
@@ -123,7 +123,7 @@ module Watobo#:nodoc: all
     
     def Utils.loadFindingYAML(file)
       puts "LoadFindingYAML: #{file}" if $DEBUG 
-      if File.exists?(file) then
+      if File.exist?(file) then
         begin
         fdata  = YAML.load(File.open(file,"rb").read)
         # need to restore CRLF
@@ -168,7 +168,7 @@ module Watobo#:nodoc: all
       #   puts "* load chat (request): #{req_file}"
       #   puts "* load chat (response): #{res_file}"
       request = []
-      if File.exists?(req_file) then
+      if File.exist?(req_file) then
         fh = File.open(req_file,"rb")
         fh.each do |line|  
           request.push line
@@ -186,7 +186,7 @@ module Watobo#:nodoc: all
       content_is_chunked = false
       max_response_size = 50000
       
-      if File.exists?(res_file) then
+      if File.exist?(res_file) then
         begin
           
           resFH = open(res_file, "rb")

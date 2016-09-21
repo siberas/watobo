@@ -160,7 +160,7 @@ module Watobo #:nodoc: all
               #puts "* got new request from client"
               c_sock = Watobo::HTTPSocket::ClientSocket.connect(session)
 
-              puts "ClientSocket: #{c_sock}"
+              #puts "ClientSocket: #{c_sock}"
               Thread.exit if c_sock.nil?
               Thread.exit unless c_sock.respond_to? :close
 
@@ -172,16 +172,7 @@ module Watobo #:nodoc: all
                 flags = []
                 begin
 
-                  puts "#{c_sock} - read request"
                   request = c_sock.request
-
-                  puts request
-
-                  #if request.is_multipart?
-                  #  puts request
-                  #  puts request.body.to_s.length
-                  #  puts request.body.to_s.unpack("H*")[0]
-                  #end
 
                   if request.nil? or request.empty? then
                     print "c/"
@@ -196,11 +187,8 @@ module Watobo #:nodoc: all
                   puts "!!! Error reading client request "
                   puts bang
                   puts bang.backtrace
-                  # puts request.class
-                  # puts request
                   c_sock.close
                   Thread.exit
-                  #break
                 end
 
                 #if request.host =~ /safebrowsing.*google\.com/

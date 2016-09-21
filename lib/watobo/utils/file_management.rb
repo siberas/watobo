@@ -22,7 +22,7 @@ module Watobo#:nodoc: all
     
     def Utils.load_settings(file)
       settings = nil
-      if File.exists?(file) then
+      if File.exist?(file) then
         settings = YAML.load_file(file)
       end
       return settings
@@ -45,7 +45,7 @@ module Watobo#:nodoc: all
       
       chat_data.update(chat.settings)  
                     
-      if File.exists?(filename) then
+      if File.exist?(filename) then
         puts "Updating #{filename}"
         File.open(filename, "w") { |fh| 
           YAML.dump(chat_data, fh)

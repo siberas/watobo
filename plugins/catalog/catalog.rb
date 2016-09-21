@@ -50,7 +50,7 @@ module Watobo #:nodoc: all
           @var_files.each do |file|
             # puts "* loading var-file #{file}"
             fname = File.join(dbpath, file)
-            if File.exists?(fname)
+            if File.exist?(fname)
               File.open(fname) { |fh|
                 fh.each do |line|
                   if line.strip =~ /^[^#]/ and line =~ /=/
@@ -77,7 +77,7 @@ module Watobo #:nodoc: all
           @db_files.each do |file|
             # puts "* loading db file #{file}.."
             fname = File.join(dbpath, file)
-            if File.exists?(fname)
+            if File.exist?(fname)
               File.open(fname) { |fh|
                 fh.each do |line|
                   next if line.strip =~ /^#/
@@ -612,7 +612,7 @@ module Watobo #:nodoc: all
         def selectScanlogDirectory(sender, sel, item)
           workspace_dt = FXFileDialog.getOpenDirectory(self, "Select Scanlog Directory", @scanlog_dir_dt.value)
           if workspace_dt != "" then
-            if File.exists?(workspace_dt) then
+            if File.exist?(workspace_dt) then
               @scanlog_dir_dt.value = workspace_dt
               @scanlog_dir_text.handle(self, FXSEL(SEL_UPDATE, 0), nil)
             end
@@ -689,7 +689,7 @@ module Watobo #:nodoc: all
         def db_path?(path)
           @db_files.each do |file|
             fname = File.join(path, file)
-            unless File.exists?(fname)
+            unless File.exist?(fname)
               m = "WARNING: Missing catalog db file: #{fname}"
               puts m
               @log_viewer.log(LOG_INFO, m)
