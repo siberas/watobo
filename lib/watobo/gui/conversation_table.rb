@@ -160,7 +160,8 @@ module Watobo #:nodoc: all
             addChat(chat, prefs)
           end
         else
-          chat_list.each do |chat|
+          chat_list.each_with_index do |chat, i|
+            #puts "   - #{i} / #{chat_list.length}"
             addChat(chat, prefs)
           end
         end
@@ -280,11 +281,13 @@ module Watobo #:nodoc: all
         initColumns()
 
         self.columnHeader.connect(SEL_CHANGED) do |sender, sel, index|
+          puts " * [ConversationTable] - ColumnHeader(SEL_CHANGED)"
           type = @col_order[index]
           @cell_width[type] = self.getColumnWidth(index)
         end
 
         self.columnHeader.connect(SEL_COMMAND) do |sender, sel, index|
+          #puts "* [ConversationTable] Col-#{index} clicked"
           type = @col_order[index]
           column_width = self.getColumnWidth(index)
 
@@ -345,7 +348,7 @@ module Watobo #:nodoc: all
 
         addHotkeyHandler(self)
 
-        start_update_timer
+       # start_update_timer
       end
 
       def scrollUp()
@@ -365,16 +368,15 @@ module Watobo #:nodoc: all
         self.setPosition(self.xPosition, (self.viewportHeight - self.contentHeight))
       end
 
-      def start_update_timer
-        @last_row_count = 0
-        Watobo.save_thread {
-          if self.getNumRows != @last_row_count
-            scrollDown if @autoscroll == true
-            @last_row_count = self.getNumRows
-          end
-        }
-
-      end
+      #def start_update_timer
+      #  @last_row_count = 0
+      #  Watobo.save_thread {
+      #    if self.getNumRows != @last_row_count
+      #      scrollDown if @autoscroll == true
+      #      @last_row_count = self.getNumRows
+      #    end
+      #  }
+      #end
 
       def clearConversation()
         self.clearItems
@@ -394,7 +396,7 @@ module Watobo #:nodoc: all
         lastRowIndex = self.getNumRows
         self.appendRows(1)
 
-        self.rowHeader.setItemJustify(lastRowIndex, FXHeaderItem::RIGHT)
+       # self.rowHeader.setItemJustify(lastRowIndex, FXHeaderItem::RIGHT)
         self.setRowText(lastRowIndex, chat.id.to_s)
 
         index = @col_order.index(TABLE_COL_SSL)

@@ -370,7 +370,7 @@ module Watobo #:nodoc: all
       end
 
       def start_update_timer
-        Watobo.save_thread {
+        FXApp.instance.addTimeout(250, :repeat => true) {
 
           #print @log_queue.length
           while @log_queue.length > 0

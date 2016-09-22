@@ -436,10 +436,20 @@ module Watobo #:nodoc: all
         }
 
         @request_lock.synchronize do
+          Watobo.save_thread do
           #   enable_buttons()
-          @request_queue << new_request
-
+          #@request_queue << new_request
+          @request_list << new_request
+          if @request_list.length > 0 and @request_box_available
+            @requestbox.setRequest @request_list.first[:request]
+            @request_box_available = false
+          end
+          @request_tab.text = "Request (#{@request_list.length})"
+          update_buttons
+          end
         end
+
+
 
         # enable_buttons()
 
@@ -459,8 +469,17 @@ module Watobo #:nodoc: all
         }
 
         @response_lock.synchronize do
-          @response_queue.push new_response
-
+          Watobo.save_thread do
+          #@response_queue.push new_response
+          @response_list << new_response
+          if @response_list.length > 0 and @response_box_available
+            # @responsebox.setText @response_list.first[:response]
+            @responsebox.setRequest @response_list.first[:response]
+            @response_box_available = false
+          end
+            end
+          @response_tab.text = "Response (#{@response_list.length})"
+          update_buttons
         end
       end
 
@@ -576,7 +595,7 @@ module Watobo #:nodoc: all
         #  @log_viewer = FXText.new(log_text_frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
 
         disable_buttons()
-
+=begin
         # start an update timer
         Watobo.save_thread{
               @request_lock.synchronize do
@@ -609,7 +628,7 @@ module Watobo #:nodoc: all
               end
               update_buttons
         }
-
+=end
       end
 
       def releaseAll()
@@ -634,7 +653,7 @@ module Watobo #:nodoc: all
 
           begin
             @request_lock.synchronize do
-              request = @request_list.first
+              request = @request_list.shift
               if not request.nil?
                 request[:request].clear
                 request[:request].concat @requestbox.parseRequest
@@ -642,9 +661,11 @@ module Watobo #:nodoc: all
                 @request_box_available = true
                 Watobo.print_debug(self.class.to_s, "release thread #{request[:thread]}")
                 request[:thread].run
-                @request_list.shift
                 @request_tab.text = "Request (#{@request_list.length})"
                 #getNextRequest()
+                unless @request_list.empty?
+                  @requestbox.setRequest @request_list.first[:request]
+                end
               else
                 puts "* [INTERCEPTOR] NOTHING TO RELEASE"
               end
@@ -656,7 +677,7 @@ module Watobo #:nodoc: all
         else
           begin
             @response_lock.synchronize do
-              response = @response_list.first
+              response = @response_list.shift
               if not response.nil?
                 response[:response].clear
                 #new_response = @responsebox.to_response(:update_content_length => true)
@@ -667,9 +688,10 @@ module Watobo #:nodoc: all
                 response[:thread].run
                 @responsebox.clear
                 @response_box_available = true
-                @response_list.shift
                 @response_tab.text = "Response (#{@response_list.length})"
-                # getNextResponse()
+                unless @response_list.empty?
+                  @responsebox.setRequest @response_list.first[:response]
+                end
               end
             end
           rescue => bang
@@ -769,23 +791,18 @@ module Watobo #:nodoc: all
 
       def update_buttons
         if @tabBook.current == 0 then
-          @request_lock.synchronize do
             if @request_list.length > 0
               enable_buttons
             else
               disable_buttons
             end
-          end
-
         else
-          @response_lock.synchronize do
             if @response_list.length > 0
               enable_buttons
             else
               disable_buttons
             end
           end
-        end
       end
 
       def onBtnFilterOptions(sender, sel, ptr)

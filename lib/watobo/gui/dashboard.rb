@@ -273,7 +273,7 @@ module Watobo #:nodoc: all
 
 
       def start_update_timer
-        Watobo.save_thread {
+        FXApp.instance.addTimeout(500, :repeat => true) {
           unless @scanner.nil?
             progress = @scanner.progress
             progress.each do |m, info|

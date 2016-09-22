@@ -552,7 +552,7 @@ module Watobo #:nodoc: all
 
 
         def start_update_timer
-          Watobo.save_thread {
+          FXApp.instance.addTimeout(250, :repeat => true) {
             unless @scanner.nil?
               sum = @scanner.sum_progress
 

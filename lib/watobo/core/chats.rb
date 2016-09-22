@@ -4,6 +4,8 @@ module Watobo#:nodoc: all
     @chats = []
     @chats_lock = Mutex.new
     @event_dispatcher_listeners = Hash.new
+
+
     def self.subscribe(event, &callback)
       (@event_dispatcher_listeners[event] ||= []) << callback
     end

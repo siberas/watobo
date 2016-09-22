@@ -40,7 +40,7 @@ module Watobo #:nodoc: all
       private
 
       def add_queue_timer(ms)
-        @update_timer = Watobo.save_thread(ms) {
+        @update_timer = FXApp.instance.addTimeout(ms, :repeat => true){
 
               unless @scanner.nil?
                 if @scanner.finished?
@@ -245,7 +245,7 @@ module Watobo #:nodoc: all
       end
 
       def update_conversation_table()
-        @chatTable.showConversation(Watobo::Chats.to_a)
+        #@chatTable.showConversation(Watobo::Chats.to_a)
         @chatTable.apply_filter(@conversation_table_ctrl.filter)
         @conversation_table_ctrl.update_text
         return true
@@ -471,8 +471,10 @@ module Watobo #:nodoc: all
 
       def addChat(chat)
         # addChatToTable(chat) if chatIsFiltered?(chat) == false
-        @chatTable.addChat(chat) #if chatIsFiltered?(chat) == false
-        @sites_tree.addChat(chat)
+
+        #
+         @chatTable.addChat(chat) #if chatIsFiltered?(chat) == false
+       # @sites_tree.addChat(chat)
       end
 
       def showPassiveModulestatus
@@ -759,25 +761,24 @@ module Watobo #:nodoc: all
             puts "!!! Could not create project :("
           ensure
             puts "* stop modal mode" if $DEBUG
-           # Watobo::Gui.application.runOnUiThread do
-            FXApp.instance.addChore do
+            Watobo.save_thread do
               getApp.stopModal
             end
+
           end
         }
         getApp().runModal
-
-
-        update_conversation_table()
-        update_status_bar()
-        puts "* starting interceptor"
-        Watobo::Interceptor.start
-        puts "* starting passive scanner"
-        Watobo::PassiveScanner.start
-        @browserView = BrowserPreview.new(Watobo::Interceptor.proxy)
-
         #  be sure to hide the progress window
         @progress_window.destroy
+
+
+        app.beginWaitCursor()
+        puts '* update conversation table'
+        update_conversation_table()
+        puts '* update status bar'
+        update_status_bar()
+
+        @browserView = BrowserPreview.new(Watobo::Interceptor.proxy)
 
 
         @chatTable.show
@@ -789,6 +790,12 @@ module Watobo #:nodoc: all
         @chatTable.apply_filter(@conversation_table_ctrl.filter)
         @conversation_table_ctrl.update_text
 
+        app.endWaitCursor()
+        puts "* starting passive scanner"
+        Watobo::PassiveScanner.start
+
+        puts "* starting interceptor"
+        Watobo::Interceptor.start
 
         puts "Project Started"
         puts "Active Modules: #{Watobo::ActiveModules.length}"
@@ -1773,16 +1780,14 @@ module Watobo #:nodoc: all
           #  @chat_queue << c
           #end
 
-            FXApp.instance.addChore do
+            Watobo.save_thread do
               addChat(c)
             end
 
         }
 
         Watobo::Findings.subscribe(:new) { |f|
-
-
-            FXApp.instance.addChore do
+          Watobo.save_thread do
               addFinding(f)
             end
 

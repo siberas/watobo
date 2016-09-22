@@ -729,7 +729,7 @@ module Watobo #:nodoc: all
         end
 
         def start_update_timer
-          Watobo.save_thread {
+          FXApp.instance.addTimeout(500, :repeat => true) {
             unless @scanner.nil?
               progress = @scanner.progress
               sum_progress = progress.values.inject(0) { |i, v| i += v[:progress] }

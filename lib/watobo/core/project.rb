@@ -324,6 +324,7 @@ module Watobo#:nodoc: all
     def setupProject(progress_window=nil)
       begin
         puts "DEBUG: Setup Project" if $DEBUG and $debug_project
+
         importSession()
         puts "* initialize egress handlers ..."
         Watobo::EgressHandlers.init

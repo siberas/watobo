@@ -249,7 +249,8 @@ module Watobo #:nodoc: all
                 end
 
                 begin
-                  s_sock, req, resp = sender.sendHTTPRequest(request, :update_sids => true,
+                  s_sock, req, resp = sender.sendHTTPRequest(request,
+                                                             :update_sids => true,
                                                              :update_session => false,
                                                              :update_contentlength => true,
                                                              :www_auth => @www_auth

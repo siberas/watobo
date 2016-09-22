@@ -4,9 +4,10 @@ module Watobo#:nodoc: all
     @fake_certs = Hash.new
     def self.acquire_ssl_ctx(target, cn)
       #OpenSSL::SSL::SSLContext::DEFAULT_PARAMS[:ciphers] = 'TLSv1.2:!aNULL:!eNULL'
-      ctx = OpenSSL::SSL::SSLContext.new(:TLSv1_2_server)
-      ctx.ssl_version = :TLSv1_2_server
-      ctx.ciphers='TLSv1.2:!aNULL:!eNull'
+      ctx = OpenSSL::SSL::SSLContext.new()
+      #ctx = OpenSSL::SSL::SSLContext.new(:TLSv1_2_server)
+      #ctx.ssl_version = :TLSv1_2_server
+      #ctx.ciphers='TLSv1.2:!aNULL:!eNull'
 
       unless @fake_certs.has_key? target
         cert_prefs = {

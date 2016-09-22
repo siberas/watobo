@@ -31,7 +31,19 @@ module Watobo #:nodoc: all
                        else
                          "UNDEF - #{now}: #{msg}\n"
                      end
-          @log_queue << log_text
+          #@log_queue << log_text
+          Watobo.save_thread do
+            if @mode == :insert
+              @log_text_lock.synchronize do
+                @textbox.insertText(0, log_text)
+              end
+            else
+              @log_text_lock.synchronize do
+                @textbox.appendText(log_text)
+              end
+            end
+            @textbox.handle(self, FXSEL(SEL_UPDATE, 0), nil)
+          end
 
         rescue => bang
           puts bang
@@ -52,30 +64,6 @@ module Watobo #:nodoc: all
 
         @textbox = FXText.new(self, nil, 0, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
         @textbox.editable = false
-
-        start_update_timer
-      end
-
-      private
-
-      def start_update_timer
-        Watobo.save_thread {
-
-          #print @log_queue.length
-          if @log_queue.length > 0
-            msg = @log_queue.deq
-            if @mode == :insert
-              @log_text_lock.synchronize do
-                @textbox.insertText(0, msg)
-              end
-            else
-              @log_text_lock.synchronize do
-                @textbox.appendText(msg)
-              end
-            end
-            @textbox.handle(self, FXSEL(SEL_UPDATE, 0), nil)
-          end
-        }
 
       end
 

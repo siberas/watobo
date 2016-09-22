@@ -569,34 +569,6 @@ module Watobo #:nodoc: all
               end
             end
           end
-
-          while @chat_queue.size > 0 do
-            request, response = @chat_queue.pop
-
-            unless request.nil? then
-              unless response.nil?
-                @response_viewer.setText response
-                @current_chat = Watobo::Chat.new(request, response, :source => CHAT_SOURCE_MANUAL, :run_passive_checks => false)
-
-                Watobo::Chats.add(@current_chat) if @logChat.checked? == true
-
-                @request_viewer.setText request
-                @last_request = request
-
-                @response_viewer.setText(response, :filter => true)
-                @responseMD5.text = response.contentMD5
-
-                addHistoryItem(@current_chat, @req_builder.rawRequest)
-
-                @history_pos_dt.value = @history.length
-                @history_pos.handle(self, FXSEL(SEL_UPDATE, 0), nil)
-              end
-            else
-              logger("ERROR: #{@current_chat.response.first}") if @current_chat.respond_to? :response
-              @responseMD5.text = "- N/A -"
-            end
-
-          end
         }
       end
 
@@ -629,14 +601,39 @@ module Watobo #:nodoc: all
         }
 
         prefs.update current_prefs
+        logger("send request")
 
         @request_thread = Thread.new(new_request, prefs) { |nr, p|
           begin
-            logger("send request")
-            last_request, last_response = @request_sender.sendRequest(nr, p)
-            logger("got answer")
 
-            @chat_queue.push [last_request, last_response]
+            request, response = @request_sender.sendRequest(nr, p)
+
+            #@chat_queue.push [last_request, last_response]
+            Watobo.save_thread do
+              logger("got answer")
+              unless request.nil? then
+                unless response.nil?
+                  @response_viewer.setText response
+                  @current_chat = Watobo::Chat.new(request, response, :source => CHAT_SOURCE_MANUAL, :run_passive_checks => false)
+
+                  Watobo::Chats.add(@current_chat) if @logChat.checked? == true
+
+                  @request_viewer.setText request
+                  @last_request = request
+
+                  @response_viewer.setText(response, :filter => true)
+                  @responseMD5.text = response.contentMD5
+
+                  addHistoryItem(@current_chat, @req_builder.rawRequest)
+
+                  @history_pos_dt.value = @history.length
+                  @history_pos.handle(self, FXSEL(SEL_UPDATE, 0), nil)
+                end
+              else
+                logger("ERROR: #{@current_chat.response.first}") if @current_chat.respond_to? :response
+                @responseMD5.text = "- N/A -"
+              end
+            end
           rescue => bang
             puts bang
           end
