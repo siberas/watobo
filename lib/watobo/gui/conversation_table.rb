@@ -280,14 +280,13 @@ module Watobo #:nodoc: all
 
         initColumns()
 
+        # SEL_CHANGED is triggered if column size is manually changed
         self.columnHeader.connect(SEL_CHANGED) do |sender, sel, index|
-          puts " * [ConversationTable] - ColumnHeader(SEL_CHANGED)"
           type = @col_order[index]
           @cell_width[type] = self.getColumnWidth(index)
         end
 
         self.columnHeader.connect(SEL_COMMAND) do |sender, sel, index|
-          #puts "* [ConversationTable] Col-#{index} clicked"
           type = @col_order[index]
           column_width = self.getColumnWidth(index)
 

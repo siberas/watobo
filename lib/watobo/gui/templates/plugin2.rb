@@ -64,6 +64,7 @@ module Watobo #:nodoc: all
       super(owner, title, :opts => DECOR_ALL, :width => 800, :height => 600)
 
       @icon = nil
+      @update_timer = nil
       load_icon()
       @plugin_name = "undefined"
       @event_dispatcher_listeners = Hash.new
@@ -81,12 +82,20 @@ module Watobo #:nodoc: all
 
     end
 
-    def add_update_timer()
-      FXApp.instance.addTimeout(250, :repeat => true){
+    def add_update_timer(ms=250)
+      @update_timer = FXApp.instance.addTimeout(ms, :repeat => true){
             #@update_lock.synchronize do
               on_update_timer()
             #end
       }
+    end
+
+    def remove_update_timer
+      #app = FXApp.instance
+      app = getApp
+      if app.hasTimeout? @update_timer
+        app.removeTimeout @update_timer
+      end
     end
 
   end

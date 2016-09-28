@@ -138,7 +138,6 @@ false
         @grabber_threads.each do |gt|
           puts "Killing Thread #{gt}"
           gt.kill
-          gt.raise "CANCEL"
         end
         @grabber_threads.each{|t| t.join }
         

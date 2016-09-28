@@ -8,9 +8,10 @@ module Watobo#:nodoc: all
         fp = Watobo::Conf::ForwardingProxy.to_h
         
         if site.nil?
-          return nil if Watobo::Conf::ForwardingProxy.default_proxy.empty?
-          name = Watobo::Conf::ForwardingProxy.default_proxy          
-          proxy = fp[name]
+          return nil unless fp.has_key? :default_proxy
+          return nil if fp[:default_proxy].empty?
+          name = fp[:default_proxy]
+          proxy = fp[:name]
           return Watobo::Proxy.new(proxy)
         end
         
@@ -33,6 +34,7 @@ module Watobo#:nodoc: all
       rescue => bang
         puts bang
         puts bang.backtrace
+        puts fp
       end
       return nil
     end

@@ -539,6 +539,7 @@ module Watobo #:nodoc: all
 
           @btn_send.connect(SEL_COMMAND, method(:onBtnSendClick))
 
+          # TODO: remove timer for query scanner status. instead subscribe for events.
           add_update_timer(250)
 
         rescue => bang
@@ -551,7 +552,7 @@ module Watobo #:nodoc: all
       private
 
       def add_update_timer(ms)
-        Watobo.save_thread {
+        FXApp.instance.addTimeout(500, :repeat => true) {
           unless @scanner.nil?
             @scan_status_lock.synchronize do
 

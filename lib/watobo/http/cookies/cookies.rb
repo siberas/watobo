@@ -14,6 +14,10 @@ module Watobo#:nodoc: all
         self.to_a
       end
 
+      def empty?
+        @cookies.empty?
+      end
+
       def to_a
         cookies = []
         raw_cookies do |c|

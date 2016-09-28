@@ -1227,7 +1227,7 @@ module Watobo #:nodoc: all
       end
 
       def add_update_timer(ms)
-       Watobo.save_thread{
+        FXApp.instance.addTimeout(ms, :repeat => true){
               unless @scanner.nil?
                 @scan_status_lock.synchronize do
 

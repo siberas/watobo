@@ -90,7 +90,8 @@ module Watobo #:nodoc: all
               when /start/i
                 start
               when /cancel/i
-                cancel
+                # cancel
+                stop_crawler
             end
           }
 
@@ -170,12 +171,7 @@ module Watobo #:nodoc: all
           end
         end
 
-        def remove_update_timer
-          app = FXApp.instance
-          if app.hasTimeout? @update_timer
-            app.removeTimeout @update_timer
-          end
-        end
+
 
         #   def add_update_timer(ms=50)
         #     @update_timer = FXApp.instance.addTimeout( ms, :repeat => true) {
@@ -204,7 +200,7 @@ module Watobo #:nodoc: all
           end
         end
 
-        def cancel
+        def stop_crawler
           remove_update_timer()
           @crawler.cancel
           @start_button.text = "start"

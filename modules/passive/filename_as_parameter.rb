@@ -31,16 +31,14 @@ module Watobo#:nodoc: all
         def do_test(chat)
           begin
             #  puts "running module: #{Module.nesting[0].name}"
-            all_parms = chat.request.parm_names
-            if all_parms
-              # puts all_parms
-              all_parms.each do |parm|
+            chat.request.parameters(:url, :wwwform, :xml, :json) do |parm|
+
                 @possible_parm_names.each do |pattern|
                   
-                  if parm =~ /#{pattern}/i
+                  if parm.name =~ /#{pattern}/i
                     match = $1
-                    if not @findings.include?(parm)
-                      @findings.push parm
+                    if not @findings.include?(parm.name)
+                      @findings.push parm.name
                       addFinding(
                                  :check_pattern => match,
                                  :chat=>chat
@@ -50,8 +48,6 @@ module Watobo#:nodoc: all
                   
                   
                 end
-                
-              end
             end
           rescue => bang
             puts "ERROR!! #{Module.nesting[0].name}"
