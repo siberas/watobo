@@ -18,7 +18,11 @@ module Watobo#:nodoc: all
       def self.load_plugins(project=nil)
         raise ArgumentError, "Need a project" unless project
         # this is the old plugin style
-        Dir["#{Watobo.plugin_path}/*"].each do |sub|
+        plugin_dirs = [ "#{Watobo.plugin_path}" ]
+        plugin_dirs << File.join(Watobo.working_directory, "plugins")
+
+        plugin_dirs.each do |pdir|
+        Dir["#{pdir}/*"].each do |sub|
           if File.ftype(sub) == "directory"
             pgf = File.join(sub, "gui.rb")
             if File.exist? pgf
@@ -105,6 +109,7 @@ module Watobo#:nodoc: all
 
 
                 # exit
+                end
                 end
               end
             end
