@@ -51,10 +51,14 @@ module Watobo #:nodoc: all
         def generateChecks(chat)
           begin
             puts "* generating checks for #{@db_file} ..."
-            if File.exist?(@db_file)
-            content = File.readlines(@db_file)
+            
+            return false if @db_file.nil?
+            return false if @db_file.empty?
+
+            unless File.exist?(@db_file)
+              content = [@db_file]
             else
-              content = [ @db_file ]
+              content = File.readlines(@db_file)
             end
 
             content.each do |uri|
@@ -680,6 +684,8 @@ module Watobo #:nodoc: all
 
           scan_prefs = Watobo.project.getScanPreferences
           if @logScanChats.checked?
+            puts "* logging enabled"
+            puts @scanlog_name_dt.value
             scan_prefs[:scanlog_name] = @scanlog_name_dt.value unless @scanlog_name_dt.value.empty?
           end
 
@@ -707,7 +713,14 @@ module Watobo #:nodoc: all
             end
             Watobo.log(long_log, :sender => self.class.to_s)
             scan_prefs = Watobo::Conf::Scanner.to_h
+            if @logScanChats.checked?
+              puts "* logging enabled"
+              puts @scanlog_name_dt.value
+              scan_prefs[:scanlog_name] = @scanlog_name_dt.value unless @scanlog_name_dt.value.empty?
+            end
             scan_prefs[:run_passive_checks] = false
+
+
             @scanner.run(scan_prefs)
 
           rescue => bang

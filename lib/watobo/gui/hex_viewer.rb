@@ -66,9 +66,12 @@ module Watobo#:nodoc: all
             pos += 1
             col += 1 
           end
-          chunk = raw_text[row*16..pos-1]
-          @hexTable.setItemText(row, 16, chunk.gsub(/[^[:print:]]/,'.')) if !chunk.nil?
-              @hexTable.getItem(row, 16).justify = FXTableItem::LEFT
+          chunk = StringIO.new
+          chunk.set_encoding('ASCII-8BIT')
+          #chunk = raw_text[row*16..pos-1]
+          chunk << raw_text[row*16..pos-1]
+          @hexTable.setItemText(row, 16, chunk.string.gsub(/[^[:print:]]/,'.')) if !chunk.nil?
+          @hexTable.getItem(row, 16).justify = FXTableItem::LEFT
           
         end
         

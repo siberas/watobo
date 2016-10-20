@@ -255,7 +255,7 @@ module Watobo #:nodoc: all
             end
 
             unless t_response.body.nil?
-              return false, t_request, t_response if t_response.body =~ /#{pat}/
+              return false, t_request, t_response if t_response.body.to_s =~ /#{pat}/
             end
           end
         end

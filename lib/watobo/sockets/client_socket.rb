@@ -210,13 +210,14 @@ module Watobo #:nodoc: all
           site = "#{target}:#{tport}"
           #puts "CONNECT #{site}"
 
+          begin
           socket.print "HTTP/1.0 200 Connection established\r\n" +
                            #"Proxy-connection: Keep-alive\r\n" +
                            "Proxy-agent: WATOBO-Proxy/1.1\r\n" +
                            "\r\n"
           bscount = 0 # bad handshake counter
           #  puts "* wait for ssl handshake ..."
-          begin
+
             unless @fake_certs.has_key? site
               puts "CREATE NEW CERTIFICATE FOR >> #{site} <<"
               cn = Watobo::HTTPSocket.get_ssl_cert_cn(target, tport)
