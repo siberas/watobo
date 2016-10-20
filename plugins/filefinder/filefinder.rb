@@ -51,9 +51,11 @@ module Watobo #:nodoc: all
         def generateChecks(chat)
           begin
             puts "* generating checks for #{@db_file} ..."
-            return false unless File.exist?(@db_file)
-
+            if File.exist?(@db_file)
             content = File.readlines(@db_file)
+            else
+              content = [ @db_file ]
+            end
 
             content.each do |uri|
               # puts "+ #{uri}"
@@ -79,7 +81,7 @@ module Watobo #:nodoc: all
                   new_uri << "/" if @append_slash == true
                   # puts ">> #{new_uri}"
                   test.replaceFileExt(new_uri)
-                  # puts test.url
+                   puts test.url
                   status, test_request, test_response = fileExists?(test, @prefs)
 
 
@@ -616,7 +618,7 @@ module Watobo #:nodoc: all
           @check = Check.new(@project, name, @project.getScanPreferences())
 
           if @append_extensions_cb.checked?
-            extensions = @extensions_text.text.split(/(;|\n)/).select { |x| !x.strip.empty? }
+            extensions = @extensions_text.text.strip.split(';').select { |x| !x.strip.empty? }
 
             @check.set_extensions(extensions)
           end
