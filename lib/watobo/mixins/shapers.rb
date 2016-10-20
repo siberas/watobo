@@ -51,8 +51,14 @@ module Watobo #:nodoc: all
           dir.strip!
           dir.gsub!(/^\/+/, "")
           dir.gsub!(/\/+$/, "")
-          dir += "/" unless dir == ''
+          dir << '/' unless dir.empty?
           self.first.gsub!(/(^[^[:space:]]{1,} https?:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}\/)(.*)( HTTP\/.*)/, "\\1#{dir}\\3")
+        end
+
+        def set_path(path)
+          path.strip!
+          path.gsub!(/^\/+/, "")
+          self.first.gsub!(/(^[^[:space:]]{1,} https?:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}\/)(.*)( HTTP\/.*)/, "\\1#{path}\\3")
         end
 
         #
