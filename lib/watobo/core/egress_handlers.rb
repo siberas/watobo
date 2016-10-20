@@ -54,6 +54,7 @@ module Watobo#:nodoc: all
     
     def self.reload
       @history.each do |file|
+       # puts "load egress file #{file}"
         load file
       end
     end
