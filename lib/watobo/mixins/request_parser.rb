@@ -123,13 +123,13 @@ module Watobo#:nodoc: all
           request = Watobo::Request.new(request)
 
           ct = request.content_type_ex
-          # puts ct
+
           # last line is without "\r\n" if text has a body
           if ct =~ /multipart/ and body then
             #Content-Type: multipart/form-data; boundary=---------------------------3035221901842
             if ct =~ /boundary=([\-\w]+)/
               boundary = $1.strip
-              chunks = body.split(/--#{boundary}[\-]{0,2}/)
+              chunks = body.split(/--#{boundary}[\-]{0,2}[\r\n]{0,2}/)
               #chunks.pop # remove "--"
               #puts "Multipart request has #{chunks.length} chunks"
               new_body = []
@@ -138,7 +138,7 @@ module Watobo#:nodoc: all
                 #c.gsub!(/[\-]+$/,'')
                 next if c.nil?
                 next if c.strip.empty?
-                c.strip!
+                #c.strip!
                 if c =~ /\n\n/
                   ctmp = c.split(/\n\n/)
                   cheader = ctmp.shift.split(/\n/)
