@@ -61,7 +61,9 @@ module Watobo #:nodoc: all
     end
 
     def initialize(owner, title, project, opts)
-      super(owner, title, :opts => DECOR_ALL, :width => 800, :height => 600)
+      copts = { :opts => DECOR_ALL, :width => 800, :height => 600 }
+      copts.update opts
+      super(owner, title, copts )
 
       @icon = nil
       @update_timer = nil
