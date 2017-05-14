@@ -17,7 +17,10 @@ module Watobo#:nodoc: all
         text_frame = FXVerticalFrame.new(base_frame, LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_SUNKEN|FRAME_THICK, :padding => 0)
         @textbox = FXText.new(text_frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|TEXT_WORDWRAP)
         @textbox.setText(chat.comment)
-        @textbox.setFocus()
+        # TODO: reactive setFocus
+        # needed to remove because of crash on specific systems
+        # see https://github.com/siberas/watobo/issues/6
+        #@textbox.setFocus()
         @textbox.setDefault()
 
         @textbox.connect(SEL_KEYPRESS) { |sender, sel, event|
