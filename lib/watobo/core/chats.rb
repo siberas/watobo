@@ -236,7 +236,6 @@ module Watobo#:nodoc: all
             match = true
             end
           end
-          puts "MIME_TYPE: #{match}"
         return false if match == false
         end
 

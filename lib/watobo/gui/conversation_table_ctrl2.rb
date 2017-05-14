@@ -67,18 +67,18 @@ module Watobo#:nodoc: all
         FXMAPFUNC(SEL_COMMAND, ID_ACCEPT, :onAccept)
         matrix = FXMatrix.new(main, 5, :opts => MATRIX_BY_COLUMNS|LAYOUT_FILL_X|LAYOUT_FILL_Y)
         f = FXVerticalFrame.new(matrix, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
-        generell_gb = FXGroupBox.new(f, "Generell", FRAME_GROOVE|LAYOUT_FILL_X|LAYOUT_FILL_Y, 0, 0, 0, 0)
-        generell_frame = FXVerticalFrame.new(generell_gb, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
-        @table_option_unique = FXCheckButton.new(generell_frame, "unique chats", nil, 0, ICON_BEFORE_TEXT|LAYOUT_SIDE_LEFT)
+        general_gb = FXGroupBox.new(f, "General", FRAME_GROOVE|LAYOUT_FILL_X|LAYOUT_FILL_Y, 0, 0, 0, 0)
+        general_frame = FXVerticalFrame.new(general_gb, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
+        @table_option_unique = FXCheckButton.new(general_frame, "unique chats", nil, 0, ICON_BEFORE_TEXT|LAYOUT_SIDE_LEFT)
         state = filter.has_key?(:unique) ? filter[:unique] : false
         @table_option_unique.setCheck(state)
 
-        @table_option_scope = FXCheckButton.new(generell_frame, "scope only", nil, 0, ICON_BEFORE_TEXT|LAYOUT_SIDE_LEFT)
+        @table_option_scope = FXCheckButton.new(general_frame, "scope only", nil, 0, ICON_BEFORE_TEXT|LAYOUT_SIDE_LEFT)
        
         state = filter.has_key?(:scope_only) ? filter[:scope_only] : false
         @table_option_scope.setCheck(state)
 
-        @table_option_hidetested_cb = FXCheckButton.new(generell_frame, "hide tested", nil, 0, ICON_BEFORE_TEXT|LAYOUT_SIDE_LEFT)
+        @table_option_hidetested_cb = FXCheckButton.new(general_frame, "hide tested", nil, 0, ICON_BEFORE_TEXT|LAYOUT_SIDE_LEFT)
         state = filter.has_key?(:hide_tested) ? filter[:hide_tested] : false
         @table_option_hidetested_cb.setCheck(state)        
         
