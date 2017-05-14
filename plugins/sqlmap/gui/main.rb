@@ -29,13 +29,9 @@ module Watobo #:nodoc: all
 
         end
 
-        def check_linux_terminals
-          return nil
-          ['gnome-terminal', 'xterm'].each do |t|
-            xterm_bin = "/usr/bin/#{t}"
-            return xterm_bin if File.exist? xterm_bin
-          end
-          nil
+        def xterm_path
+          bin = '/usr/bin/xterm'
+          File.exist?(bin) ? bin : ''
         end
 
         def initialize(owner, project=nil, chat=nil)
@@ -59,7 +55,7 @@ module Watobo #:nodoc: all
 
           @change_btn.connect(SEL_COMMAND) {
             open_path = nil
-            unless @binary_path_txt.text.empty?
+            unless @binary_path_txt.text.strip.empty?
               dir_name = File.dirname(@binary_path_txt.text)
               unless dir_name.empty?
                 open_path = dir_name unless File.exist? dir_name
@@ -71,8 +67,8 @@ module Watobo #:nodoc: all
               @binary_path_txt.text = bin_path
             else
               @binary_path_txt.text = bin_path_old
-
             end
+
             if File.exist? @binary_path_txt.text
               Watobo::Plugin::Sqlmap.set_binary_path bin_path
               @accept_btn.enable
@@ -170,8 +166,8 @@ module Watobo #:nodoc: all
 
         def linux_command(file)
           # /usr/bin/xterm -hold -e "script -c \"ls -alh\" test234.out"
-          term_bin = check_linux_terminals
-          return nil if term_bin.nil?
+          term_bin = xterm_path
+          return '' if term_bin.empty?
 
           command = "cd #{@output_path_txt.text} && #{term_bin} "
           command << '-hold ' unless term_bin.match(/xterm/).nil?
@@ -202,7 +198,7 @@ module Watobo #:nodoc: all
                         win_command file
                     end
 
-          unless command.nil? or command.strip.empty?
+          unless command.strip.empty?
             Thread.new(command) { |cmd|
               system(cmd)
             }

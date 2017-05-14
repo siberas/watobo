@@ -9,24 +9,28 @@ module Watobo#:nodoc: all
       @binary_path = ''
       @command = ""
       @tmp_dir = nil
-      # set sqlmap binary path, leave it empty to check well-know-locaitons
-      # it returns the path if any or an empty string
-      def self.set_binary_path(path=nil)
-        search_paths = @well_known_paths
-        search_paths = [ path ] unless path.nil?
-        @binary_path = ""
+
+      def self.search_binary
+        bin_path = ''
 
         [ "sqlmap.py",
           "sqlmap"     # on some distributions no .py extension, e.g. kali linux
         ].each do |binary_name|
-          search_paths.each do |p|
-          bp = File.join(p, binary_name)
-          if File.exist? bp
-            @binary_path = bp
-            break
-          end
+          @well_known_paths.each do |p|
+            bp = File.join(p, binary_name)
+            if File.exist? bp
+              bin_path = bp
+              break
+            end
           end
         end
+        bin_path
+      end
+      # set sqlmap binary path, leave it empty to check well-know-locations
+      # it returns the path if any or an empty string
+      def self.set_binary_path(path=nil)
+        @binary_path = path.nil? ? search_binary : path
+
         save_config
         
         @binary_path
@@ -68,6 +72,7 @@ module Watobo#:nodoc: all
                    :tmp_dir => @tmp_dir,
                    :binary_path => @binary_path
         }
+
         Watobo::Utils.save_settings(file, config)
       end
       
