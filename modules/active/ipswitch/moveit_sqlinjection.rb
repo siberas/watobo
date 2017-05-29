@@ -75,7 +75,7 @@ module Watobo #:nodoc: all
                   end
                 rescue Timeout::Error
 
-                  output << "Request didn't finish after max_t #{max_t}\nPrevious Response Times:\n#{rtimes}"
+                  output << "Request didn't finish after max_t #{max_t}\nPrevious Response Times:\n- #{rtimes.join("\n- ")}"
 
                   addFinding(test_request, test_response,
                              :check_pattern => 'ASP.NET_SessionId',

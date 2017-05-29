@@ -1,7 +1,7 @@
 # @private 
 module Watobo#:nodoc: all
   module Plugin
-    class CQ5
+    class Sniper
       class Agent < Watobo::Session
          def initialize(base_request, in_queue, out_queue )
             @work_queue = in_queue

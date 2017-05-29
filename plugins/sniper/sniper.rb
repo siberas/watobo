@@ -5,7 +5,7 @@ module Watobo#:nodoc: all::Plugin
       plugin_name "Sniper"
       description "Run specific tests on a list of targets. Good for bughunting."
       load_libs
-      load_gui :main, :tree_view
+      load_gui :main, :targets
     end
   end
 end

@@ -3,7 +3,7 @@
 # @private 
 module Watobo#:nodoc: all
   module Plugin
-    class AEM
+    class Sniper
       class Gui
     class TreeView < FXTreeList
       
