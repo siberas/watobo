@@ -1,31 +1,54 @@
 # @private 
 module Watobo#:nodoc: all
-  module Gui
+
     module Settings
-       def self.save_gui_settings(settings)
-        wd = Watobo.working_directory
 
-        dir_name = Watobo::Utils.snakecase self.class.to_s.gsub(/.*::/,'')
-        path = File.join(wd, "conf", "gui")
-        Dir.mkdir path unless File.exist? path
-        conf_dir = File.join(path, dir_name)
-        Dir.mkdir conf_dir unless File.exist? conf_dir
-        file = File.join(conf_dir, dir_name + "_settings.yml")
-        
-        Watobo::Utils.save_settings(file, config)
+      module Saver
+
+        def inner_filename=(fname)
+          @@inner_filename=fname
+        end
+
+        def save(&block)
+          s = self.to_h
+          s = yield(s) if block_given?
+          Watobo::Utils.save_settings(@@inner_filename, s)
+        end
+
+        def load()
+          return false unless File.exist?(@@inner_filename)
+
+          config = Watobo::Utils.load_settings(@@inner_filename)
+          self.marshal_load config
+          true
+        end
       end
 
-      def load_gui_settings()
+      def self.included(base)
+        const_set('Settings', OpenStruct.new )
+        s = const_get('Settings')
+        s.extend Saver
+
+        stack = base.to_s.split('::')
+
+        clazz_name = stack.pop
+        grp_name = stack.pop
+
+        subdir = grp_name.nil? ? '' : Watobo::Utils.snakecase(grp_name)
+        cname = Watobo::Utils.snakecase(clazz_name)
+
         wd = Watobo.working_directory
-        dir_name = Watobo::Utils.snakecase self.class.to_s.gsub(/.*::/,'')
-        path = File.join(wd, "conf", "gui")
-        Dir.mkdir path unless File.exist? path
-        conf_dir = File.join(path, dir_name)
+
+        conf_dir = File.join(wd, 'conf')
         Dir.mkdir conf_dir unless File.exist? conf_dir
-        file = File.join(conf_dir, dir_name + "_settings.yml")
-        config = Watobo::Utils.load_settings(file)
-        config
+
+        grp_dir = File.join(conf_dir, subdir)
+        Dir.mkdir grp_dir unless File.exist? grp_dir
+
+        s.inner_filename = File.join(grp_dir, cname + '_settings.yml')
+        s.load
+
+
       end
-    end
-  end
+end
 end

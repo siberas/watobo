@@ -67,6 +67,9 @@ module Watobo #:nodoc: all
       puts self
       return true
     end
+
+
+
   end
 
   class PluginGui < FXDialogBox
@@ -110,12 +113,15 @@ module Watobo #:nodoc: all
       title = self.class.instance_variable_defined?("@window_title") ? window_title : "#{self}"
       super(Watobo::Gui.application, title, copts)
 
+
+
       @timer_lock = Mutex.new
       load_icon
 
     end
 
     private
+
 
     def load_icon
       ipath = icons_path

@@ -1121,7 +1121,7 @@ module Watobo #:nodoc: all
         self.icon = ICON_WATOBO
         self.show(PLACEMENT_MAXIMIZED)
 
-        self.extend Watobo::Gui::Settings
+        self.extend Watobo::Settings
 
         self.connect(SEL_CLOSE, method(:onClose))
 
