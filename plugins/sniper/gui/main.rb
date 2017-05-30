@@ -2,10 +2,15 @@
 module Watobo#:nodoc: all
   module Plugin
     class Sniper
+      include Watobo::Settings
+
       class Gui < Watobo::PluginGui
 
         window_title "Sniper"
         icon_file "hunter.ico"
+
+
+
         def start
           @results = []
           @tree_view.clear
@@ -27,13 +32,12 @@ module Watobo#:nodoc: all
 
           super()
 
+          self.extend Watobo::Settings
+
           main_frame = FXVerticalFrame.new(self, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
           
           url_frame = FXHorizontalFrame.new(main_frame, :opts => LAYOUT_FILL_X)
-          @url = FXTextField.new(url_frame, 25, nil, 0, :opts => TEXTFIELD_NORMAL|LAYOUT_FILL_X|LAYOUT_LEFT)
-
-          @url.setFocus()
-          @url.setDefault()
+         
 
           @start_btn = FXButton.new(url_frame, "start")
 
