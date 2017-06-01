@@ -124,6 +124,7 @@ Watobo::Gui.create_application
 require 'watobo/gui/utils/init_icons'
 #require 'watobo/gui/mixins/subscriber'
 require 'watobo/gui/mixins/gui_settings'
+require 'watobo/gui/mixins/events'
 require 'watobo/gui/fxsave_thread'
 
 gui_path = File.expand_path(File.join(File.dirname(__FILE__), "gui"))

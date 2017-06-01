@@ -32,34 +32,45 @@ module Watobo#:nodoc: all
 
           super()
 
+          begin
           self.extend Watobo::Settings
 
           main_frame = FXVerticalFrame.new(self, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
           
           url_frame = FXHorizontalFrame.new(main_frame, :opts => LAYOUT_FILL_X)
-         
+
 
           @start_btn = FXButton.new(url_frame, "start")
 
-          @url.connect(SEL_COMMAND){ start }
           @start_btn.connect(SEL_COMMAND){ start }
 
           @stop_btn = FXButton.new(url_frame, "stop")
           @stop_btn.connect(SEL_COMMAND){ stop }
           
           splitter = FXSplitter.new(main_frame, LAYOUT_FILL_X|SPLITTER_HORIZONTAL|LAYOUT_FILL_Y|SPLITTER_TRACKING)
-          targets_frame  = TargetsFrame.new(splitter, :opts => LAYOUT_SIDE_BOTTOM|LAYOUT_FIX_WIDTH, :width => 450)
-         
-          
+          @targets_frame  = TargetsFrame.new(splitter, :opts => LAYOUT_SIDE_BOTTOM|LAYOUT_FILL_X)
+          @policy_frame = ChecksPolicyFrame.new(splitter)
 
-          top_frame = FXVerticalFrame.new(splitter, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|LAYOUT_FIX_HEIGHT|FRAME_SUNKEN,:height => 500)
-          checks_frame  = FXVerticalFrame.new(splitter, :opts => LAYOUT_SIDE_BOTTOM|LAYOUT_FIX_WIDTH, :width => 450)
+          @policy_frame.subscribe(:sel_command){
+           puts '* checks changed'
+          }
+            @results_frame  = ResultFrame.new(splitter, :opts => LAYOUT_SIDE_BOTTOM|LAYOUT_FILL_X)
+
+
+
+          #top_frame = FXVerticalFrame.new(splitter, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|LAYOUT_FIX_HEIGHT|FRAME_SUNKEN,:height => 500)
+          #checks_frame  = FXVerticalFrame.new(splitter, :opts => LAYOUT_SIDE_BOTTOM, :width => 450)
           
          
           frame = FXHorizontalFrame.new(main_frame, :opts => LAYOUT_FILL_X)
 
           @save_btn = FXButton.new(frame, "export", :opts => BUTTON_NORMAL|LAYOUT_RIGHT)
           @save_btn.connect(SEL_COMMAND){ save_results }
+          rescue => bang
+            puts bang
+            puts bang.backtrace
+            exit
+            end
 
         end
 

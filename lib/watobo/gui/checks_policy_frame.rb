@@ -2,6 +2,7 @@
 module Watobo#:nodoc: all
   module Gui
     class ChecksPolicyFrame < FXVerticalFrame
+
      # attr :policy_name
       def onPolicyChanged(sender, sel, item)
         @policy_name = @policyCombo.getItemText(@policyCombo.currentItem)
@@ -64,6 +65,8 @@ module Watobo#:nodoc: all
         # Invoke base class initialize function first
         super(parent, :opts => LAYOUT_FILL_X| LAYOUT_FILL_Y, :padding => 0)
 
+        self.extend Watobo::Gui::Events
+
          @checks = Watobo::ActiveModules.to_a
         #@checks = Watobo.active_checks
 =begin        
@@ -100,6 +103,12 @@ module Watobo#:nodoc: all
 
         tree_frame = FXVerticalFrame.new(self, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_GROOVE)
         @tree = CheckBoxTreeList.new(tree_frame)
+
+        @tree.subscribe(:sel_command){
+          puts '!! TREE SEL_COMMAND'
+          notify(:sel_command)
+          false
+        }
 
         #if @policy_list
         #  @policy_list.each do |pname, p|
