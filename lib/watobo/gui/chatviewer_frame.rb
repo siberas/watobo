@@ -432,9 +432,9 @@ module Watobo #:nodoc: all
         @hexViewer = HexViewer.new(tab_frame)
         @viewers << @hexViewer
 
-        FXTabItem.new(@tabBook, "HTML", nil)
-        @html_viewer = HTMLViewerFrame.new(@tabBook, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_RAISED)
-        @viewers << @html_viewer
+#        FXTabItem.new(@tabBook, "HTML", nil)
+#        @html_viewer = HTMLViewerFrame.new(@tabBook, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_RAISED)
+#        @viewers << @html_viewer
 
         FXTabItem.new(@tabBook, "Custom", nil)
         @viewers << CustomViewer.new(@tabBook, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_RAISED)
