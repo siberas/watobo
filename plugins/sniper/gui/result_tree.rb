@@ -584,6 +584,14 @@ module Watobo #:nodoc: all
 
         class ResultFrame < FXVerticalFrame
 
+          def set_targets
+
+          end
+
+          def update
+            
+          end
+
           def initialize(parent, opts)
             super(parent, opts)
 

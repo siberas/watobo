@@ -1,6 +1,9 @@
 # @private 
 module Watobo#:nodoc: all
 
+  # Mixin for easier settings handling
+  # This mixin should be included in the base class of an object
+  # Then it's possibe to reference it from within subclasses or modules
     module Settings
 
       module Saver
