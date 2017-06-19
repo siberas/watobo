@@ -1,4 +1,6 @@
-# @private 
+# @private
+# https://stackoverflow.com/questions/30814230/dynamically-create-ssl-certs-keys-with-common-ca
+
 module Watobo#:nodoc: all
   module CA
     @cadir = File.join(Watobo.working_directory, "CA")
