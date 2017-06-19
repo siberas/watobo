@@ -147,6 +147,10 @@ module Watobo #:nodoc: all
       }
     end
 
+    def remove_timer(timer)
+      FXApp.instance.removeTimeout(timer)
+    end
+
   end
 end
 

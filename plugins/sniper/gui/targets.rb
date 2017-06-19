@@ -5,6 +5,10 @@ module Watobo #:nodoc: all
       class Gui
         class TargetsFrame < FXVerticalFrame
 
+          def targets
+            @targets_list.to_s.split("\n").map{|t| t.strip }
+          end
+
           def initialize(parent, opts)
             super(parent, opts)
 
@@ -47,18 +51,28 @@ module Watobo #:nodoc: all
                 @settings.save
 
                 valid = 0
+                offline = 0
 
                 File.readlines(filename).each do |l|
                   l.strip!
                   next if l.empty?
 
                   if is_url?(l)
-                    valid += 1
-                    @targets_list.appendText("#{l}\n")
+
+
+                    request = Request.new(l)
+
+                    if Watobo::HTTPSocket.siteAlive?(request)
+                      @targets_list.appendText("#{l}\n")
+                      valid += 1
+                    else
+                      offline += 1
+                    end
+
                   end
                 end
 
-                FXMessageBox.information(self,MBOX_OK,"Import Target URLs", "Found #{valid} valid URLs.")
+                FXMessageBox.information(self,MBOX_OK,"Import Target URLs", "Found #{valid} valid URLs.\n#{offline} were offline.")
 
             end
           end

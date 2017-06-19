@@ -1,24 +1,24 @@
 # @private 
-module Watobo#:nodoc: all
+module Watobo #:nodoc: all
   module Conf
 
     @@settings = Hash.new
     @count = 0
     @@modules = []
-    
+
     def self.each(&b)
       @@modules.each do |m|
         yield m if block_given?
       end
       @@modules.length
     end
-    
+
     def self.load_project_settings()
       @@modules.each do |m|
         m.load_project()
       end
     end
-    
+
     def self.load_session_settings()
       @@modules.each do |m|
         m.load_session()
@@ -32,7 +32,7 @@ module Watobo#:nodoc: all
       m = const_get(group)
       m.module_eval do
         def self.to_file
-       #   n = self.to_s.gsub(/(Watobo)?::/, "/").gsub(/([A-Z])([A-Z][a-z])/, '\1_\2').gsub(/([a-z\d])([A-Z])/, '\1_\2').tr("-","_").downcase
+          #   n = self.to_s.gsub(/(Watobo)?::/, "/").gsub(/([A-Z])([A-Z][a-z])/, '\1_\2').gsub(/([a-z\d])([A-Z])/, '\1_\2').tr("-","_").downcase
           n = Watobo::Utils.snakecase self.to_s.gsub(/(Watobo)?::/, "/")
           n << ".yml"
         end
@@ -40,7 +40,7 @@ module Watobo#:nodoc: all
         def self.update(filename=nil, &b)
           n = self.to_file
           file = filename unless filename.nil?
-          file = File.join( Watobo::Conf::General.working_directory, n )
+          file = File.join(Watobo::Conf::General.working_directory, n)
           if File.exist? file
             puts " [#{self}] update settings from file #{file}" if $DEBUG
             @settings.update YAML.load_file(file)
@@ -48,11 +48,11 @@ module Watobo#:nodoc: all
             puts "! [#{self}] could not update settings from file #{file}" if $DEBUG
           end
         end
-        
+
         # returns the group name of the module
         # e.g. the group name of Watobo::Conf::Interceptor would be Interceptor
         def self.group_name
-          self.to_s.gsub(/.*::/,"")
+          self.to_s.gsub(/.*::/, "")
         end
 
         def self.set(settings)
@@ -60,45 +60,45 @@ module Watobo#:nodoc: all
           @settings = YAML.load(YAML.dump(settings))
         end
 
-        def self.save_session( *filter, &b)
+        def self.save_session(*filter, &b)
           #raise ArgumentError, "Need a valid Watobo::DataStore" unless data_store.respond_to? :save_project_settings
           s = filter_settings filter
           s = yield s if block_given?
-         # puts group_name
-          Watobo::DataStore.save_session_settings( group_name, s )
+          # puts group_name
+          Watobo::DataStore.save_session_settings(group_name, s)
         end
 
-        def self.save_project( *filter, &b)
-         # raise ArgumentError, "Need a valid Watobo::DataStore" unless data_store.respond_to? :save_project_settings
+        def self.save_project(*filter, &b)
+          # raise ArgumentError, "Need a valid Watobo::DataStore" unless data_store.respond_to? :save_project_settings
           s = filter_settings filter
           s = yield s if block_given?
-         # puts @settings.to_yaml
-         # puts s.to_yaml
+          # puts @settings.to_yaml
+          # puts s.to_yaml
           Watobo::DataStore.save_project_settings(group_name, s)
         end
-        
+
         def self.load_session(prefs={}, &b)
-          
-          p = { :update => true }
+
+          p = {:update => true}
           p.update prefs
-          
+
           s = Watobo::DataStore.load_session_settings(group_name)
           return false if s.nil?
-          
+
           if p[:update] == true
             @settings.update s
           else
             @settings = s
           end
         end
-        
+
         def self.load_project(prefs={}, &b)
-          p = { :update => true }
+          p = {:update => true}
           p.update prefs
-          
+
           s = Watobo::DataStore.load_project_settings(group_name)
           return false if s.nil?
-          
+
           if p[:update] == true
             @settings.update s
           else
@@ -108,13 +108,13 @@ module Watobo#:nodoc: all
 
         def self.filter_settings(f)
           s = YAML.load(YAML.dump(@settings))
-          
+
           return s unless f.is_a? Array
           return s if f.empty?
           #return s unless s.respond_to? :each_key
-          
+
           s.each_key do |k|
-              s.delete k unless f.include? k
+            s.delete k unless f.include? k
           end
           s
         end
@@ -125,21 +125,21 @@ module Watobo#:nodoc: all
           p = Conf::General.working_directory
           unless path.nil?
             if File.exist? path
-            p = path
+              p = path
             end
           end
 
-          file = File.join( p, n )
+          file = File.join(p, n)
 
           s = filter_settings filter
-          
+
 
           yield s if block_given?
 
           if File.exist?(File.dirname(file))
             puts "* save config #{self} to: #{file}"
             puts s.to_yaml
-           
+
             File.open(file, "w") { |fh|
               YAML.dump(s, fh)
             }
@@ -159,46 +159,25 @@ module Watobo#:nodoc: all
         def self.dump
           @settings
         end
-        
+
         def self.to_h
           @settings
         end
-        
+
 
         #@@settings = settings
         def self.method_missing(name, *args, &block)
           #  puts "* instance method missing (#{name})"
           if name =~ /(.*)=$/
-          @settings.has_key? $1.to_sym || super
-          @settings[$1.to_sym] = args[0]
+            @settings.has_key? $1.to_sym || super
+            @settings[$1.to_sym] = args[0]
           else
-          # puts @settings[name.to_sym]
-          @settings[name.to_sym]
+            # puts @settings[name.to_sym]
+            @settings[name.to_sym]
 
           end
         end
 
-        # TODO: create a class-instance of the module itself, so it can be referenced like @scanner.scope
-        # before creating the reference also check if there's another class-instance variable with the same name
-        def self.included_UNUSED(clazz)
-          puts "* #{self} gets included into #{clazz}"
-          @settings.each_key do |k|
-            puts "* add method for #{k}"
-
-            clazz.class_eval "
-            @@#{k} ||= #{self}.#{k}
-
-            def #{k}=(value)
-            @@#{k} = value
-            end
-
-            def #{k}
-            @@#{k}
-            end
-            "
-
-          end
-        end
 
       end
       @@modules << m

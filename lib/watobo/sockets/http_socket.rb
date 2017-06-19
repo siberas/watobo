@@ -25,13 +25,17 @@ module Watobo#:nodoc: all
     # end
     end
 
+    # siteAlive?
+    # checks if site can be reached
+    # input: takes a chat or a request object
     def self.siteAlive?(chat)
       #puts chat.class
       site = nil
       host = nil
       port = nil
 
-      site = chat.request.site
+
+      site = chat.respond_to?(:request) ? chat.request.site : chat.site
 
       #return @sites_online[site] if @sites_online.has_key?(site)
 
@@ -48,8 +52,8 @@ module Watobo#:nodoc: all
 
       else
         print "* check if site is alive (#{site}) ... "
-      host = chat.request.host
-      port = chat.request.port
+      host = chat.respond_to?(:request) ? chat.request.host : chat.host
+      port = chat.respond_to?(:request) ? chat.request.port : chat.port
 
       end
 

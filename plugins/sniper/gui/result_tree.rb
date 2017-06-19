@@ -584,6 +584,14 @@ module Watobo #:nodoc: all
 
         class ResultFrame < FXVerticalFrame
 
+          def show_results(results)
+
+          end
+
+          def update
+
+          end
+
           def initialize(parent, opts)
             super(parent, opts)
 
@@ -591,7 +599,7 @@ module Watobo #:nodoc: all
 
             result_gb = FXGroupBox.new(self, "Results", FRAME_GROOVE|LAYOUT_FILL_X|LAYOUT_FILL_Y, 0, 0, 0, 0)
             @result_tree = ResultTree.new(result_gb) #, :opts => LAYOUT_SIDE_BOTTOM|LAYOUT_FIX_WIDTH, :width => 450)
-        # namespace end
+            # namespace end
           end
         end
 
