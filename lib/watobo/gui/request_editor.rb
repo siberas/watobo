@@ -292,9 +292,8 @@ module Watobo #:nodoc: all
 
       def normalizeText(text)
         begin
-          t = text
-          return "" if text.nil?
-          t = text.join if text.is_a? Array
+          return '' if text.nil?
+          t = text.is_a?(Array) ? text.join : text
           t = t.unpack("C*").pack("C*")
           t.gsub!(/\x0d/, '')
 

@@ -23,7 +23,8 @@ module Watobo #:nodoc: all
           normalized_text = text.gsub(/[^[:print:]]/, ".")
         elsif text.respond_to? :has_body?
           if text.content_type =~ /(xml)/
-            doc = Nokogiri::XML(text.body, &:noblanks)
+            body = text.body.force_encoding('iso-8859-1').encode('utf-8')
+            doc = Nokogiri::XML(body, &:noblanks)
             fbody = doc.to_xhtml(indent: 3, indent_text: " ")
             normalized_text = text.headers.map { |h| h.strip }.join("\n")
             normalized_text << "\n\n"
@@ -358,14 +359,20 @@ module Watobo #:nodoc: all
       attr_accessor :max_len, :auto_filter
 
       def setText(text, prefs={})
+        begin
 
         @text = text
         @textviewer.max_len = @max_len
-        index = @tabBook.current
 
-        @viewers[index].setText(text)
-        #  @viewers.map{|v| v.setText(text)}
-        # @textviewer.applyFilter if cp[:filter] == true
+        index = @tabBook.current
+        @viewers[index].setText(@text)
+
+        rescue => bang
+          puts bang
+          puts "Encoding: #{text.to_s.encoding}"
+          puts '---'
+          puts text
+          end
 
       end
 
