@@ -112,6 +112,7 @@ module Watobo #:nodoc: all
 
     class CheckBoxTreeList < FXTreeList
       include Watobo::Gui::Icons
+      include Watobo::Subscriber
       #------------------------------
       # C R E A T E T R E E
       #------------------------------
@@ -251,8 +252,6 @@ module Watobo #:nodoc: all
             TREELIST_MULTIPLESELECT
         )
         #LAYOUT_TOP|LAYOUT_RIGHT|TREELIST_SHOWS_LINES|TREELIST_SHOWS_BOXES|TREELIST_ROOT_BOXES|TREELIST_EXTENDEDSELECT
-
-        self.extend Watobo::Gui::Events
 
         self.connect(SEL_COMMAND) do |sender, sel, item|
           if $DEBUG

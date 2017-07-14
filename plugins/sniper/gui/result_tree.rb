@@ -222,7 +222,6 @@ module Watobo #:nodoc: all
             @clipboard = ""
             @expandeds = []
 
-            @event_dispatcher_listeners = Hash.new
 
             super(parent, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|LAYOUT_TOP|LAYOUT_RIGHT|TREELIST_SHOWS_LINES|TREELIST_SHOWS_BOXES|TREELIST_ROOT_BOXES|TREELIST_EXTENDEDSELECT)
 

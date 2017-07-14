@@ -3,6 +3,8 @@ module Watobo #:nodoc: all
   module Gui
     class ChecksPolicyFrame < FXVerticalFrame
 
+      include Watobo::Subscriber
+
 
       def applyPolicy(policy=nil)
         #return false if policy.nil?
@@ -57,7 +59,6 @@ module Watobo #:nodoc: all
         # Invoke base class initialize function first
         super(parent, :opts => LAYOUT_FILL_X| LAYOUT_FILL_Y, :padding => 0)
 
-        self.extend Watobo::Gui::Events
 
         @checks = Watobo::ActiveModules.to_a
 

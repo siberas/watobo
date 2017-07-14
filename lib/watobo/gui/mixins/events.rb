@@ -1,11 +1,10 @@
 # @private
 module Watobo #:nodoc: all
   module Gui
-    module Events
+    module Events_UNUSED
 
       def self.extended(base)
         base.instance_variable_set('@event_dispatcher_listeners', {})
-
       end
 
       def subscribe(event, &callback)
