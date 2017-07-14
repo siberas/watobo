@@ -2,7 +2,7 @@
 module Watobo#:nodoc: all
   
 LICENSE =<<'EOF'
-Copyright 2011 by siberas, http://www.siberas.de
+Copyright 2017 by siberas, http://www.siberas.de
 
 Disclaimer: You should only use WATOBO to perform 
 vulnerability audits of your own web applications or
