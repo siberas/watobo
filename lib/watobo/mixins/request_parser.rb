@@ -10,6 +10,8 @@ module Watobo#:nodoc: all
       # Possible prefs:
       #
       # :code_dlmtr [String] - set ruby code delimiter
+      #
+      # returns nil on parse error
 
       def parse_code(prefs={})
         cprefs = { :code_dlmtr => '%%' } # default delimiter for ruby code
@@ -104,6 +106,7 @@ module Watobo#:nodoc: all
         body = nil
         begin
           text = parse_code
+          return nil if text.nil?
           request = []
 
           eoh = nil

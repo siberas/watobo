@@ -30,10 +30,14 @@ module Watobo #:nodoc: all
       def sendRequest(new_request, prefs)
 
         if prefs[:run_login] == true
-          login_chats = Watobo::Conf::Scanner.login_chat_ids.uniq.map { |id| Watobo::Chats.get_by_id(id) }
-          #  puts "running #{login_chats.length} login requests"
-          #  puts login_chats.first.class
-          runLogin(login_chats, prefs)
+          unless login_chats = Watobo::Conf::Scanner.login_chat_ids.nil?
+            login_chats = Watobo::Conf::Scanner.login_chat_ids.uniq.map {|id| Watobo::Chats.get_by_id(id)}
+            #  puts "running #{login_chats.length} login requests"
+            #  puts login_chats.first.class
+            runLogin(login_chats, prefs)
+          else
+            #TODO: Show warning message that no login-chats are defined
+          end
         end
 
         request = Watobo::Request.new(new_request)
@@ -274,7 +278,7 @@ module Watobo #:nodoc: all
           @egress.enable
           @egress_handlers.enable
           #@egress_btn.enable
-          Watobo::EgressHandlers.list { |h|
+          Watobo::EgressHandlers.list {|h|
             @egress_handlers.appendItem(h.to_s, nil)
           }
         end
@@ -290,7 +294,7 @@ module Watobo #:nodoc: all
           @chat_queue = Queue.new
 
           @request_sender = ManualRequestSender.new(self.object_id)
-          @request_sender.subscribe(:follow_redirect) { |loc| logger("follow redirect -> #{loc}") }
+          @request_sender.subscribe(:follow_redirect) {|loc| logger("follow redirect -> #{loc}")}
           @responseFilter = FXDataTarget.new("")
 
           @chat = chat
@@ -357,7 +361,7 @@ module Watobo #:nodoc: all
             sendManualRequest()
           }
 
-          @req_builder.subscribe(:error) { |msg| logger(msg) }
+          @req_builder.subscribe(:error) {|msg| logger(msg)}
 
           @req_builder.setRequest(@original_request)
 
@@ -369,9 +373,9 @@ module Watobo #:nodoc: all
           @history_pos.justify = JUSTIFY_RIGHT
           @history_pos.handle(self, FXSEL(SEL_UPDATE, 0), nil)
 
-          hback.connect(SEL_COMMAND) { showHistory(-1) }
+          hback.connect(SEL_COMMAND) {showHistory(-1)}
           hnext = FXButton.new(history_navigation, ">", nil, nil, 0, FRAME_RAISED|FRAME_THICK)
-          hnext.connect(SEL_COMMAND) { showHistory(1) }
+          hnext.connect(SEL_COMMAND) {showHistory(1)}
 
           menu = FXMenuPane.new(self)
           FXMenuCommand.new(menu, "-> GET").connect(SEL_COMMAND, method(:trans2Get))
@@ -412,13 +416,13 @@ module Watobo #:nodoc: all
           @egress_handlers.numVisible = 0
           @egress_handlers.numColumns = 23
           @egress_handlers.editable = false
-          @egress_handlers.connect(SEL_COMMAND) { |sender, sel, name|
+          @egress_handlers.connect(SEL_COMMAND) {|sender, sel, name|
             Watobo::EgressHandlers.last = name
           }
 
           # @egress_handlers.appendItem('none', nil)
           @egress_add_btn = FXButton.new(eframe, "add", nil, nil, 0, FRAME_RAISED|FRAME_THICK)
-          @egress_add_btn.connect(SEL_COMMAND) { add_handler }
+          @egress_add_btn.connect(SEL_COMMAND) {add_handler}
           #@egress_handlers.connect(SEL_COMMAND, method(:onRequestChanged))
           @egress_btn = FXButton.new(eframe, "reload", nil, nil, 0, FRAME_RAISED|FRAME_THICK)
           @egress_btn.connect(SEL_COMMAND) {
@@ -604,7 +608,7 @@ module Watobo #:nodoc: all
         prefs.update current_prefs
         logger("send request")
 
-        @request_thread = Thread.new(new_request, prefs) { |nr, p|
+        @request_thread = Thread.new(new_request, prefs) {|nr, p|
           begin
 
             request, response = @request_sender.sendRequest(nr, p)
@@ -680,7 +684,7 @@ module Watobo #:nodoc: all
       def simulatePressSendBtn()
         @btn_send.state = STATE_DOWN
         getApp().addTimeout(250, :repeat => false) do
-            @btn_send.state = STATE_UP
+          @btn_send.state = STATE_UP
         end
       end
 
