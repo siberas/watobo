@@ -41,7 +41,7 @@ module Watobo #:nodoc: all
             unless chat.response.has_body?
               if chat.response.content_type =~ /(text|script)/ then
                 body = chat.response.body_encoded
-                data << body
+                data << body unless body.nil?
               end
             end
 
