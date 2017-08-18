@@ -32,17 +32,17 @@ module Watobo #:nodoc: all
         @state_mutex.synchronize do
           @state = STATE_RUNNING;
         end
-        Thread.new { @engine.run }
+        Thread.new {@engine.run}
       end
 
       def start
-        @engine = Thread.new(@prefs) { |prefs|
+        @engine = Thread.new(@prefs) {|prefs|
           relogin_count = 0
           loop do
             Thread.current[:pos] = "wait for task"
             task = @tasks.deq
             begin
-             # puts "RUNNING #{task[:module]}"
+              # puts "RUNNING #{task[:module]}"
               request, response = task[:check].call()
 
               next if response.nil?
@@ -92,7 +92,7 @@ module Watobo #:nodoc: all
       end
 
       def stop
-        @state_mutex.synchronize { @state = STATE_IDLE }
+        @state_mutex.synchronize {@state = STATE_IDLE}
         begin
           return false if @engine.nil?
           if @engine.alive?
@@ -220,7 +220,7 @@ module Watobo #:nodoc: all
     def sum_total
       sum = 0
       @task_count_lock.synchronize do
-        sum = @task_counter.values.inject(0) { |i, v| i + v[:total] }
+        sum = @task_counter.values.inject(0) {|i, v| i + v[:total]}
       end
       sum
     end
@@ -228,7 +228,7 @@ module Watobo #:nodoc: all
     def sum_progress
       sum = 0
       @task_count_lock.synchronize do
-        sum = @task_counter.values.inject(0) { |i, v| i + v[:progress] }
+        sum = @task_counter.values.inject(0) {|i, v| i + v[:progress]}
       end
       sum
     end
@@ -247,7 +247,7 @@ module Watobo #:nodoc: all
           if @tasks.num_waiting == @workers.length and @tasks.size == 0 and generation_finished?
             begin
               puts "[#{self}] seems scan is finished. stopping workers now ..."
-              @workers.map { |w|
+              @workers.map {|w|
                 #puts "[]#{self}] stopping worker #{w}"
                 w.stop
               }
@@ -285,7 +285,7 @@ module Watobo #:nodoc: all
 
       @prefs.update check_prefs
       msg = "\n[Scanner] Starting Scan ..."
-     # puts @prefs.to_yaml
+      # puts @prefs.to_yaml
       notify(:logger, LOG_INFO, msg)
       puts msg
 
@@ -302,7 +302,7 @@ module Watobo #:nodoc: all
             @active_checks.uniq.each do |ac|
               ac.reset()
               if site_alive?(chat) then
-                ac.generateChecks(chat) { |check|
+                ac.generateChecks(chat) {|check|
                   while @tasks.size > @max_tasks
                     sleep 1
                   end
@@ -418,7 +418,7 @@ module Watobo #:nodoc: all
         print "... #{i + 1}"
         w = Scanner3::Worker.new(@tasks, @logged_out, check_prefs)
 
-        w.subscribe(:task_finished) { |m|
+        w.subscribe(:task_finished) {|m|
           @task_count_lock.synchronize do
             cn = m.check_name
             @task_counter[cn][:progress] += 1
@@ -438,11 +438,13 @@ module Watobo #:nodoc: all
 
     def login
       #puts "do relogin"
-      login_chats = Watobo::Conf::Scanner.login_chat_ids.uniq.map { |id| Watobo::Chats.get_by_id(id) }
-      #  puts "running #{login_chats.length} login requests"
-      #  puts login_chats.first.class
+      unless Watobo::Conf::Scanner.login_chat_ids.nil?
+        login_chats = Watobo::Conf::Scanner.login_chat_ids.uniq.map {|id| Watobo::Chats.get_by_id(id)}
+        #  puts "running #{login_chats.length} login requests"
+        #  puts login_chats.first.class
 
-      @active_checks.first.runLogin(login_chats, @prefs)
+        @active_checks.first.runLogin(login_chats, @prefs)
+      end
 
     end
 
