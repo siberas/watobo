@@ -469,6 +469,17 @@ module Watobo #:nodoc: all
         end
       end
 
+      def open_plugin_jwt(chat)
+        begin
+          plugin = Watobo::Plugin::JWT::Gui.new( chat)
+          plugin.create
+          plugin.show(Fox::PLACEMENT_SCREEN)
+        rescue => bang
+          puts "!!! could not open jwt plugin"
+          puts bang
+        end
+      end
+
       def addChat(chat)
         # addChatToTable(chat) if chatIsFiltered?(chat) == false
 
@@ -1509,6 +1520,10 @@ module Watobo #:nodoc: all
                   target = FXMenuCommand.new(sendto_menu, "Crawler...")
                   target.connect(SEL_COMMAND) {
                     open_plugin_crawler(chat)
+                  }
+                  target = FXMenuCommand.new(sendto_menu, "JWT...")
+                  target.connect(SEL_COMMAND) {
+                    open_plugin_jwt(chat)
                   }
 
                 end

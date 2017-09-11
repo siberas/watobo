@@ -19,11 +19,13 @@ module Watobo #:nodoc: all
     def self.load_libs(*order)
       lpath = get_lib_path
       if order.empty?
-        libs = Dir.glob("#{lpath}/*")
+        libs = Dir.glob("#{lpath}/*.rb")
       else
         libs = order.map { |l| l.to_s + ".rb" }
       end
+
       libs.each do |lib|
+        puts lib
         load File.join(lib)
       end
     end

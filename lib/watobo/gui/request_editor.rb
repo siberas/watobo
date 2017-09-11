@@ -475,6 +475,9 @@ module Watobo #:nodoc: all
                             begin
                               jb = JSON.parse(text)
                               out = JSON.pretty_generate jb
+                            rescue => bang
+                              puts bang
+                              out = text
                             end
                             out
                           else
