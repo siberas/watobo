@@ -6,14 +6,13 @@ module Watobo #:nodoc: all
 
       class Gui < Watobo::PluginGui
 
-        window_title "Java Web Token"
+        window_title "JSON Web Token Analyzer"
         icon_file "jwt.ico"
-
 
 
         def initialize(chat=nil)
 
-          super()
+          super(:width => 600, :height => 800)
 
           @settings = Watobo::Plugin::JWT::Settings
 
@@ -37,35 +36,35 @@ module Watobo #:nodoc: all
             @raw_tab = FXTabItem.new(@tabBook, "RAW", nil)
             frame = FXVerticalFrame.new(@tabBook, :opts => LAYOUT_FILL_Y|LAYOUT_FILL_Y|FRAME_RAISED)
             FXLabel.new(frame, 'Enter your raw jwt-token here')
-            @client_cert_txt = FXTextField.new(frame, 80,:opts => TEXTFIELD_NORMAL|LAYOUT_SIDE_RIGHT)
+            @raw_txt = FXTextField.new(frame, 80, :opts => TEXTFIELD_NORMAL|LAYOUT_SIDE_RIGHT)
 
 
             @chat_tab = FXTabItem.new(@tabBook, "Chat-ID", nil)
             frame = FXVerticalFrame.new(@tabBook, :opts => LAYOUT_FILL_Y|LAYOUT_FILL_Y|FRAME_RAISED)
             FXLabel.new(frame, 'Enter your chat-id here')
-            @chatid_txt = FXTextField.new(frame, 80,:opts => TEXTFIELD_NORMAL|LAYOUT_SIDE_RIGHT)
+            @chatid_txt = FXTextField.new(frame, 80, :opts => TEXTFIELD_NORMAL|LAYOUT_SIDE_RIGHT)
 
             FXLabel.new(matrix, 'Status: -')
 
             #
 
             FXLabel.new(matrix, "Header:", nil, LAYOUT_TOP|JUSTIFY_RIGHT)
-            frame = FXVerticalFrame.new(matrix, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|LAYOUT_FIX_HEIGHT|FRAME_SUNKEN|FRAME_THICK, :height => 80, :padding => 0 )
+            frame = FXVerticalFrame.new(matrix, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|LAYOUT_FIX_HEIGHT|FRAME_SUNKEN|FRAME_THICK, :height => 80, :padding => 0)
             @head_txt = FXText.new(frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
-           # FXButton.new(matrix, "Select").connect(SEL_COMMAND) { select_key_file }
+            # FXButton.new(matrix, "Select").connect(SEL_COMMAND) { select_key_file }
             FXLabel.new(matrix, '')
 
             #
 
             FXLabel.new(matrix, "Payload:", nil, LAYOUT_TOP|JUSTIFY_RIGHT)
-            frame = FXVerticalFrame.new(matrix, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|LAYOUT_FIX_HEIGHT|FRAME_SUNKEN|FRAME_THICK, :height => 400, :padding => 0 )
+            frame = FXVerticalFrame.new(matrix, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|LAYOUT_FIX_HEIGHT|FRAME_SUNKEN|FRAME_THICK, :height => 400, :padding => 0)
             @payload_txt = FXText.new(frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
             # FXButton.new(matrix, "Select").connect(SEL_COMMAND) { select_key_file }
             FXLabel.new(matrix, '')
 
             #  matrix = FXMatrix.new(main_frame, 2, :opts => MATRIX_BY_COLUMNS|LAYOUT_FILL_X|LAYOUT_FILL_Y)
             FXLabel.new(matrix, "Signature:", nil, LAYOUT_TOP|JUSTIFY_RIGHT)
-            @signature_txt = FXTextField.new(matrix, 83,:target => nil, :selector => 0, :opts => TEXTFIELD_NORMAL)
+            @signature_txt = FXTextField.new(matrix, 83, :target => nil, :selector => 0, :opts => TEXTFIELD_NORMAL)
             FXLabel.new(matrix, '')
 
             FXLabel.new(matrix, "Actions:", nil, LAYOUT_TOP|JUSTIFY_RIGHT)
@@ -81,9 +80,12 @@ module Watobo #:nodoc: all
             unless chat.nil?
               @tabBook.current = 1
               @chatid_txt.setText chat.id.to_s
-              get_token_from_chat chat
+              jwt = get_token_from_chat(chat)
 
-              update_fields
+              unless jwt.nil?
+                @raw_txt.setText jwt unless jwt.nil?
+                update_fields
+              end
             end
 
 
@@ -106,12 +108,13 @@ module Watobo #:nodoc: all
         def get_token_from_chat(chat)
           bearer = chat.request.headers(' Bearer ')[0]
           unless bearer.nil?
-          jwt = bearer.match(/Bearer (.*)/)[1]
-          jhb64, jpb64, jsb64 = jwt.split('.')
-          @jwt_head = JSON.parse(Base64.decode64(jhb64))
-          @jwt_payload = JSON.parse(Base64.decode64(jpb64))
-          @jwt_signature = jsb64
-            end
+            jwt = bearer.match(/Bearer (.*)/)[1]
+            jhb64, jpb64, jsb64 = jwt.split('.')
+            @jwt_head = JSON.parse(Base64.decode64(jhb64))
+            @jwt_payload = JSON.parse(Base64.decode64(jpb64))
+            @jwt_signature = jsb64
+          end
+          bearer
         end
 
 

@@ -41,13 +41,20 @@ module Watobo #:nodoc: all
             pattern = 'Authorization.*Bearer(.*)'
             chat.request.headers do |header|
               if header =~ /#{pattern}/i then
-                match = $1.strip
+                auth_match = $1.strip
                 addFinding(
                     :check_pattern => "#{pattern}",
-                    :proof_pattern => "#{match}",
+                    :proof_pattern => "#{auth_match}",
                     :title => "[Bearer Authentication Scheme] - #{chat.request.path}",
                     :chat => chat
                 )
+
+                # check signature algo
+                jwt = auth_match.match(/Bearer (.*)/)[1]
+                jwt_head = JSON.parse(Base64.decode64(jwt.split('.')[0]))
+                if jwt_head['alg'] =~ /^HS/
+
+                end
               end
 
             end
