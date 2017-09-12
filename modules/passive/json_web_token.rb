@@ -48,13 +48,6 @@ module Watobo #:nodoc: all
                     :title => "[Bearer Authentication Scheme] - #{chat.request.path}",
                     :chat => chat
                 )
-
-                # check signature algo
-                jwt = auth_match.match(/Bearer (.*)/)[1]
-                jwt_head = JSON.parse(Base64.decode64(jwt.split('.')[0]))
-                if jwt_head['alg'] =~ /^HS/
-
-                end
               end
 
             end
