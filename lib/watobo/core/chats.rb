@@ -33,6 +33,7 @@ module Watobo #:nodoc: all
     end
 
 
+    # find_by_url
     def self.find_by_url(site, pattern, opts={}, &block)
       o = {
           :method => nil,
