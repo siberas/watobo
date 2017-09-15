@@ -39,7 +39,6 @@ module Watobo #:nodoc: all
           :max_count => 0,
           :reverse => false
       }
-
       o.update opts
 
       matches = []
@@ -53,11 +52,8 @@ module Watobo #:nodoc: all
           return matches if o[:max_count] > 0 and matches.length >= o[:max_count]
         end
       else
-        puts '* search reverse'
         @chats.reverse_each do |c|
           if c.request.site == site then
-            puts "Test #{c.request.url.class}"
-            puts "Pattern: #{pattern}"
             matches.push c if c.request.url.to_s =~ /#{pattern}/
             yield c if block_given?
           end
