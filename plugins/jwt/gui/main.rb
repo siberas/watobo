@@ -28,15 +28,19 @@ module Watobo #:nodoc: all
           begin
             main_frame = FXVerticalFrame.new(self, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
 
-            matrix = FXMatrix.new(main_frame, 3, :opts => MATRIX_BY_COLUMNS|LAYOUT_FILL_X|LAYOUT_FILL_Y)
+            matrix = FXMatrix.new(main_frame, 2, :opts => MATRIX_BY_COLUMNS|LAYOUT_FILL_X|LAYOUT_FILL_Y)
 
             FXLabel.new(matrix, "Token:", nil, LAYOUT_TOP|JUSTIFY_RIGHT)
 
-            @tabBook = FXTabBook.new(matrix, nil, 0, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|LAYOUT_RIGHT)
+            @tabBook = FXTabBook.new(matrix, nil, 0, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|LAYOUT_RIGHT, :padding => 0)
             @raw_tab = FXTabItem.new(@tabBook, "RAW", nil)
             frame = FXVerticalFrame.new(@tabBook, :opts => LAYOUT_FILL_Y|LAYOUT_FILL_Y|FRAME_RAISED)
             FXLabel.new(frame, 'Enter your raw jwt-token here')
             @raw_txt = FXTextField.new(frame, 80, :opts => TEXTFIELD_NORMAL|LAYOUT_SIDE_RIGHT)
+
+            @raw_txt.connect(SEL_CHANGED) {|sender, sel, index|
+              parse_raw
+            }
 
 
             @chat_tab = FXTabItem.new(@tabBook, "Chat-ID", nil)
@@ -44,15 +48,12 @@ module Watobo #:nodoc: all
             FXLabel.new(frame, 'Enter your chat-id here')
             @chatid_txt = FXTextField.new(frame, 80, :opts => TEXTFIELD_NORMAL|LAYOUT_SIDE_RIGHT)
 
-            FXLabel.new(matrix, 'Status: -')
-
             #
 
             FXLabel.new(matrix, "Header:", nil, LAYOUT_TOP|JUSTIFY_RIGHT)
             frame = FXVerticalFrame.new(matrix, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|LAYOUT_FIX_HEIGHT|FRAME_SUNKEN|FRAME_THICK, :height => 80, :padding => 0)
             @head_txt = FXText.new(frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
             # FXButton.new(matrix, "Select").connect(SEL_COMMAND) { select_key_file }
-            FXLabel.new(matrix, '')
 
             #
 
@@ -60,22 +61,21 @@ module Watobo #:nodoc: all
             frame = FXVerticalFrame.new(matrix, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|LAYOUT_FIX_HEIGHT|FRAME_SUNKEN|FRAME_THICK, :height => 400, :padding => 0)
             @payload_txt = FXText.new(frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
             # FXButton.new(matrix, "Select").connect(SEL_COMMAND) { select_key_file }
-            FXLabel.new(matrix, '')
 
             #  matrix = FXMatrix.new(main_frame, 2, :opts => MATRIX_BY_COLUMNS|LAYOUT_FILL_X|LAYOUT_FILL_Y)
             FXLabel.new(matrix, "Signature:", nil, LAYOUT_TOP|JUSTIFY_RIGHT)
             @signature_txt = FXTextField.new(matrix, 83, :target => nil, :selector => 0, :opts => TEXTFIELD_NORMAL)
-            FXLabel.new(matrix, '')
-
-            FXLabel.new(matrix, "Actions:", nil, LAYOUT_TOP|JUSTIFY_RIGHT)
-            frame = FXHorizontalFrame.new(matrix, :opts => LAYOUT_FILL_Y|LAYOUT_FILL_Y|FRAME_RAISED|PACK_UNIFORM_WIDTH)
-            # add some action buttons
-
-            # save prettyfied
-            FXButton.new(frame, "Save") #.connect(SEL_COMMAND) { select_key_file }
 
             # create new token and copy to clipboard
-            FXButton.new(frame, "Create \& Copy") #.connect(SEL_COMMAND) { select_key_file }
+            FXButton.new(matrix, "Create",:opts => FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_Y|LAYOUT_FILL_X).connect(SEL_COMMAND) {create_token}
+            frame = FXHorizontalFrame.new(matrix, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_RAISED|PACK_UNIFORM_WIDTH)
+            @recalc_cb = FXCheckButton.new(frame, "recalc signature", nil, 0, JUSTIFY_LEFT|JUSTIFY_TOP|ICON_BEFORE_TEXT)
+            @pack_cb = FXCheckButton.new(frame, "pack as is", nil, 0, JUSTIFY_LEFT|JUSTIFY_TOP|ICON_BEFORE_TEXT)
+
+            frame = FXVerticalFrame.new(main_frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
+            token_frame = FXVerticalFrame.new(frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_SUNKEN|FRAME_THICK, :padding => 0)
+            @token_txt = FXText.new(token_frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
+
 
             unless chat.nil?
               @tabBook.current = 1
@@ -99,6 +99,24 @@ module Watobo #:nodoc: all
 
         private
 
+        def parse_raw
+          jhb64, jpb64, jsb64 = @raw_txt.text.strip.split('.')
+          return false if jhb64.nil? | jpb64.nil? | jsb64.nil?
+          begin
+            jwt_head = JSON.parse(Base64.decode64(jhb64))
+            jwt_payload = JSON.parse(Base64.decode64(jpb64))
+            jwt_signature = jsb64
+          rescue => bang
+            return false
+          end
+
+          @jwt_head = jwt_head
+          @jwt_payload = jwt_payload
+          @jwt_signature = jwt_signature
+
+          update_fields
+        end
+
         def update_fields
           @head_txt.setText(JSON.pretty_generate(@jwt_head))
           @payload_txt.setText(JSON.pretty_generate(@jwt_payload))
@@ -115,6 +133,19 @@ module Watobo #:nodoc: all
             @jwt_signature = jsb64
           end
           bearer
+        end
+
+        def create_token
+          token = []
+          begin
+            token << Base64.encode64(JSON.parse(@head_txt.text).to_s)
+            token << Base64.encode64(JSON.parse(@payload_txt.text).to_s)
+            token << @signature_txt.text
+            @token_txt.setText(token.join('.'))
+          rescue => bang
+            @token_txt.setText(bang.to_s)
+          end
+
         end
 
 
