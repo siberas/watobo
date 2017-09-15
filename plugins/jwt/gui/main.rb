@@ -103,8 +103,8 @@ module Watobo #:nodoc: all
           jhb64, jpb64, jsb64 = @raw_txt.text.strip.split('.')
           return false if jhb64.nil? | jpb64.nil? | jsb64.nil?
           begin
-            jwt_head = JSON.parse(Base64.decode64(jhb64))
-            jwt_payload = JSON.parse(Base64.decode64(jpb64))
+            jwt_head = JSON.parse(Base64.urlsafe_decode64(jhb64))
+            jwt_payload = JSON.parse(Base64.urlsafe_decode64(jpb64))
             jwt_signature = jsb64
           rescue => bang
             return false
@@ -128,8 +128,8 @@ module Watobo #:nodoc: all
           unless bearer.nil?
             jwt = bearer.match(/Bearer (.*)/)[1]
             jhb64, jpb64, jsb64 = jwt.split('.')
-            @jwt_head = JSON.parse(Base64.decode64(jhb64))
-            @jwt_payload = JSON.parse(Base64.decode64(jpb64))
+            @jwt_head = JSON.parse(Base64.urlsafe_decode64(jhb64))
+            @jwt_payload = JSON.parse(Base64.urlsafe_decode64(jpb64))
             @jwt_signature = jsb64
           end
           bearer
@@ -138,8 +138,10 @@ module Watobo #:nodoc: all
         def create_token
           token = []
           begin
-            token << Base64.encode64(JSON.parse(@head_txt.text).to_s)
-            token << Base64.encode64(JSON.parse(@payload_txt.text).to_s)
+            #token << Base64.urlsafe_encode64(JSON.parse(@head_txt.text).to_s)
+            token << Base64.urlsafe_encode64(@head_txt.to_s)
+            #token << Base64.urlsafe_encode64(JSON.parse(@payload_txt.text).to_s)
+            token << Base64.urlsafe_encode64(@payload_txt.to_s)
             token << @signature_txt.text
             @token_txt.setText(token.join('.'))
           rescue => bang

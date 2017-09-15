@@ -9,7 +9,7 @@ require 'watobo/plugin_loader'
 
 module Watobo
   module Gui
-    PluginLoader.new(application)
+    PluginLoader.new
     application.create
     application.run
   end
