@@ -110,6 +110,9 @@ module Watobo #:nodoc: all
     end
 
     def initialize(r)
+     # super
+
+      @data = @url = @json = nil
       if r.respond_to? :push
         #puts "Create REQUEST from ARRAY"
         self.concat r
