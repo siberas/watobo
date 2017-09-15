@@ -1,17 +1,16 @@
 # @private 
-module Watobo#:nodoc: all
+module Watobo #:nodoc: all
   module HTTP
     class Url
       def to_s
-        s = @root.url_string
+        @root.url_string
       end
-      
-            
+
       def set(parm)
         if has_parm?(parm.name)
-        @root.replace_get_parm(parm.name, parm.value)
+          @root.replace_get_parm(parm.name, parm.value)
         else
-        @root.add_get_parm(parm.name, parm.value)
+          @root.add_get_parm(parm.name, parm.value)
         end
       end
 
@@ -29,13 +28,13 @@ module Watobo#:nodoc: all
           i = p.index("=")
           name = p[0..i-1]
           val = i < p.length ? p[i+1..-1] : ""
-          parms << Watobo::UrlParameter.new( :name => name, :value => val )
+          parms << Watobo::UrlParameter.new(:name => name, :value => val)
         end
         parms
       end
 
       def initialize(root)
-         @root = root
+        @root = root
 
       end
     end
