@@ -1,5 +1,5 @@
 # @private
-module Watobo#:nodoc: all
+module Watobo #:nodoc: all
   class Chats
     @chats = []
     @chats_lock = Mutex.new
@@ -32,24 +32,75 @@ module Watobo#:nodoc: all
 
     end
 
-    def self.select(site, opts={}, &block)
+
+    def self.find_by_url(site, pattern, opts={}, &block)
       o = {
-        :dir => "",
-        #:file => nil,
-        :method => nil,
-        :max_count => 0
+          :method => nil,
+          :max_count => 0,
+          :reverse => false
       }
+
       o.update opts
-      o[:dir].strip!
-      o[:dir].gsub!(/^\//,"")
 
       matches = []
-      @chats.each do |c|
-        if c.request.site == site then
-          matches.push c if o[:dir] == c.request.dir
-          yield c if block_given?
+
+      unless o[:reverse]
+        @chats.each do |c|
+          if c.request.site == site then
+            matches.push c if c.request.url.to_s =~ /#{pattern}/
+            yield c if block_given?
+          end
+          return matches if o[:max_count] > 0 and matches.length >= o[:max_count]
         end
-        return matches if o[:max_count] > 0 and matches.length >= o[:max_count]
+      else
+        puts '* search reverse'
+        @chats.reverse_each do |c|
+          if c.request.site == site then
+            puts "Test #{c.request.url.class}"
+            puts "Pattern: #{pattern}"
+            matches.push c if c.request.url.to_s =~ /#{pattern}/
+            yield c if block_given?
+          end
+          return matches if o[:max_count] > 0 and matches.length >= o[:max_count]
+        end
+      end
+      return matches
+
+    end
+
+    # select chats by request options
+
+    def self.select(site, opts={}, &block)
+      o = {
+          :dir => "",
+          #:file => nil,
+          :method => nil,
+          :max_count => 0,
+          :reverse => false
+      }
+
+      o.update opts
+      o[:dir].strip!
+      o[:dir].gsub!(/^\//, "")
+
+      matches = []
+
+      unless o[:reverse]
+        @chats.each do |c|
+          if c.request.site == site then
+            matches.push c if o[:dir] == c.request.dir
+            yield c if block_given?
+          end
+          return matches if o[:max_count] > 0 and matches.length >= o[:max_count]
+        end
+      else
+        @chats.reverse_each do |c|
+          if c.request.site == site then
+            matches.push c if o[:dir] == c.request.dir
+            yield c if block_given?
+          end
+          return matches if o[:max_count] > 0 and matches.length >= o[:max_count]
+        end
       end
       return matches
 
@@ -58,8 +109,8 @@ module Watobo#:nodoc: all
     def self.sites(prefs={}, &block)
       list = Hash.new
 
-      cprefs = { :in_scope => false,
-        :ssl => false
+      cprefs = {:in_scope => false,
+                :ssl => false
       }
       cprefs.update prefs
 
@@ -77,8 +128,8 @@ module Watobo#:nodoc: all
     end
 
     def self.dirs(site, list_opts={}, &block)
-      opts = { :base_dir => "",
-        :include_subdirs => true
+      opts = {:base_dir => "",
+              :include_subdirs => true
       }
       opts.update(list_opts) if list_opts.is_a? Hash
       list = Hash.new
@@ -94,9 +145,9 @@ module Watobo#:nodoc: all
           if opts[:include_subdirs] == true then
             yield dir if block_given?
           else
-            d = dir.gsub(/#{Regexp.quote(opts[:base_dir])}/,"")
+            d = dir.gsub(/#{Regexp.quote(opts[:base_dir])}/, "")
             yield dir unless d =~ /\// and block_given?
-          # otherwise it is a subdir of base_dir
+            # otherwise it is a subdir of base_dir
           end
         end
       end
@@ -106,7 +157,7 @@ module Watobo#:nodoc: all
       @chats_lock.synchronize do
         @chats.each do |c|
           if c.id.to_s == chatid.to_s then
-          return c
+            return c
           end
         end
       end
@@ -116,7 +167,7 @@ module Watobo#:nodoc: all
     def self.each(&block)
       if block_given?
         @chats_lock.synchronize do
-          @chats.map{|c| yield c }
+          @chats.map {|c| yield c}
         end
       end
     end
@@ -163,7 +214,7 @@ module Watobo#:nodoc: all
       @chats.each do |chat|
         if match?(chat, filter)
           yield chat if block_given?
-        filtered_chats << chat
+          filtered_chats << chat
         end
       end
 
@@ -177,8 +228,8 @@ module Watobo#:nodoc: all
             @chats << chat
 
             options = {
-              :run_passive_checks => true,
-              :notify => true
+                :run_passive_checks => true,
+                :notify => true
             }
             options.update prefs
 
@@ -195,7 +246,7 @@ module Watobo#:nodoc: all
             end
           end
 
-          # p "!P!"
+            # p "!P!"
         rescue => bang
           puts bang
           puts bang.backtrace if $DEBUG
@@ -207,9 +258,9 @@ module Watobo#:nodoc: all
 
     def self.match?(chat, filter)
       begin
-        
+
         filtered = false
-      # return false if filter[:ok_only] == true and chat.response.responseCode !~ /200/
+        # return false if filter[:ok_only] == true and chat.response.responseCode !~ /200/
 
         if filter[:unique]
           uniq_hash = chat.request.uniq_hash
@@ -222,21 +273,21 @@ module Watobo#:nodoc: all
         end
         # puts "* passed scope"
         if filter[:hide_tested]
-        return false if chat.tested?
+          return false if chat.tested?
         end
 
         if filter.has_key?(:status_codes) and not filter[:status_codes].empty?
-          return false if filter[:status_codes].find_index{|i| chat.response.status =~ /#{i}/}.nil?
+          return false if filter[:status_codes].find_index {|i| chat.response.status =~ /#{i}/}.nil?
         end
 
         if filter.has_key?(:mime_types) and not filter[:mime_types].empty?
           match = false
           filter[:mime_types].each do |mt|
             if chat.response.content_type =~ /#{mt}/i
-            match = true
+              match = true
             end
           end
-        return false if match == false
+          return false if match == false
         end
 
         #puts "extensions"
@@ -256,7 +307,7 @@ module Watobo#:nodoc: all
           unless filter[:url_pattern].empty?
             filtered = true
             return true if chat.request.first =~ /#{filter[:url_pattern]}/i
-          #return false
+            #return false
           end
         end
 
@@ -264,7 +315,7 @@ module Watobo#:nodoc: all
           unless filter[:request_pattern].empty?
             filtered = true
             return true if chat.request.join =~ /#{filter[:request_pattern]}/i
-          #return false
+            #return false
           end
         end
         # puts filter.to_yaml
@@ -274,7 +325,7 @@ module Watobo#:nodoc: all
             filtered = true
             #return false if filter[:text_only] == true and chat.response.content_type !~ /(text|javascript|xml|json)/
             return true if chat.response.join.unpack("C*").pack("C*") =~ /#{filter[:response_pattern]}/i
-          #return false
+            #return false
           end
         end
 
