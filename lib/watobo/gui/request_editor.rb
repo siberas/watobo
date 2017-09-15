@@ -360,7 +360,7 @@ module Watobo #:nodoc: all
 
               FXMenuSeparator.new(menu_pane)
               fp_submenu = FXMenuPane.new(self) do |sub|
-                target = FXMenuCommand.new(sub, "JSON")
+                target = FXMenuCommand.new(sub, "JSON (ctrl-j)")
                 target.connect(SEL_COMMAND) {
                   begin
                     jb = JSON.parse(string2decode)
@@ -371,7 +371,7 @@ module Watobo #:nodoc: all
                     out << bang.to_s
                   end
                 }
-                target = FXMenuCommand.new(sub, "XML")
+                target = FXMenuCommand.new(sub, "XML (ctrl-x)")
                 target.connect(SEL_COMMAND) {
                   begin
                     doc = Nokogiri.XML(string2decode)
