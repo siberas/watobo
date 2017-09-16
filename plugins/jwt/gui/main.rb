@@ -28,37 +28,48 @@ module Watobo #:nodoc: all
           begin
             main_frame = FXVerticalFrame.new(self, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
 
-            matrix = FXMatrix.new(main_frame, 2, :opts => MATRIX_BY_COLUMNS|LAYOUT_FILL_X|LAYOUT_FILL_Y)
+            matrix = FXMatrix.new(main_frame, 2, :opts => MATRIX_BY_COLUMNS|LAYOUT_FILL_X)
 
             FXLabel.new(matrix, "Token:", nil, LAYOUT_TOP|JUSTIFY_RIGHT)
 
-            @tabBook = FXTabBook.new(matrix, nil, 0, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|LAYOUT_RIGHT, :padding => 0)
+            @tabBook = FXTabBook.new(matrix, nil, 0, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
             @raw_tab = FXTabItem.new(@tabBook, "RAW", nil)
-            frame = FXVerticalFrame.new(@tabBook, :opts => LAYOUT_FILL_Y|LAYOUT_FILL_Y|FRAME_RAISED)
+            frame = FXVerticalFrame.new(@tabBook, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_RAISED)
             FXLabel.new(frame, 'Enter your raw jwt-token here')
             @raw_txt = FXTextField.new(frame, 80, :opts => TEXTFIELD_NORMAL|LAYOUT_SIDE_RIGHT)
 
             @raw_txt.connect(SEL_CHANGED) {|sender, sel, index|
+              puts '* raw text changed'
               parse_raw
             }
 
 
             @chat_tab = FXTabItem.new(@tabBook, "Chat-ID", nil)
-            frame = FXVerticalFrame.new(@tabBook, :opts => LAYOUT_FILL_Y|LAYOUT_FILL_Y|FRAME_RAISED)
+            frame = FXVerticalFrame.new(@tabBook, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_RAISED)
             FXLabel.new(frame, 'Enter your chat-id here')
             @chatid_txt = FXTextField.new(frame, 80, :opts => TEXTFIELD_NORMAL|LAYOUT_SIDE_RIGHT)
 
             #
 
-            FXLabel.new(matrix, "Header:", nil, LAYOUT_TOP|JUSTIFY_RIGHT)
-            frame = FXVerticalFrame.new(matrix, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|LAYOUT_FIX_HEIGHT|FRAME_SUNKEN|FRAME_THICK, :height => 80, :padding => 0)
+            frame = FXVerticalFrame.new(matrix, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
+            FXLabel.new(frame, "Header:", nil, LAYOUT_TOP|JUSTIFY_RIGHT)
+            @raw_header_cb = FXCheckButton.new(frame, "raw", nil, 0, JUSTIFY_LEFT|JUSTIFY_TOP|ICON_BEFORE_TEXT)
+            @raw_header_cb.connect(SEL_COMMAND) {|sender, sel, index|
+              update_fields
+            }
+            frame = FXVerticalFrame.new(matrix, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|LAYOUT_MIN_HEIGHT|FRAME_SUNKEN|FRAME_THICK, :height => 80, :padding => 0)
             @head_txt = FXText.new(frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
             # FXButton.new(matrix, "Select").connect(SEL_COMMAND) { select_key_file }
 
             #
 
-            FXLabel.new(matrix, "Payload:", nil, LAYOUT_TOP|JUSTIFY_RIGHT)
-            frame = FXVerticalFrame.new(matrix, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|LAYOUT_FIX_HEIGHT|FRAME_SUNKEN|FRAME_THICK, :height => 400, :padding => 0)
+            frame = FXVerticalFrame.new(matrix, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
+            FXLabel.new(frame, "Payload:", nil, LAYOUT_TOP|JUSTIFY_RIGHT)
+            @raw_payload_cb = FXCheckButton.new(frame, "raw", nil, 0, JUSTIFY_LEFT|JUSTIFY_TOP|ICON_BEFORE_TEXT)
+            @raw_payload_cb.connect(SEL_COMMAND) {|sender, sel, index|
+              update_fields
+            }
+            frame = FXVerticalFrame.new(matrix, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|LAYOUT_FIX_HEIGHT|LAYOUT_MIN_HEIGHT|FRAME_SUNKEN|FRAME_THICK, :height => 400, :padding => 0)
             @payload_txt = FXText.new(frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
             # FXButton.new(matrix, "Select").connect(SEL_COMMAND) { select_key_file }
 
@@ -67,10 +78,13 @@ module Watobo #:nodoc: all
             @signature_txt = FXTextField.new(matrix, 83, :target => nil, :selector => 0, :opts => TEXTFIELD_NORMAL)
 
             # create new token and copy to clipboard
-            FXButton.new(matrix, "Create",:opts => FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_Y|LAYOUT_FILL_X).connect(SEL_COMMAND) {create_token}
+            FXButton.new(matrix, "Create", :opts => FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_Y|LAYOUT_FILL_X).connect(SEL_COMMAND) {create_token}
             frame = FXHorizontalFrame.new(matrix, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_RAISED|PACK_UNIFORM_WIDTH)
             @recalc_cb = FXCheckButton.new(frame, "recalc signature", nil, 0, JUSTIFY_LEFT|JUSTIFY_TOP|ICON_BEFORE_TEXT)
-            @pack_cb = FXCheckButton.new(frame, "pack as is", nil, 0, JUSTIFY_LEFT|JUSTIFY_TOP|ICON_BEFORE_TEXT)
+            @recalc_cb.disable
+
+            @create_raw_cb = FXCheckButton.new(frame, "raw", nil, 0, JUSTIFY_LEFT|JUSTIFY_TOP|ICON_BEFORE_TEXT)
+            @create_raw_cb.check = true
 
             frame = FXVerticalFrame.new(main_frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
             token_frame = FXVerticalFrame.new(frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_SUNKEN|FRAME_THICK, :padding => 0)
@@ -100,14 +114,18 @@ module Watobo #:nodoc: all
         private
 
         def parse_raw
+          @raw_txt.backColor = FXColor::White
           jhb64, jpb64, jsb64 = @raw_txt.text.strip.split('.')
           return false if jhb64.nil? | jpb64.nil? | jsb64.nil?
           begin
-            jwt_head = JSON.parse(Base64.urlsafe_decode64(jhb64))
-            jwt_payload = JSON.parse(Base64.urlsafe_decode64(jpb64))
+            jwt_head = Base64.urlsafe_decode64(jhb64)
+            jwt_payload = Base64.urlsafe_decode64(jpb64)
             jwt_signature = jsb64
           rescue => bang
-            return false
+            @raw_txt.backColor = FXColor::Red
+            jwt_head = ''
+            jwt_payload = ''
+            jwt_signature = ''
           end
 
           @jwt_head = jwt_head
@@ -118,9 +136,32 @@ module Watobo #:nodoc: all
         end
 
         def update_fields
-          @head_txt.setText(JSON.pretty_generate(@jwt_head))
-          @payload_txt.setText(JSON.pretty_generate(@jwt_payload))
+          begin
+            head_bak = @head_txt.text
+            payload_bak = @payload_txt.text
+            sig_bak = @signature_txt.text
+
+          unless @raw_header_cb.checked?
+            @head_txt.setText(JSON.pretty_generate(JSON.parse(@jwt_head)).to_s)
+          else
+            @head_txt.setText(@jwt_head)
+          end
+
+          unless @raw_payload_cb.checked?
+            @payload_txt.setText(JSON.pretty_generate(JSON.parse(@jwt_payload)).to_s)
+          else
+            @payload_txt.setText(@jwt_payload)
+          end
+
           @signature_txt.setText(@jwt_signature)
+          rescue => bang
+            @raw_txt.backColor = FXColor::Red
+            puts bang
+            @head_txt.text = head_bak
+            @payload_txt.text = payload_bak
+            @signature_txt.text = sig_bak
+          end
+
         end
 
         def get_token_from_chat(chat)
