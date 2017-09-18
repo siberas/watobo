@@ -13,25 +13,25 @@ if $0 == __FILE__
 end
 
 # @private 
-module Watobo#:nodoc: all
+module Watobo #:nodoc: all
   module Gui
-    
+
     module CheckboxMixin
       include Watobo::Gui::Icons
-      
+
       def check
         begin
           @checked ||= true
           self.setOpenIcon(ICON_CB_CHECKED)
           self.setClosedIcon(ICON_CB_CHECKED)
-          # opened = true
+            # opened = true
         rescue => bang
           puts "!!!ERROR: could not check item"
           puts bang
           puts bang.backtrace
         end
       end
-      
+
       def checked
         @checked ||= false
       end
@@ -41,7 +41,7 @@ module Watobo#:nodoc: all
           @checked ||= false
           self.setOpenIcon(ICON_CB_UNCHECKED)
           self.setClosedIcon(ICON_CB_UNCHECKED)
-          #opened = false
+            #opened = false
         rescue => bang
           puts "!!!ERROR: could not uncheck item"
           puts bang
@@ -57,19 +57,20 @@ module Watobo#:nodoc: all
           check
         end
       end
-      
+
     end
-    
+
     class CheckBoxTreeItem < FXTreeItem
       attr_accessor :checked
 
       include Watobo::Gui::Icons
+
       def check
         begin
           @checked = true
           self.setOpenIcon(ICON_CB_CHECKED)
           self.setClosedIcon(ICON_CB_CHECKED)
-          # opened = true
+            # opened = true
         rescue => bang
           puts "!!!ERROR: could not uncheck item"
         end
@@ -80,7 +81,7 @@ module Watobo#:nodoc: all
           @checked = false
           self.setOpenIcon(ICON_CB_UNCHECKED)
           self.setClosedIcon(ICON_CB_UNCHECKED)
-          #opened = false
+            #opened = false
         rescue => bang
           puts "!!!ERROR: could not uncheck item"
         end
@@ -94,7 +95,7 @@ module Watobo#:nodoc: all
         end
       end
 
-      def initialize(item_text, item_status )
+      def initialize(item_text, item_status)
         super item_text
         @checked = item_status
         #icon = ICON_CB_CHECKED
@@ -111,6 +112,7 @@ module Watobo#:nodoc: all
 
     class CheckBoxTreeList < FXTreeList
       include Watobo::Gui::Icons
+      include Watobo::Subscriber
       #------------------------------
       # C R E A T E T R E E
       #------------------------------
@@ -124,34 +126,34 @@ module Watobo#:nodoc: all
         #return false if elements.length > 0
         elements.each do |e|
 
-        # puts icon.class.to_s
+          # puts icon.class.to_s
           node = nil
           levels = e[:name].split('|')
           begin
-        #  puts "Processing: #{e[:name]} > #{e[:data].class}" if $DEBUG
-          levels.each_with_index do |l,i|
-            #puts "#{l} - #{l.class}"
-            item = self.findItem(l, node, SEARCH_FORWARD|SEARCH_IGNORECASE)
+            #  puts "Processing: #{e[:name]} > #{e[:data].class}" if $DEBUG
+            levels.each_with_index do |l, i|
+              #puts "#{l} - #{l.class}"
+              item = self.findItem(l, node, SEARCH_FORWARD|SEARCH_IGNORECASE)
 
-            if item.nil? then
-              # new_item = FXTreeItem.new(l, ICON_CB_CHECKED, ICON_CB_CHECKED)
-              # new_item.extend CheckboxMixin
-              new_item = CheckBoxTreeItem.new(l, e[:enabled] )
-            # item = self.appendItem(node, l, ICON_CB_CHECKED, ICON_CB_CHECKED)
-            item = self.appendItem(node, new_item)
-            #  if e[:enabled] then
-            #    self.openItem(item, false)
-            #  else
-            #    self.closeItem(item, false)
-            #  end
-            end
-            node = item
-            if i == levels.length-1 then
-              self.setItemData(item, e[:data])
-              updateParent(item)
-            end
+              if item.nil? then
+                # new_item = FXTreeItem.new(l, ICON_CB_CHECKED, ICON_CB_CHECKED)
+                # new_item.extend CheckboxMixin
+                new_item = CheckBoxTreeItem.new(l, e[:enabled])
+                # item = self.appendItem(node, l, ICON_CB_CHECKED, ICON_CB_CHECKED)
+                item = self.appendItem(node, new_item)
+                #  if e[:enabled] then
+                #    self.openItem(item, false)
+                #  else
+                #    self.closeItem(item, false)
+                #  end
+              end
+              node = item
+              if i == levels.length-1 then
+                self.setItemData(item, e[:data])
+                updateParent(item)
+              end
 
-          end
+            end
           rescue => bang
             puts bang
             puts bang.backtrace
@@ -165,8 +167,8 @@ module Watobo#:nodoc: all
         return false if parent.nil?
         ec = 0
         parent.each do |item|
-        #data = self.getItemData(item)
-        #ec += 1 if data[:enabled]
+          #data = self.getItemData(item)
+          #ec += 1 if data[:enabled]
           ec += 1 if item.checked
         end
         if ec == 0 then
@@ -174,21 +176,21 @@ module Watobo#:nodoc: all
           # puts "no childs selected"
           icon = ICON_CB_UNCHECKED
           self.setItemData(parent, :none)
-        elsif  ec < parent.numChildren  then
+        elsif ec < parent.numChildren then
           # puts "not all childs are selected"
           icon = ICON_CB_CHECKED_ORANGE
           self.setItemData(parent, :partly)
         else
 
-        # puts "all childs have been selected"
-          icon =   ICON_CB_CHECKED
+          # puts "all childs have been selected"
+          icon = ICON_CB_CHECKED
           self.setItemData(parent, :all)
         end
         self.setItemOpenIcon(parent, icon)
         self.setItemClosedIcon(parent, icon)
       end
 
-     def getCheckedData(root = self)
+      def getCheckedData(root = self)
         @selected = [] if root == self
         root.each do |c|
           getCheckedData(c) if c.numChildren > 0
@@ -200,21 +202,21 @@ module Watobo#:nodoc: all
       def checkAll
         self.each do |r|
           r.check
-          setItemData(r,:all)
+          setItemData(r, :all)
           r.each do |c|
             c.check
           end
           self.update
-        # checkAllChildren(r)
-        #   openItem(child, true)
+          # checkAllChildren(r)
+          #   openItem(child, true)
         end
       end
 
       def uncheckAll
         self.each do |r|
-        # uncheckItem(r)
+          # uncheckItem(r)
           r.uncheck
-          setItemData(r,:none)
+          setItemData(r, :none)
           r.each do |c|
             c.uncheck
           end
@@ -223,17 +225,17 @@ module Watobo#:nodoc: all
         end
       end
 
-     
+
       def uncheckAllChildren(parent)
         parent.each do |child|
-        #uncheckItem(child)
+          #uncheckItem(child)
           child.uncheck
         end
       end
 
       def checkAllChildren(parent)
         parent.each do |child|
-        #checkItem(child)
+          #checkItem(child)
           child.check
 
         end
@@ -243,11 +245,11 @@ module Watobo#:nodoc: all
 
         @parent = parent
         super(parent, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|
-        TREELIST_SHOWS_LINES|
-        TREELIST_SHOWS_BOXES|
-        TREELIST_ROOT_BOXES|
-        #TREELIST_EXTENDEDSELECT|
-        TREELIST_MULTIPLESELECT
+            TREELIST_SHOWS_LINES|
+            TREELIST_SHOWS_BOXES|
+            TREELIST_ROOT_BOXES|
+            #TREELIST_EXTENDEDSELECT|
+            TREELIST_MULTIPLESELECT
         )
         #LAYOUT_TOP|LAYOUT_RIGHT|TREELIST_SHOWS_LINES|TREELIST_SHOWS_BOXES|TREELIST_ROOT_BOXES|TREELIST_EXTENDEDSELECT
 
@@ -268,34 +270,36 @@ module Watobo#:nodoc: all
             data = self.getItemData(item)
 
             new_state = case data
-            when :partly
-              #  puts data
-              icon = ICON_CB_UNCHECKED
-              uncheckAllChildren(item)
-              :none
-            when :none
-              #  puts data
-              icon = ICON_CB_CHECKED
-              checkAllChildren(item)
-              :all
-            when :all
-              # puts data
-              icon = ICON_CB_UNCHECKED
-              uncheckAllChildren(item)
-              :none
-            end
+                          when :partly
+                            #  puts data
+                            icon = ICON_CB_UNCHECKED
+                            uncheckAllChildren(item)
+                            :none
+                          when :none
+                            #  puts data
+                            icon = ICON_CB_CHECKED
+                            checkAllChildren(item)
+                            :all
+                          when :all
+                            # puts data
+                            icon = ICON_CB_UNCHECKED
+                            uncheckAllChildren(item)
+                            :none
+                        end
 
-          self.setItemData(item, new_state)
-          self.setItemClosedIcon(item, icon)
-          self.setItemOpenIcon(item, icon)
+            self.setItemData(item, new_state)
+            self.setItemClosedIcon(item, icon)
+            self.setItemOpenIcon(item, icon)
           end
 
           self.killSelection()
+
+          notify(:sel_command)
         end
 
       end
     end
-  #--
+    #--
   end
 end
 
@@ -303,18 +307,18 @@ end
 
 if $0 == __FILE__
   # @private 
-module Watobo#:nodoc: all
+  module Watobo #:nodoc: all
     module Gui
 
       @application ||= FXApp.new('LayoutTester', 'FoxTest')
       class TestGui < FXMainWindow
-       
+
         class TreeDlg < FXDialogBox
 
-       #   include Responder
-          def initialize(parent, project=nil, prefs={} )
+          #   include Responder
+          def initialize(parent, project=nil, prefs={})
             super(parent, "CheckBox Dialog", DECOR_ALL, :width => 300, :height => 400)
-           # FXMAPFUNC(SEL_COMMAND, ID_ACCEPT, :onAccept)
+            # FXMAPFUNC(SEL_COMMAND, ID_ACCEPT, :onAccept)
             frame = FXVerticalFrame.new(self, LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_GROOVE)
             elements = []
             num_root_nodes = 4
@@ -323,7 +327,7 @@ module Watobo#:nodoc: all
               max_child_nodes.times do |si|
                 name = "root#{ri}|sub#{si}"
                 data = name + "-data"
-                e = { :name => name, :enabled => false, :data => data }
+                e = {:name => name, :enabled => false, :data => data}
                 elements << e
               end
             end
@@ -331,7 +335,7 @@ module Watobo#:nodoc: all
             @cbtree.elements = elements
 
           end
-                    
+
         end
 
         def leave
@@ -353,7 +357,7 @@ module Watobo#:nodoc: all
             max_child_nodes.times do |si|
               name = "root#{ri}|sub#{si}"
               data = name + "-data"
-              e = { :name => name, :enabled => false, :data => data }
+              e = {:name => name, :enabled => false, :data => data}
               elements << e
             end
           end
@@ -361,10 +365,10 @@ module Watobo#:nodoc: all
           @cbtree = CheckBoxTreeList.new(frame)
           @cbtree.elements = elements
 
-          FXButton.new(frame, "Select All",:opts => FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_TOP|LAYOUT_LEFT).connect(SEL_COMMAND){ @cbtree.checkAll }
-          FXButton.new(frame, "Deselect All",:opts => FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_TOP|LAYOUT_LEFT).connect(SEL_COMMAND){ @cbtree.uncheckAll }
+          FXButton.new(frame, "Select All", :opts => FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_TOP|LAYOUT_LEFT).connect(SEL_COMMAND) { @cbtree.checkAll }
+          FXButton.new(frame, "Deselect All", :opts => FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_TOP|LAYOUT_LEFT).connect(SEL_COMMAND) { @cbtree.uncheckAll }
 
-          FXButton.new(frame, "Open TreeDialog",:opts => FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_TOP|LAYOUT_LEFT).connect(SEL_COMMAND){
+          FXButton.new(frame, "Open TreeDialog", :opts => FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_TOP|LAYOUT_LEFT).connect(SEL_COMMAND) {
             dlg = TreeDlg.new(self)
             if dlg.execute != 0 then
               puts "* Dialog Finished"
@@ -373,11 +377,11 @@ module Watobo#:nodoc: all
             end
           }
 
-          FXButton.new(frame, "Exit",:opts => FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_TOP|LAYOUT_LEFT).connect(SEL_COMMAND){ leave }
+          FXButton.new(frame, "Exit", :opts => FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_TOP|LAYOUT_LEFT).connect(SEL_COMMAND) { leave }
         end
 
         def create
-          super                  # Create the windows
+          super # Create the windows
           show(PLACEMENT_SCREEN) # Make the main window appear
         end
       end

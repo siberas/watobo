@@ -53,6 +53,10 @@ module Watobo #:nodoc: all
 
 
         def settings_valid?
+          if @client_cert_dt.value.strip.empty? and @client_key_dt.value.strip.empty?
+            return true
+          end
+
           unless @password_dt.value.empty?
             puts "* password is set"
             if @password_dt.value != @retype_dt.value
@@ -136,7 +140,7 @@ module Watobo #:nodoc: all
 
         def select_key_file()
 
-          key_filename = FXFileDialog.getOpenFilename(self, "Select Key File", @cert_path, "*.key\n*")
+          key_filename = FXFileDialog.getOpenFilename(self, "Select Key File", @cert_path, "*.pem,*.key\n*")
           if key_filename != "" then
             if File.exist?(key_filename) then
               @client_key_dt.value = key_filename
@@ -190,6 +194,11 @@ module Watobo #:nodoc: all
         end
 
         def settings_valid?
+
+          if @client_cert_dt.value.strip.empty?
+            return true
+          end
+
           unless @password_dt.value.empty?
             puts "* password is set"
             if @password_dt.value != @retype_dt.value

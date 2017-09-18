@@ -96,7 +96,7 @@ module Watobo #:nodoc: all
         #puts "\n>> Request RAW:"
         #puts request
         #puts "\n>> Request RAW (HEX):"
-      #  puts request.unpack("H*")[0]
+        #  puts request.unpack("H*")[0]
 
         clean_request request
 
@@ -212,12 +212,12 @@ module Watobo #:nodoc: all
           #puts "CONNECT #{site}"
 
           begin
-          socket.print "HTTP/1.0 200 Connection established\r\n" +
-                           #"Proxy-connection: Keep-alive\r\n" +
-                           "Proxy-agent: WATOBO-Proxy/1.1\r\n" +
-                           "\r\n"
-          bscount = 0 # bad handshake counter
-          #  puts "* wait for ssl handshake ..."
+            socket.print "HTTP/1.0 200 Connection established\r\n" +
+                             #"Proxy-connection: Keep-alive\r\n" +
+                             "Proxy-agent: WATOBO-Proxy/1.1\r\n" +
+                             "\r\n"
+            bscount = 0 # bad handshake counter
+            #  puts "* wait for ssl handshake ..."
 
             unless @fake_certs.has_key? site
               puts "CREATE NEW CERTIFICATE FOR >> #{site} <<"
@@ -244,16 +244,16 @@ module Watobo #:nodoc: all
             #  @ctx.key = OpenSSL::PKey::DSA.new(File.read(key_file))
             #ctx.key = @key
             ctx.key = @fake_certs[site][:key]
-            ctx.tmp_dh_callback = proc { |*args|
+            ctx.tmp_dh_callback = proc {|*args|
               @dh_key
             }
 
-          if ctx.respond_to? :tmp_ecdh_callback
-            ctx.tmp_ecdh_callback = ->(*args){
-              called = true
-              OpenSSL::PKey::EC.new 'prime256v1'
-            }
-          end
+           # if ctx.respond_to? :tmp_ecdh_callback
+           #   ctx.tmp_ecdh_callback = ->(*args) {
+           #     called = true
+           #     OpenSSL::PKey::EC.new 'prime256v1'
+           #   }
+           # end
 
             ctx.verify_mode = OpenSSL::SSL::VERIFY_NONE
             ctx.timeout = 10
@@ -281,8 +281,11 @@ module Watobo #:nodoc: all
 
             request = Watobo::Request.new(request)
           rescue => bang
-            puts bang
-            puts bang.backtrace if $DEBUG
+            puts '! could not answer request for site ' + site
+            puts bang if $VERBOSE
+            if $DEBUG
+              puts bang.backtrace
+            end
 
             return nil
 
@@ -569,7 +572,7 @@ module Watobo #:nodoc: all
             #  @ctx.key = OpenSSL::PKey::DSA.new(File.read(key_file))
             #ctx.key = @key
             ctx.key = @fake_certs[site][:key]
-            ctx.tmp_dh_callback = proc { |*args|
+            ctx.tmp_dh_callback = proc {|*args|
               @dh_key
             }
 

@@ -2,6 +2,7 @@
 module Watobo#:nodoc: all
 
   module Subscriber
+
     def subscribe(event, &callback)
       @event_dispatcher_listeners ||= Hash.new
       (@event_dispatcher_listeners[event] ||= []) << callback

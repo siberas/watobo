@@ -1,4 +1,25 @@
 # @private
+=begin
+The following example, will replace the md5 hash by it's correct value
+
+module Watobo#:nodoc: all
+
+module EgressHandlers
+  class MyEgress2
+    def execute(r)
+      d = r.parameters(:url).select{|p| p.name == 'data'}[0]
+      h = r.parameters(:url).select{|p| p.name == 'md5'}[0]
+
+      h.value = Digest::MD5.hexdigest(d.value)
+
+      r.set h
+
+    end
+  end
+end
+end
+
+=end
 module Watobo#:nodoc: all
 
   module EgressHandlers

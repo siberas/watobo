@@ -61,7 +61,7 @@ module Watobo#:nodoc: all
     end
 
     def siteAlive?(chat)
-      puts chat.class
+      #puts chat.class
       site = nil
       host = nil
       port = nil

@@ -30,6 +30,7 @@ require 'nokogiri'
 require 'stringio'
 require 'mechanize'
 require 'jwt'
+require 'ostruct'
 
 require 'watobo/constants'
 require 'watobo/utils'

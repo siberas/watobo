@@ -1,8 +1,6 @@
 begin
   print "\nLoading FXRuby ... this may take some time ... "
   require 'fox16'
-  require 'fox16/colors'
-  require 'watobo/patch_fxruby_setfocus'
   print "[OK]\n"
 rescue LoadError => bang
   puts bang
@@ -12,6 +10,9 @@ rescue LoadError => bang
   puts "please check the installation tutorial at http://watobo.sourceforge.net"
   exit
 end
+
+require 'fox16/colors'
+require 'watobo/patch_fxruby_setfocus'
 
 info =<<EOF
 Selenium webdriver binding is used by WATOBO for different purposes, e.g. html preview or screenshots.
@@ -123,6 +124,7 @@ Watobo::Gui.create_application
 require 'watobo/gui/utils/init_icons'
 #require 'watobo/gui/mixins/subscriber'
 require 'watobo/gui/mixins/gui_settings'
+require 'watobo/gui/mixins/events'
 require 'watobo/gui/fxsave_thread'
 
 gui_path = File.expand_path(File.join(File.dirname(__FILE__), "gui"))

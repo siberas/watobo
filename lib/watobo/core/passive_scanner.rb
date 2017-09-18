@@ -14,7 +14,8 @@ module Watobo #:nodoc: all
           loop do
             if Watobo::PassiveScanner.queue.size > 0
               chat = Watobo::PassiveScanner.pop
-              unless chat.nil?
+              # TODO: make max size configurable
+              unless chat.nil? or chat.response.to_s.length > 500000
                 Watobo::PassiveModules.each do |test_module|
                   begin
                     test_module.do_test(chat)
