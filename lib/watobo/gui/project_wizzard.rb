@@ -157,7 +157,8 @@ module Watobo#:nodoc: all
                 updateSessionList(@selected_project_path)
                 @new_project_name.value = ''
                 @nextButton.enable
-                @nextButton.setFocus()
+                # had to disable setFocus on button, because it freezed the project name field
+                #@nextButton.setFocus()
                 @nextButton.setDefault()
                 @finishButton.disable
               end
