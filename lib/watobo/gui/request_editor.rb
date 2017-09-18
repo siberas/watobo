@@ -127,11 +127,11 @@ module Watobo #:nodoc: all
               FXMenuSeparator.new(menu_pane)
               target = FXMenuCheck.new(menu_pane, "word wrap")
               target.check = (@textbox.textStyle & TEXT_WORDWRAP > 0) ? true : false
-              target.connect(SEL_COMMAND) { @textbox.textStyle ^= TEXT_WORDWRAP }
+              target.connect(SEL_COMMAND) {@textbox.textStyle ^= TEXT_WORDWRAP}
 
               target = FXMenuCheck.new(menu_pane, "big font")
               target.check = (@textbox.font == @small_font) ? false : true
-              target.connect(SEL_COMMAND) { |ts, tsel, titem|
+              target.connect(SEL_COMMAND) {|ts, tsel, titem|
                 if ts.checked?
                   @textbox.font = @big_font
                 else
@@ -351,12 +351,17 @@ module Watobo #:nodoc: all
                     if File.exist?(insf) then
                       # puts "Inserting #{insf}"
                       sender.insertText(cpos, "%%File.read('#{insf}').encode('UTF-8').force_encoding('BINARY')%%")
+                      highlight_markers
                     end
                   end
-
+                }
+                eh = FXMenuCommand.new(sub, "Clipboard Text")
+                eh.connect(SEL_COMMAND) {
+                  sender.insertText(cpos, '%%getDNDData(FROM_CLIPBOARD, FXWindow.stringType).strip%%')
+                  highlight_markers
                 }
               end
-              FXMenuCascade.new(menu_pane, "Insert", nil, fp_submenu)
+              FXMenuCascade.new(menu_pane, "Dynamic Content", nil, fp_submenu)
 
               FXMenuSeparator.new(menu_pane)
               fp_submenu = FXMenuPane.new(self) do |sub|
@@ -411,9 +416,9 @@ module Watobo #:nodoc: all
             @ctrl_pressed = true
             @keystate = true
           elsif event.code == KEY_Alt_R
-          @ctrl_pressed = false
-          @keystate = true
-          #  @shift_pressed = true if @ctrl_pressed and ( event.code == KEY_Shift_L or event.code == KEY_Shift_R )
+            @ctrl_pressed = false
+            @keystate = true
+            #  @shift_pressed = true if @ctrl_pressed and ( event.code == KEY_Shift_L or event.code == KEY_Shift_R )
           elsif event.code == KEY_F1
             unless event.moved?
               FXMenuPane.new(self) do |menu_pane|
@@ -522,6 +527,10 @@ module Watobo #:nodoc: all
 
 
       private
+      def highlight_markers
+        pattern = '(%%.*?%%)'
+        @markers = highlight(pattern)
+      end
 
       def onTextChanged(sender, sel, changed)
         begin
@@ -530,10 +539,8 @@ module Watobo #:nodoc: all
 
           pos = changed.pos
 
-          pattern = "(%%.*?%%)"
-          #if dummy =~ /%/ then
+         highlight_markers
 
-          @markers = highlight(pattern)
           @textbox.setCursorPos(pos)
             # else
             #   @markers.each do |start, len|
