@@ -115,17 +115,20 @@ module Watobo #:nodoc: all
 
         def parse_raw
           @raw_txt.backColor = FXColor::White
-          jhb64, jpb64, jsb64 = @raw_txt.text.strip.split('.')
+          jwt = @raw_txt.text.strip
+          jhb64, jpb64, jsb64 = jwt.split('.')
           return false if jhb64.nil? | jpb64.nil? | jsb64.nil?
           begin
             jwt_head = Base64.urlsafe_decode64(jhb64)
             jwt_payload = Base64.urlsafe_decode64(jpb64)
             jwt_signature = jsb64
+            @jwt = jwt
           rescue => bang
             @raw_txt.backColor = FXColor::Red
             jwt_head = ''
             jwt_payload = ''
             jwt_signature = ''
+            @jwt = nil
           end
 
           @jwt_head = jwt_head
@@ -166,14 +169,15 @@ module Watobo #:nodoc: all
 
         def get_token_from_chat(chat)
           bearer = chat.request.headers(' Bearer ')[0]
+          @jwt = nil
           unless bearer.nil?
-            jwt = bearer.match(/Bearer (.*)/)[1]
-            jhb64, jpb64, jsb64 = jwt.split('.')
-            @jwt_head = JSON.parse(Base64.urlsafe_decode64(jhb64))
-            @jwt_payload = JSON.parse(Base64.urlsafe_decode64(jpb64))
+            @jwt = bearer.match(/Bearer (.*)/)[1]
+            jhb64, jpb64, jsb64 = @jwt.split('.')
+            @jwt_head = Base64.urlsafe_decode64(jhb64)
+            @jwt_payload = Base64.urlsafe_decode64(jpb64)
             @jwt_signature = jsb64
           end
-          bearer
+          @jwt
         end
 
         def create_token
@@ -184,7 +188,7 @@ module Watobo #:nodoc: all
             #token << Base64.urlsafe_encode64(JSON.parse(@payload_txt.text).to_s)
             token << Base64.urlsafe_encode64(@payload_txt.to_s)
             token << @signature_txt.text
-            @token_txt.setText(token.join('.'))
+            @token_txt.setText(token.join('.').gsub(/=+/,''))
           rescue => bang
             @token_txt.setText(bang.to_s)
           end
@@ -195,8 +199,6 @@ module Watobo #:nodoc: all
         def add_update_timer(ms)
           @timer = FXApp.instance.addTimeout(500, :repeat => true) {
             unless @scanner.nil?
-
-
               if @pbar.total > 0
                 @pbar.progress = @scanner.sum_progress
               end
