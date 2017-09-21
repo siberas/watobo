@@ -25,6 +25,8 @@ module Watobo #:nodoc: all
             )
 
 
+            @known_directories = {}
+
             @pattern_list = []
             #@pattern_list << "access_token"
             @pattern_list << '.*_token'
@@ -42,12 +44,26 @@ module Watobo #:nodoc: all
             chat.request.headers do |header|
               if header =~ /#{pattern}/i then
                 auth_match = $1.strip
-                addFinding(
-                    :check_pattern => "#{pattern}",
-                    :proof_pattern => "#{auth_match}",
-                    :title => "[Bearer Authentication Scheme] - #{chat.request.path}",
-                    :chat => chat
-                )
+
+                site = chat.request.site
+                @known_directories[site] ||= []
+                # strip path
+                dir = chat.request.dir
+                # we only want to have 2 levels
+                strip_dir = dir.split('/')[0..1].join('/')
+
+                unless @known_directories[site].include?(strip_dir)
+
+                  @known_directories[site] << strip_dir
+
+
+                  addFinding(
+                      :check_pattern => "#{pattern}",
+                      :proof_pattern => "#{auth_match}",
+                      :title => "[Bearer Authentication Scheme] - #{chat.request.path}",
+                      :chat => chat
+                  )
+                end
               end
 
             end
@@ -61,14 +77,25 @@ module Watobo #:nodoc: all
           chat.response.new_cookies do |c|
             begin
               if c.name =~ /#{pattern}/
+                site = chat.request.site
+                @known_directories[site] ||= []
+                # strip path
+                dir = chat.request.dir
+                # we only want to have 2 levels
+                strip_dir = dir.split('/')[0..1].join('/')
+
+                next if @known_directories[site].include?(strip_dir)
+
+                @known_directories[site] << strip_dir
+
                 e = c.value.split('.')
                 next if e.size != 3
                 # parse jwt header
-                th = JSON.parse( Base64.decode64(e[0]))
+                th = JSON.parse(Base64.decode64(e[0]))
                 # parse jwt payload
-                tp =  JSON.parse( Base64.decode64(e[1]))
+                tp = JSON.parse(Base64.decode64(e[1]))
 
-                # if we reach this point everything is fine
+                # if we reach this point base64 decoding was successful
                 addFinding(
                     :check_pattern => "#{pattern}",
                     :proof_pattern => "#{c.value}",
