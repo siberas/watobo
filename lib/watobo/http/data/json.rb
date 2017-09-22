@@ -7,9 +7,14 @@ module Watobo#:nodoc: all
       def to_s
         s = @root.body.nil? ? "" : @root.body
       end
+
+      def clear
+        @root.set_body ''
+      end
       
       def set(parm)
-         parms = JSON.parse(@root.body.to_s)
+         json = @root.body.nil? ? '' : @root.body.to_s
+         parms = JSON.parse(json)
          parms[parm.name] = parm.value
          @root.set_body parms.to_json
       end
