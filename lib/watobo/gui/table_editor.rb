@@ -118,6 +118,7 @@ module Watobo#:nodoc: all
       def parseRequest
         return '' if @request.nil?
         request = @request.copy
+        request.clear_parameters
         
         self.numRows.times do |i|
           name = CGI.escape(self.getItemText(i, 1))

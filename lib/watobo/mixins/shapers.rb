@@ -119,10 +119,10 @@ module Watobo #:nodoc: all
         def add_post_parm(parm, value)
           unless self.has_body?
             # if we don't have a body we have to create one
-              line = ''
-              self.push "\r\n"
-            else
-              line = self.pop
+            line = ''
+            self.push "\r\n"
+          else
+            line = self.pop
           end
           line << '&' unless line.empty?
           line << "#{parm}=#{value}"
@@ -213,7 +213,7 @@ module Watobo #:nodoc: all
         def removeHeader(header)
           begin
 
-            while i = headers.index { |h| h =~ /#{header}/i }
+            while i = headers.index {|h| h =~ /#{header}/i}
               self.delete_at i
             end
 
@@ -247,6 +247,23 @@ module Watobo #:nodoc: all
           end
 
           self.unshift new_line
+        end
+
+        def removeCookies
+          begin
+            pattern = '^Cookie'
+            while i = headers.index {|h| h =~ /#{pattern}/i}
+              #puts "* remove #{self[i]}"
+              self.delete_at i
+            end
+          rescue => bang
+            puts bang
+            if $DEBUG
+              puts bang.backtrace
+              puts self
+            end
+          end
+
         end
 
         def removeHeader_OLD(header)

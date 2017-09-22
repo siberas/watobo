@@ -62,6 +62,19 @@ module Watobo #:nodoc: all
       end
     end
 
+    def clear_parameters(*locations)
+      param_locations = [:url, :data, :wwwform, :xml, :cookies, :json]
+      unless locations.empty?
+        param_locations.select! { |loc| locations.include? loc }
+      end
+
+      @url.clear if !@url.nil? and param_locations.include?(:url)
+      cookies.clear if !@cookies.nil? and param_locations.include?(:cookies)
+      @data.clear if !@data.nil? and param_locations.include?(:wwwform)
+      @json.clear if !@json.nil? and param_locations.include?(:json)
+
+    end
+
     def parameters(*locations, &block)
       param_locations = [:url, :data, :wwwform, :xml, :cookies, :json]
       unless locations.empty?

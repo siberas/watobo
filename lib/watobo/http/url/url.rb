@@ -14,6 +14,10 @@ module Watobo #:nodoc: all
         end
       end
 
+      def clear
+        @root.removeUrlParms
+      end
+
       def has_parm?(parm_name)
         @root.get_parm_names do |pn|
           return true if pn == parm_name

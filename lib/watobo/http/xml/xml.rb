@@ -13,6 +13,10 @@ module Watobo#:nodoc: all
         s = @root.body.to_s
       end
 
+      def clear
+        @root.set_body ''
+      end
+
       def set(parm)
         return false unless parm.location == :xml
        # puts "= set "

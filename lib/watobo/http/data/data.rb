@@ -6,6 +6,10 @@ module Watobo#:nodoc: all
         s = @root.body.nil? ? "" : @root.body
       end
 
+      def clear
+        @root.set_body ''
+      end
+
       def initialize(root)
         @root = root
       end

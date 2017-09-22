@@ -18,6 +18,11 @@ module Watobo#:nodoc: all
         @cookies.empty?
       end
 
+      def clear
+        @cookies.clear
+        @root.removeCookies
+      end
+
       def to_a
         cookies = []
         raw_cookies do |c|
