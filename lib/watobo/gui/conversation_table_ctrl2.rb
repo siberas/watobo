@@ -218,15 +218,15 @@ module Watobo#:nodoc: all
       def update_text
        @filter_info.text = filter_text
        @filter_info.appendText "     "
-       @filter_info.appendStyledText("click to change", 1)
+       @filter_info.appendStyledText("click to change", 3)
        
      end
      
-     def text=(t)
-       @filter_info.text = t
-       @filter_info.appendText "     "
-       @filter_info.appendStyledText("click to change", 1)
-     end
+     #def text=(t)
+     #  @filter_info.text = t
+     #  @filter_info.appendText "     "
+     #  @filter_info.appendStyledText("click to change", 3)
+     #end
       
       def default_filter
         fs = {
@@ -273,10 +273,15 @@ module Watobo#:nodoc: all
         hs_red.normalBackColor = @filter_info.backColor
         hs_red.style = FXText::STYLE_BOLD
 
+        hs_blue = FXHiliteStyle.new
+        hs_blue.normalForeColor = FXRGBA(0,0,255,1)
+        hs_blue.normalBackColor = @filter_info.backColor
+        hs_blue.style = FXText::STYLE_BOLD
+
         # Enable the style buffer for this text widget
         @filter_info.styled = true
         # Set the styles
-        @filter_info.hiliteStyles = [ hs_green, hs_red]
+        @filter_info.hiliteStyles = [ hs_green, hs_red, hs_blue]
         
        # @filter_info.setText(filter_text)
        update_text
