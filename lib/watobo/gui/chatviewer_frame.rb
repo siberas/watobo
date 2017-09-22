@@ -22,7 +22,7 @@ module Watobo #:nodoc: all
         if text.is_a? String
           normalized_text = text.gsub(/[^[:print:]]/, ".")
         elsif text.respond_to? :has_body?
-          if text.content_type =~ /(xml)/
+          if text.has_body? and text.content_type =~ /(xml)/
             body = text.body.force_encoding('iso-8859-1').encode('utf-8')
             doc = Nokogiri::XML(body, &:noblanks)
             fbody = doc.to_xhtml(indent: 3, indent_text: " ")
