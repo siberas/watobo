@@ -348,6 +348,10 @@ module Watobo #:nodoc: all
        # tab_frame = FXVerticalFrame.new(@tabBook, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_RAISED)
        # @viewers << Watobo::Gui::TableEditorFrame.new(tab_frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_SUNKEN|FRAME_THICK, :padding => 0)
         @viewers << JsonViewer.new(@tabBook, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_RAISED)
+
+        FXTabItem.new(@tabBook, "Custom", nil)
+        @viewers << CustomViewer.new(@tabBook, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_RAISED)
+
       end
 
     end
