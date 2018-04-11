@@ -1820,7 +1820,7 @@ module Watobo #:nodoc: all
         @sites_tree.subscribe(:show_conversation) { |chat_list|
           showConversation()
           @chatTable.showConversation(chat_list, :ignore_filter)
-          @conversation_table_ctrl.text = "Selected Chats (#{chat_list.length}/#{Watobo::Chats.length})"
+         # @conversation_table_ctrl.text = "Selected Chats (#{chat_list.length}/#{Watobo::Chats.length})"
         }
 
         @sites_tree.subscribe(:show_chat) { |chat|
