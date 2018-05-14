@@ -326,6 +326,13 @@ module Watobo #:nodoc: all
           end
         end
 
+        if filter[:comment_pattern]
+          unless filter[:comment_pattern].empty?
+            filtered = true
+            return true if chat.comment =~ /#{filter[:comment_pattern]}/i
+          end
+        end
+
         return !filtered
 
       rescue => bang

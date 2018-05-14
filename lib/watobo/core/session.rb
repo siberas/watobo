@@ -469,7 +469,7 @@ module Watobo#:nodoc: all
 
       session = nil
 
-      session = ( session_id.is_a? Fixnum ) ? session_id : session_id.object_id
+      session = ( session_id.is_a? Integer ) ? session_id : session_id.object_id
       session = Digest::MD5.hexdigest(Time.now.to_f.to_s) if session_id.nil?
 
       @sid_cache = Watobo::SIDCache.acquire(session)

@@ -28,6 +28,7 @@ module Watobo#:nodoc: all
         fs[:url_pattern] = @foption_url.checked? ? pattern : ''
         fs[:request_pattern] = @foption_req.checked? ? pattern : ''
         fs[:response_pattern] = @foption_res.checked? ? pattern : ''
+        fs[:comment_pattern] = @foption_comment.checked? ? pattern : ''
         
         mime_types = []
         mime_types << "html" if @mime_html.checked?
@@ -161,7 +162,7 @@ module Watobo#:nodoc: all
           true
         }
         
-        [ :url_pattern, :request_pattern, :response_pattern ].each do |k|
+        [ :url_pattern, :request_pattern, :response_pattern, :comment_pattern ].each do |k|
           if filter.has_key? k
             @text_filter.text = filter[k] unless filter[k].empty?
           end
@@ -179,6 +180,10 @@ module Watobo#:nodoc: all
         state = ( filter.has_key?(:response_pattern) and not filter[:response_pattern].empty? )
         @foption_res.setCheck state
        # @foption_res.connect(SEL_COMMAND){ update_text_filter }
+
+        @foption_comment = FXCheckButton.new(pattern_frame, "&Comment", nil, 0, ICON_BEFORE_TEXT|LAYOUT_SIDE_LEFT)
+        state = ( filter.has_key?(:comment_pattern) and not filter[:comment_pattern].empty? )
+        @foption_comment.setCheck state
          
        buttons = FXHorizontalFrame.new(main, :opts => LAYOUT_FILL_X)
           @accept_btn = FXButton.new(buttons, "&Apply", nil, self, ID_ACCEPT,
@@ -244,6 +249,7 @@ module Watobo#:nodoc: all
         fs[:hidden_extensions] = true
         fs[:show_extensions] = false
         fs[:show_extension_patterns] = %w(jsp php asp aspx)
+        fs[:comment_pattern] = ''
         fs
         
       end
@@ -415,7 +421,7 @@ module Watobo#:nodoc: all
       end
 
       def update_text_filter
-        if @foption_url.checked? or @foption_req.checked? or @foption_res.checked?
+        if @foption_url.checked? or @foption_req.checked? or @foption_res.checked? or @foption_comment.checked?
         @text_filter.enable
         else
         @text_filter.disable
