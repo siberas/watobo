@@ -97,6 +97,7 @@ module Watobo #:nodoc: all
     end
 
     def set(parm)
+      return false unless parm.respond_to?(:location)
       case parm.location
         when :data
           #

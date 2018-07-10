@@ -54,7 +54,7 @@ module Watobo#:nodoc: all
         FXMenuSeparator.new(menu_pane)
         FXMenuCaption.new(menu_pane,"- Info -")
         FXMenuSeparator.new(menu_pane)
-        FXMenuCaption.new(menu_pane,"Length: #{string.length}")
+        FXMenuCaption.new(menu_pane,( "Length: #{string.length} (0x%0.2x)" % string.length))
 
       end
 

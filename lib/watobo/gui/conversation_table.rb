@@ -3,7 +3,7 @@ class CustomTableItem < FXTableItem
   attr_accessor :backcolor
 
   def drawContent table, unusable_dc, x, y, w, h
-    FXDCWindow.new(table) { |dc|
+    FXDCWindow.new(table) {|dc|
       if @color and not selected?
 
         if @backcolor
@@ -91,7 +91,7 @@ module Watobo #:nodoc: all
       end
 
 
-      def apply_filter(filter={})
+      def apply_filter(filter = {})
         @filter = filter
         puts @filter.to_yaml if $DEBUG
         update_table
@@ -168,7 +168,7 @@ module Watobo #:nodoc: all
         adjustCellWidth()
       end
 
-      def setNewFont(font_type=nil, size=nil)
+      def setNewFont(font_type = nil, size = nil)
         begin
           new_size = size.nil? ? GUI_REGULAR_FONT_SIZE : size
           new_font_type = font_type.nil? ? "helvetica" : font_type
@@ -177,7 +177,7 @@ module Watobo #:nodoc: all
 
           self.font = new_font
           self.rowHeader.font = new_font
-          self.defRowHeight = new_size+10
+          self.defRowHeight = new_size + 10
 
           update_table()
 
@@ -225,7 +225,7 @@ module Watobo #:nodoc: all
       def initialize(owner, unused = nil)
         @event_dispatcher_listeners = Hash.new
 
-        super(owner, :opts => TABLE_COL_SIZABLE|TABLE_ROW_SIZABLE|LAYOUT_FILL_X|LAYOUT_FILL_Y|TABLE_READONLY|LAYOUT_SIDE_TOP, :padding => 2)
+        super(owner, :opts => TABLE_COL_SIZABLE | TABLE_ROW_SIZABLE | LAYOUT_FILL_X | LAYOUT_FILL_Y | TABLE_READONLY | LAYOUT_SIDE_TOP, :padding => 2)
 
         @filter = {}
 
@@ -280,54 +280,61 @@ module Watobo #:nodoc: all
 
         initColumns()
 
+        self.cornerButton.connect(SEL_COMMAND) do |sender, sel, index|
+        #  just a dummy function for disabling default functionality which lets hang watobo
+        end
+
         # SEL_CHANGED is triggered if column size is manually changed
         self.columnHeader.connect(SEL_CHANGED) do |sender, sel, index|
+          #puts index
           type = @col_order[index]
           @cell_width[type] = self.getColumnWidth(index)
         end
 
         self.columnHeader.connect(SEL_COMMAND) do |sender, sel, index|
-          type = @col_order[index]
-          column_width = self.getColumnWidth(index)
+          #puts index
+          unless index == 0
+            type = @col_order[index]
+            column_width = self.getColumnWidth(index)
 
-          new_width = case column_width
-                        when column_width > @cell_auto_max
-                          @cell_auto_max
-                        when (column_width > @cell_width_defaults[type])
-                          @cell_width_defaults[type]
-                        when @cell_width_defaults[type]
-                          self.fitColumnsToContents(index)
-                          w = self.getColumnWidth(index)
-                          w = @cell_auto_max if self.getColumnWidth(index) > @cell_auto_max
-                          w = @cell_width_defaults[type] if self.getColumnWidth(index) < @cell_width_defaults[type]
-                          w
-                        else
-                          @cell_width_defaults[type]
-                      end
-          self.setColumnWidth(index, new_width)
-          @cell_width[type] = new_width
-          self.rowHeaderMode = 0
+            new_width = case column_width
+                          when column_width > @cell_auto_max
+                            @cell_auto_max
+                          when (column_width > @cell_width_defaults[type])
+                            @cell_width_defaults[type]
+                          when @cell_width_defaults[type]
+                            self.fitColumnsToContents(index)
+                            w = self.getColumnWidth(index)
+                            w = @cell_auto_max if self.getColumnWidth(index) > @cell_auto_max
+                            w = @cell_width_defaults[type] if self.getColumnWidth(index) < @cell_width_defaults[type]
+                            w
+                          else
+                            @cell_width_defaults[type]
+                        end
+            self.setColumnWidth(index, new_width)
+            @cell_width[type] = new_width
+            self.rowHeaderMode = 0
 
-          adjustCellWidth()
-
+            adjustCellWidth()
+          end
 
         end
 
-        self.connect(SEL_CHANGED) { |sender, sel, item|
+        self.connect(SEL_CHANGED) {|sender, sel, item|
           # puts "SEL_CHANGED #{item.row}"
           self.selectRow(item.row, false)
           chat = self.getItemData(item.row, 0)
           notify(:chat_selected, chat) if chat.respond_to? :request
         }
 
-        self.connect(SEL_COMMAND) { |sender, sel, item|
-          # puts "SEL_COMMAND #{item.row}"
+        self.connect(SEL_COMMAND) {|sender, sel, item|
+           #puts "SEL_COMMAND #{item.row}"
           self.selectRow(item.row, false)
           chat = self.getItemData(item.row, 0)
           notify(:chat_selected, chat) if chat.respond_to? :request
         }
 
-        self.connect(SEL_DOUBLECLICKED) { |sender, sel, item|
+        self.connect(SEL_DOUBLECLICKED) {|sender, sel, item|
           #  puts "SEL_DOUBLECLICKED #{item.row}"
           if item.row >= 0
             self.selectRow(item.row, false)
@@ -336,7 +343,7 @@ module Watobo #:nodoc: all
           end
         }
 
-        self.connect(SEL_SELECTED) { |sender, sel, item|
+        self.connect(SEL_SELECTED) {|sender, sel, item|
           #  puts "SEL_SELECTED #{item.row}"
           self.selectRow(item.row, false)
           chat = self.getItemData(item.row, 0)
@@ -347,7 +354,7 @@ module Watobo #:nodoc: all
 
         addHotkeyHandler(self)
 
-       # start_update_timer
+        # start_update_timer
       end
 
       def scrollUp()
@@ -395,7 +402,7 @@ module Watobo #:nodoc: all
         lastRowIndex = self.getNumRows
         self.appendRows(1)
 
-       # self.rowHeader.setItemJustify(lastRowIndex, FXHeaderItem::RIGHT)
+        # self.rowHeader.setItemJustify(lastRowIndex, FXHeaderItem::RIGHT)
         self.setRowText(lastRowIndex, chat.id.to_s)
 
         index = @col_order.index(TABLE_COL_SSL)
@@ -502,7 +509,7 @@ module Watobo #:nodoc: all
       def addHotkeyHandler(widget)
         @ctrl_pressed = false
 
-        widget.connect(SEL_KEYPRESS) { |sender, sel, event|
+        widget.connect(SEL_KEYPRESS) {|sender, sel, event|
           # puts event.code
           cont = false
           @ctrl_pressed = true if event.code == KEY_Control_L or event.code == KEY_Control_R
@@ -557,7 +564,7 @@ module Watobo #:nodoc: all
           cont
         }
 
-        widget.connect(SEL_KEYRELEASE) { |sender, sel, event|
+        widget.connect(SEL_KEYRELEASE) {|sender, sel, event|
           @ctrl_pressed = false if event.code == KEY_Control_L or event.code == KEY_Control_R
           false
         }
