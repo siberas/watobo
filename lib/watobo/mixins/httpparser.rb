@@ -355,9 +355,10 @@ module Watobo #:nodoc: all
         def post_parms
           parmlist=[]
           return parmlist unless has_body?
+          parms = self.last.force_encoding('ASCII-8BIT')
           begin
-            if self.last =~ /\=.*\&?/i
-              parmlist = self.last.split(/\&/)
+            if parms =~ /\=.*\&?/i
+              parmlist = parms.split(/\&/)
               parmlist.map! { |p| x = p.strip.empty? ? nil : p }
               parmlist.compact!
             end

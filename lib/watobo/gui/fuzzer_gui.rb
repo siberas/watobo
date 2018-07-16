@@ -1278,6 +1278,7 @@ module Watobo #:nodoc: all
 
 
       def addFilterItem(filter)
+        return false if filter.nil?
 
         filter_root = self.findItem("Filters", nil, SEARCH_FORWARD|SEARCH_IGNORECASE)
 
