@@ -8,6 +8,12 @@ rescue LoadError
   puts "please run\n gem install bundler\n bundle install\n"
   exit
 end
+
+begin
+  require 'epics'
+rescue LoadError
+  puts "- no ebics support"
+end
 require 'yaml'
 require 'json'
 require 'thread'

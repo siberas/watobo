@@ -56,6 +56,7 @@ module Watobo #:nodoc: all
         @logger = (defined? owner.logger) ? owner.logger : nil
         @pattern_matches = []
         @text = ""
+        @@save_dir = nil
 
         @event_dispatcher_listeners = Hash.new
 
@@ -114,6 +115,26 @@ module Watobo #:nodoc: all
               FXMenuCaption.new(menu_pane, "- Copy -")
               FXMenuSeparator.new(menu_pane)
               copyText = FXMenuCommand.new(menu_pane, "copy text: #{selection}", nil, @textbox, FXText::ID_COPY_SEL)
+
+              FXMenuSeparator.new(menu_pane)
+              saveText = FXMenuCommand.new(menu_pane, "save ...")
+              saveText.connect(SEL_COMMAND){
+                begin
+                  # puts @project.settings[:session_path]
+                  # path = @project.settings[:session_path]+"/"
+                  filename = FXFileDialog.getSaveFilename(self, "Save file", @@save_dir, "All Files (*)")
+                  unless filename.empty?
+                    File.open(filename, "w"){|fh|
+                    fh.puts @textbox.text
+                    }
+                    @@save_dir = File.dirname(filename + '/*')
+                  end
+                rescue => bang
+                  puts bang
+                  puts bang.backtrace if $DEBUG
+                end
+              }
+
 
               FXMenuSeparator.new(menu_pane)
               FXMenuCaption.new(menu_pane, "- Transcoder -")
@@ -485,12 +506,24 @@ module Watobo #:nodoc: all
                               out = text
                             end
                             out
+                          when KEY_x
+                            out = text
+                            begin
+                            out = Nokogiri.XML(text).to_xml
+                              puts out
+                            rescue => bang
+                              out = text
+                            end
+                          out
                           else
                             text
                         end
                 text = normalizeText(rptxt)
+
                 @textbox.replaceText(pos, len, text)
-                @textbox.setSelection(pos, text.length)
+
+                # BUG: setSelection deleted replaced text???
+               #@textbox.setSelection(pos, text.length)
               end
               @keystate = false
             end
