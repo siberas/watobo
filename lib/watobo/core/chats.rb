@@ -191,6 +191,8 @@ module Watobo #:nodoc: all
         next if scan_prefs[:excluded_chats].include?(chat.id)
         uch = chat.request.uniq_hash
 
+        next if uch.nil?
+
         next if unique_list.has_key?(uch) and scan_prefs[:smart_scan] == true
         unique_list[uch] = nil
         if Watobo::Scope.match_chat? chat

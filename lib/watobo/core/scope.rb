@@ -11,6 +11,7 @@ module Watobo#:nodoc: all
     end
 
     def self.set(scope)
+      puts "* set scope to: #{scope}"
       @scope = scope
     end
 
@@ -47,6 +48,8 @@ module Watobo#:nodoc: all
 
       if @scope.has_key? site
 
+        return false unless @scope[site][:enabled]
+
         path = chat.request.path
         url = chat.request.url.to_s
         scope = @scope[site]
@@ -70,6 +73,7 @@ module Watobo#:nodoc: all
     end
 
     def self.add(site)
+      puts "* add site to scope: #{site}"
 
       scope_details = {
         :site => site,

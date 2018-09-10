@@ -41,6 +41,8 @@ module Watobo #:nodoc: all
     def uniq_hash()
       begin
         settings = Watobo::Conf::Scanner.to_h
+
+        return nil if site.nil?
         hashbase = site + method + path
 
         get_parm_names.sort.each do |p|

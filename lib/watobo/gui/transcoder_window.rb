@@ -54,15 +54,12 @@ module Watobo #:nodoc: all
       end
 
       def onEncodeB64(sender, sel, item)
-        string2encode = @textbox.text
-        string2encode.extend Watobo::Mixin::Transcoders
-        setText(string2encode.b64encode)
+
+        setText(Base64.strict_encode64(@text))
       end
 
       def onEncodeURL(sender, sel, item)
-        string2encode = @textbox.text
-        string2encode.extend Watobo::Mixin::Transcoders
-        setText(string2encode.url_encode)
+        setText(Base64.strict_decode64(@text))
       end
 
       def onDecodeURL(sender, sel, item)
