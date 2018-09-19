@@ -16,6 +16,15 @@ module Watobo #:nodoc: all
       @scope = scope
     end
 
+    def self.save
+      Watobo::Conf::Scope.set(@scope)
+      Watobo::Conf::Scope.save_project
+    end
+
+    def self.load
+      Watobo::Conf::Scope.load_project
+    end
+
     def self.exist?
       return false if @scope.empty?
       @scope.each_value do |s|

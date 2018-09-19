@@ -38,6 +38,9 @@ module Watobo#:nodoc: all
     Watobo::Conf.load_project_settings()
     Watobo::Conf.load_session_settings()
 
+    # apply settings to modules/objects
+    Watobo::Scope.set Watobo::Conf::Scope.to_h
+
     #project_settings[:session_store] = ds
 
     puts "* INIT PASSIVE MODULES"

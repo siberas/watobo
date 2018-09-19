@@ -29,6 +29,7 @@ module Watobo#:nodoc: all
           Watobo::Conf::General.save_project
           Watobo::Conf::Interceptor.save_project
           Watobo::Conf::SidCache.save_project
+          Watobo::Scope.save
         end
         # also save global settings here
        # puts "- save global settings"
