@@ -373,7 +373,7 @@ module Watobo #:nodoc: all
         @chat_list.each_with_index do |chat, index|
           #print "."
           check.updateCounters(chat, @prefs)
-          puts "* [#{index}] CheckCounter #{chat.id}: #{check.check_name} - #{check.numChecks}"
+          puts "* [#{index+1}] CheckCounter for Chat-ID #{chat.id}: #{check.check_name} - #{check.numChecks}"
         end
 
         # @numTotalChecks += check.numChecks

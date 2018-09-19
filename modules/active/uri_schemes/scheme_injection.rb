@@ -63,7 +63,7 @@ EOF
                     @env_count += 1
 
                     check_id = "watobo_#{scheme}_#{@env_count}"
-                    checks << [scheme.dup, "#{scheme}://#{check_id}.collab.qimera.eu/watobo.#{fext}", check_id]
+                    checks << [scheme.dup, "#{scheme}://#{check_id}.#{Watobo::Conf::Scanner.dns_sensor}.#{fext}", check_id]
                   end
                 end
                 checker = proc {
