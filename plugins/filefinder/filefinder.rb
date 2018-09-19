@@ -191,6 +191,7 @@ module Watobo #:nodoc: all
           @sites_combo.appendItem("no site selected", nil)
           Watobo::Chats.sites(:in_scope => Watobo::Scope.exist?).each do |site|
             #puts "Site: #{site}"
+            next if site.nil?
             @sites_combo.appendItem(site.slice(0..35), site)
           end
           @sites_combo.setCurrentItem(0) if @sites_combo.numItems > 0
