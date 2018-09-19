@@ -80,6 +80,7 @@ EOD
           def generateChecks(chat)
 
             begin
+
               checker = proc{
                   test_request = nil
                   test_response = nil
