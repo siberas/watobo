@@ -1,7 +1,8 @@
 # @private 
-module Watobo#:nodoc: all
+module Watobo #:nodoc: all
   class Scope
     @scope = {}
+
     def self.to_s
       @scope.to_yaml
     end
@@ -30,14 +31,15 @@ module Watobo#:nodoc: all
     def self.each(&block)
       if block_given?
         @scope.each do |site, scope|
-          yield [ site, scope]
+          yield [site, scope]
         end
       end
     end
 
     def self.match_site?(site)
+
       return true if @scope.empty?
-      @scope.has_key? site
+      @scope.has_key?(site) && @scope[site][:enabled]
     end
 
     def self.match_chat?(chat)
@@ -53,21 +55,21 @@ module Watobo#:nodoc: all
         path = chat.request.path
         url = chat.request.url.to_s
         scope = @scope[site]
-       
+
         if scope.has_key? :root_path
           unless scope[:root_path].empty?
             return false unless path =~ /^(\/)?#{scope[:root_path]}/i
           end
         end
         return true unless scope.has_key? :excluded_paths
-       
+
 
         scope[:excluded_paths].each do |p|
-         # puts "#{url} - #{p}"
+          # puts "#{url} - #{p}"
           return false if url =~ /#{p}/
         end
-        
-      return true
+
+        return true
       end
       return false
     end
@@ -76,10 +78,10 @@ module Watobo#:nodoc: all
       puts "* add site to scope: #{site}"
 
       scope_details = {
-        :site => site,
-        :enabled => true,
-        :root_path => '',
-        :excluded_paths => [],
+          :site => site,
+          :enabled => true,
+          :root_path => '',
+          :excluded_paths => [],
       }
 
       @scope[site] = scope_details
