@@ -2,10 +2,10 @@
 module Watobo #:nodoc: all
   module Modules
     module Active
-      module Template_injection
+      module Ssti
 
 
-        class Tinject < Watobo::ActiveCheck
+        class Ssti_simple < Watobo::ActiveCheck
 
           threat = <<'EOF'
 
@@ -15,7 +15,7 @@ EOF
 
           @info.update(
               :check_name => 'Simple Template Injection Checks', # name of check which briefly describes functionality, will be used for tree and progress views
-              :check_group => AC_GROUP_TEMPLATE,
+              :check_group => AC_GROUP_SSTI,
               :description => "Check for template injection vulnerabilities.", # description of checkfunction
               :author => "Andreas Schmidt", # author of check
               :version => "0.9" # check version
@@ -23,7 +23,7 @@ EOF
 
           @finding.update(
               :threat => threat, # thread of vulnerability, e.g. loss of information
-              :class => "Template Injection", # vulnerability class, e.g. Stored XSS, SQL-Injection, ...
+              :class => AC_GROUP_SSTI, # vulnerability class, e.g. Stored XSS, SQL-Injection, ...
               :type => FINDING_TYPE_VULN, # FINDING_TYPE_HINT, FINDING_TYPE_INFO, FINDING_TYPE_VULN
               :rating => VULN_RATING_HIGH,
               :measure => measure
@@ -54,7 +54,7 @@ EOF
 
 
               @parm_list = chat.request.parameters(:data, :url, :json)
-              @parm_list.each do |parm|
+              @parm_list.each do |param|
                 checks = []
                 checks.concat @markers
 
@@ -71,9 +71,8 @@ EOF
                     inj = "#{check[0]} #{inj_val} #{check[1]}"
                     pattern = eval(inj_val).to_s
 
-                    puts pattern
-
                     test = chat.copyRequest
+                    parm = param.copy
 
                     parm.value = inj
                     if parm.location == :url
@@ -81,22 +80,20 @@ EOF
                     end
                     test.set parm
 
-                    puts test
-
                     test_request, test_response = doRequest(test)
-
-                    puts test_response
 
 
                     if test_response.join =~ /(#{pattern})/i
+                      puts '!!! GOTCHA !!!! FOUND SSTI Vulnerability' if $VERBOSE
                       match = $1
 
                       addFinding(test_request, test_response,
-                                 :check_pattern => "#{check}",
+                                # :check_pattern => "#{Regexp.quote(parm.value)}",
+                                 :check_pattern => "#{parm.value}",
                                  :proof_pattern => "#{match}",
-                                 :test_item => parm,
+                                 :test_item => "#{parm.name}",
                                  :chat => chat,
-                                 :title => "[#{parm}] - #{test_request.path}"
+                                 :title => "[#{parm.name}] - #{test_request.path}"
                       )
                     end
 
