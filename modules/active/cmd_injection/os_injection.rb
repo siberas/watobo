@@ -14,18 +14,18 @@ EOF
           measure = "All user input should be filtered and/or escaped using a method appropriate for the output context"
 
           @info.update(
-              :check_name => 'Simple Template Injection Checks', # name of check which briefly describes functionality, will be used for tree and progress views
-              :check_group => AC_GROUP_SSTI,
-              :description => "Check for template injection vulnerabilities.", # description of checkfunction
+              :check_name => 'OS Command Injection Checks', # name of check which briefly describes functionality, will be used for tree and progress views
+              :check_group => AC_GROUP_CMD,
+              :description => "Check for command injection vulnerabilities.", # description of checkfunction
               :author => "Andreas Schmidt", # author of check
               :version => "0.9" # check version
           )
 
           @finding.update(
               :threat => threat, # thread of vulnerability, e.g. loss of information
-              :class => AC_GROUP_SSTI, # vulnerability class, e.g. Stored XSS, SQL-Injection, ...
+              :class => AC_GROUP_CMD, # vulnerability class, e.g. Stored XSS, SQL-Injection, ...
               :type => FINDING_TYPE_VULN, # FINDING_TYPE_HINT, FINDING_TYPE_INFO, FINDING_TYPE_VULN
-              :rating => VULN_RATING_HIGH,
+              :rating => VULN_RATING_CRITICAL,
               :measure => measure
           )
 
@@ -50,8 +50,11 @@ EOF
               @parm_list.each do |param|
                 checks = []
                 checks.concat @injections
+                checks.concat @injections.map{|i| [ "#{param.value};#{i[0]}", i[1]]}
                 checks.concat @injections.map{|i| [ ";#{i[0]}", i[1]]}
                 checks.concat @injections.map{|i| [ "`#{i[0]}`", i[1]]}
+                checks.concat @injections.map{|i| [ ";`#{i[0]}`", i[1]]}
+                checks.concat @injections.map{|i| [ "|`#{i[0]}`", i[1]]}
 
                   checks.each do |check|
                   checker = proc {
@@ -63,7 +66,7 @@ EOF
                     parm = param.copy
                     pattern = "#{check[1]}"
 
-                    inj="#{parm.value}#{check[0]}"
+                    inj="#{check[0]}"
 
                     parm.value = inj
                     if parm.location == :url
