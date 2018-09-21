@@ -350,7 +350,7 @@ module Watobo #:nodoc: all
 
       @prefs.update prefs
 
-      puts @prefs.to_yaml
+      #puts @prefs.to_yaml
 
       unique_checks = {}
       active_checks.each do |x|

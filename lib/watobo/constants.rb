@@ -33,6 +33,7 @@ module Watobo#:nodoc: all
     AC_GROUP_ENUMERATION = "Enumeration"
     AC_GROUP_FILE_INCLUSION = "File Inclusion"
     AC_GROUP_SSTI = "SSTI"
+    AC_GROUP_CMD = "CMD Injection"
     
     AC_GROUP_DOMINO = "Lotus Domino"
     AC_GROUP_SAP = "SAP"

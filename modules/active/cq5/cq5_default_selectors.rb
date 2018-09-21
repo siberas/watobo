@@ -24,7 +24,7 @@ module Watobo#:nodoc: all
           def initialize(project, prefs={})
             super(project, prefs)
             
-            @checked_locations = []
+            @@checked_locations = []
             @selectors = %w( query assets infinity children s7catalog pages feed feedentry tidy sysview docview permissions overlay 1 2 3 4 5 6 7 )
             @extensions = %w( json html csv zip xml )
             # specials are combinations which need one or more parameters to produce a valid result
@@ -35,15 +35,15 @@ module Watobo#:nodoc: all
           end
 
           def reset()
-            @checked_locations = []
+            @@checked_locations = []
           end
 
           def generateChecks(chat)
              path = chat.request.path
-             return false if @checked_locations.include? path
-             @checked_locations << path
+             return false if @@checked_locations.include? path
+             @@checked_locations << path
              
-             test_extensions = @extensions
+             test_extensions = @extensions.clone
              test_extensions.concat @specials
              test_extensions.concat @mixed
              

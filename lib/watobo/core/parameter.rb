@@ -10,81 +10,83 @@ module Watobo #:nodoc: all
 
 =end
   class Parameter
-    attr :location
-    attr :name
-    attr_accessor :value
+    def location
+      @prefs[:location]
+    end
+
+    def name
+      @prefs[:name]
+    end
+
+    def value
+      @prefs[:value]
+    end
+
+    def value=(v)
+      @prefs[:value] = v
+    end
 
     def to_h
-      {name: name, value: value}
+      @prefs.clone
+    end
+
+    def to_s
+      "#{name}=#{value}"
     end
 
     def initialize(prefs)
-      @location = nil
-      @name = prefs[:name]
-      @value = prefs[:value]
+      raise ":location is missing" unless prefs.has_key?(:location)
+      raise ":name is missing" unless prefs.has_key?(:name)
+
       @prefs = prefs
     end
 
     def copy
-      p = self.to_h
-      c = case location
-            when :url
-              UrlParameter.new(p)
-            when :data
-              WWWFormParameter.new(p)
-            when :json
-              JSONParameter.new(p)
-            when :cookie
-              CookieParameter.new(p)
-            when :xml
-              XmlParameter.new(p)
+      Parameter.new(self.to_h)
+    end
 
-          end
+    def method_missing(name, *args, &block)
+      m = name.to_sym
+      super unless @prefs.has_key?(m)
+      return @prefs[m]
     end
   end
 
   class WWWFormParameter < Parameter
     def initialize(prefs)
+      prefs[:location] = :data
       super prefs
-      @location = :data
     end
   end
 
 
   class UrlParameter < Parameter
     def initialize(prefs)
+      prefs[:location] = :url
       super prefs
-      @location = :url
     end
   end
 
   class CookieParameter < Parameter
     def initialize(prefs)
+      prefs[:location] = :cookie
       super prefs
-      @location = :cookie
     end
   end
 
   class JSONParameter < Parameter
     def initialize(prefs)
+      prefs[:location] = :json
       super prefs
-      @location = :json
     end
   end
 
   class XmlParameter < Parameter
-    attr :parent
-    attr :namespace
-
-    def to_h
-      {name: name, value: value, parent: parent, namespace: namespace}
-    end
-
     def initialize(prefs)
+      prefs[:location] = :xml
       super prefs
-      @location = :xml
-      @parent = prefs.has_key?(:parent) ? prefs[:parent] : ""
-      @namespace = prefs.has_key?(:namespace) ? prefs[:namespace] : nil
+      # @parent = prefs.has_key?(:parent) ? prefs[:parent] : ""
+      # @namespace = prefs.has_key?(:namespace) ? prefs[:namespace] : nil
     end
   end
 end
