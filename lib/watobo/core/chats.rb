@@ -114,6 +114,14 @@ module Watobo #:nodoc: all
       Watobo::Chats.each do |chat|
         next if list.has_key?(chat.request.site)
         site = chat.request.site
+
+        if site.nil? and $VERBOSE
+          puts "! No Site in request:"
+          puts " - ChatID: #{chat.id}"
+          puts " - Chat-Request:"
+          puts chat.request
+        end
+        next if site.nil?
         next if cprefs[:in_scope] == true and not Watobo::Scope.match_site?(site)
         next if cprefs[:ssl] and not chat.use_ssl?
 

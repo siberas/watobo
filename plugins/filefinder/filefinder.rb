@@ -238,6 +238,8 @@ module Watobo #:nodoc: all
               end
             end
 
+            @db_list.uniq!
+
             if config.has_key? :name
               @db_list.each do |db|
                 @db_name = db if config[:name] == db
@@ -251,6 +253,8 @@ module Watobo #:nodoc: all
           Dir.glob("#{db_path}/*").each do |db|
             @db_list << db
           end
+
+          @db_list.uniq!
 
           begin
             hs_green = FXHiliteStyle.new
