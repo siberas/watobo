@@ -36,8 +36,9 @@ module Watobo#:nodoc: all
 
         settings[:dns_sensor] = @dns_dt.value.strip
 
-        
-      puts settings.to_json
+        puts 'Scanner Settings:'
+        puts settings.to_json
+        puts '---'
         return settings
       end
       
@@ -61,6 +62,7 @@ module Watobo#:nodoc: all
       
       def removePattern(list_box)
         index = list_box.currentItem
+        #puts index
         if  index >= 0
           list_box.removeItem(index)
         end

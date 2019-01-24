@@ -57,6 +57,8 @@ EOD
               jwt = bearer.match(/Bearer (.*)/)[1]
               jh, jp, js = jwt.split('.')
               jh = JSON.parse(Base64.decode64(jh))
+
+
               jp = JSON.parse(Base64.decode64(jp))
 
               # remove 'alg' from original header

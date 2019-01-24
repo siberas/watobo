@@ -448,11 +448,13 @@ module Watobo #:nodoc: all
               parms = CGI.unescape(ps_ascii)
             end
           end
+          # clean parms
+          parms.gsub!("\n",'')
           parms.gsub!(/[^[:print:]]/, '.')
-
+          parms.gsub!(/\s+/,' ')
         end
 
-        self.setItemText(lastRowIndex, index, parms)
+        self.setItemText(lastRowIndex, index, parms[0..150])
         self.getItem(lastRowIndex, index).justify = FXTableItem::LEFT
 
         index = @col_order.index(TABLE_COL_STATUS)
