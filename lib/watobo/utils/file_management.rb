@@ -34,25 +34,7 @@ module Watobo#:nodoc: all
 
       Watobo::DataStore.save_chat(filename, chat)
     end
-    
-    def Utils.saveChat_UNUSED(chat, filename)
-      return false if filename.nil?
-      return false if chat.nil?
-      chat_data = {
-        :request => chat.request.map{|x| x.inspect},
-        :response => chat.response.map{|x| x.inspect},
-      }
-      
-      chat_data.update(chat.settings)  
-                    
-      if File.exist?(filename) then
-        puts "Updating #{filename}"
-        File.open(filename, "w") { |fh| 
-          YAML.dump(chat_data, fh)
-        }
-        chat.file = filename
-      end
-    end
+
     
   end
 end

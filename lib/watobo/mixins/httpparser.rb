@@ -722,7 +722,7 @@ module Watobo #:nodoc: all
           begin
             filter = '.*' if filter.nil?
             header_list=[]
-            self.each do |line|
+            self[1..-1].each do |line|
               cl = line.force_encoding('ASCII-8BIT')
               return header_list if cl.strip.empty?
               if cl =~ /#{filter}/

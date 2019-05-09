@@ -422,6 +422,8 @@ module Watobo#:nodoc: all
       @scan_settings = Watobo::Conf::Scanner.dump
       @forward_proxy_settings = Watobo::Conf::ForwardingProxy.dump
 
+      Watobo::ClientCertStore.load
+
      # raise ArgumentError, "No SessionStore Defined" unless @settings.has_key? :session_store
 
      # @session_store = @settings[:session_store]

@@ -107,7 +107,7 @@ module Watobo #:nodoc: all
 
       end
 
-      def initialize(socket, req=nil)
+      def initialize(socket, req = nil)
         @socket = socket
         @port = nil
         @address = nil
@@ -129,8 +129,10 @@ module Watobo #:nodoc: all
         ra = socket.remote_address
         cport = ra.ip_port
         caddr = ra.ip_address
-        #puts cport
-        #puts caddr
+        if $DEBUG
+          puts cport
+          puts caddr
+        end
 
         optval = [1, 500_000].pack("I_2")
         # socket.setsockopt Socket::SOL_SOCKET, Socket::SO_RCVTIMEO, optval
@@ -248,12 +250,12 @@ module Watobo #:nodoc: all
               @dh_key
             }
 
-           # if ctx.respond_to? :tmp_ecdh_callback
-           #   ctx.tmp_ecdh_callback = ->(*args) {
-           #     called = true
-           #     OpenSSL::PKey::EC.new 'prime256v1'
-           #   }
-           # end
+            # if ctx.respond_to? :tmp_ecdh_callback
+            #   ctx.tmp_ecdh_callback = ->(*args) {
+            #     called = true
+            #     OpenSSL::PKey::EC.new 'prime256v1'
+            #   }
+            # end
 
             ctx.verify_mode = OpenSSL::SSL::VERIFY_NONE
             ctx.timeout = 10
@@ -439,7 +441,7 @@ module Watobo #:nodoc: all
         request
       end
 
-      def initialize(socket, req=nil)
+      def initialize(socket, req = nil)
         @socket = socket
         @port = nil
         @address = nil

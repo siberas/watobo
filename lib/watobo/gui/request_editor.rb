@@ -311,7 +311,7 @@ module Watobo #:nodoc: all
         end
       end
 
-      def normalizeText(text)
+      def normalizeText(text, replace_char='')
         begin
           return '' if text.nil?
           t = text.is_a?(Array) ? text.join : text
@@ -319,7 +319,7 @@ module Watobo #:nodoc: all
           t.gsub!(/\x0d/, '')
 
           r = Regexp.new '[\x00-\x09\x0b-\x1f\x7f-\xff]+', nil, 'n'
-          t.gsub!(r, '.')
+          t.gsub!(r, replace_char)
           return t
         rescue => bang
           puts bang

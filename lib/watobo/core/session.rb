@@ -704,10 +704,22 @@ module Watobo#:nodoc: all
         #  OpenSSL::PKey::DH.new(128)
         #}
         if current_prefs.has_key? :client_certificate
+
           ccp = current_prefs[:client_certificate]
           ctx.cert = ccp[:ssl_client_cert]
           ctx.key = ccp[:ssl_client_key]
           ctx.extra_chain_cert = ccp[:extra_chain_certs] if ccp.has_key?(:extra_chain_certs)
+
+          if $DEBUG
+            puts "[SSLconnect] Client Certificates"
+            puts "= CERT ="
+            puts ctx.cert.display
+            puts "---"
+            p
+            puts "= KEY ="
+            puts ctx.key.display
+            puts "---"
+          end
         end
 
         socket = OpenSSL::SSL::SSLSocket.new(tcp_socket, ctx)

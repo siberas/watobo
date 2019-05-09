@@ -789,7 +789,7 @@ module Watobo #:nodoc: all
         puts '* update status bar'
         update_status_bar()
 
-        @browserView = BrowserPreview.new(Watobo::Interceptor.proxy)
+
 
 
         @chatTable.show
@@ -807,6 +807,10 @@ module Watobo #:nodoc: all
 
         puts "* starting interceptor"
         Watobo::Interceptor.start
+
+        #TODO: reactivate browser preview
+
+       # @browserView = BrowserPreview.new(Watobo::Interceptor.proxy)
 
         puts "Project Started"
         puts "Active Modules: #{Watobo::ActiveModules.length}"
