@@ -1,6 +1,6 @@
 # @private
 module Watobo#:nodoc: all
-  module HTTP
+  module HTTPData
     class Xml
 
       module Mixin

@@ -5,7 +5,7 @@ require 'fox16'
 include Fox
 
 require 'watobo'
-require 'watobo/plugin_loader'
+require 'watobo/dev/plugin_loader'
 
 module Watobo
   module Gui
