@@ -75,14 +75,24 @@ module Watobo #:nodoc: all
     end
 
     def list_scans
-      Dir["#{@scanlog_path}/*"].map {|x| File.basename(x)}.sort
+      Dir["#{@scanlog_path}/*"].map {|x| x}.sort
     end
 
-    def each_scan(scan_name, &block)
-      scan_dir = File.join(@scanlog_path, scan_name)
-      return nil unless File.exist? scan_dir
-      list = get_file_list(scan_dir, "log_*")
-      list.each do |fname|
+    alias :scans :list_scans
+
+    # @param scan_name [String] the scan location. This can be the shortened scan name of
+    # the current project directory, or an absolute directory
+    # @yield chat [Chat]
+    # @returns scan-chats [Array]
+    def load_scan(scan_name, &block)
+      scan_chats = []
+      scan_dir = scan_name
+      unless File.exist?(scan_dir)
+        scan_dir = File.join(@scanlog_path, scan_name)
+        return nil unless File.exist? scan_dir
+      end
+
+      get_file_list(scan_dir, "log_*").each do |fname|
         #puts
         chat = nil
         if fname =~ /\.mrs$/
@@ -92,7 +102,9 @@ module Watobo #:nodoc: all
         end
         next if chat.nil?
         yield chat if block_given?
+        scan_chats << chat
       end
+      scan_chats
     end
 
     # add_scan_log
@@ -108,7 +120,7 @@ module Watobo #:nodoc: all
         return false if scan_name.nil?
         return false if scan_name.empty?
 
-        scan_name_clean = scan_name.gsub(/[:\\\/\.]*/, '_')
+        scan_name_clean = scan_name.gsub(/[:\\\/\.]+/, '_')
         # puts ">> scan_name"
         path = File.join(@scanlog_path, scan_name_clean)
 

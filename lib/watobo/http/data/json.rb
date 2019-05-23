@@ -14,19 +14,38 @@ module Watobo #:nodoc: all
       end
 
       def clear
-        @root.set_body ''
+        # ignore 'clear' because this will destroy mapping
       end
 
       #
       def set(parm)
         return false unless parm.location == :json
-        index = parm.name
-        ref = @mapping[index]
+
         hash = JSON.parse(@root.body.strip)
-        eval("hash#{ref}=#{parm.value}")
+        # refresh mapping by parsing
+        parse(hash)
+
+        # TODO: add posibility to add new parameters
+        # return if parameter does not have an id. This might be the case if the
+        # parameter has been created manually, to be added as a new parameter.
+        # non existing parameters don't have an id
+        return false if parm.id.nil?
+
+        index = parm.id
 
 
-        @root.set_body doc.to_s
+        ref = @mapping[index]
+        # return immediatly if no reference can be found
+        # this might happen if structurs have been overridden before
+        return false if ref.nil?
+        hash = JSON.parse(@root.body.strip)
+
+        #puts "[Mapping] #{parm.name} -> #{index} --> #{ref}"
+        new_val = parm.value
+        #  puts "[EVAL] hash#{ref}=#{new_val}"
+        eval("hash#{ref}=new_val")
+
+        @root.set_body hash.to_json
 
       end
 
@@ -34,16 +53,18 @@ module Watobo #:nodoc: all
         false
       end
 
+      # @input opts [*SYM]
+      #    supported values:
+      #                       :skip_structures - do not return structure types like Array of Hash
+      #
       def parameters(&block)
-        params = []
 
-        return params unless @root.is_json?
+        return nil unless @root.is_json?
 
         hash = JSON.parse(@root.body.strip)
-        parameters = parse(hash)
+        ps = parse(hash)
 
-
-        return params
+        return ps
       end
 
       def initialize(root)
@@ -56,7 +77,7 @@ module Watobo #:nodoc: all
 
       def index_name(name, index)
         xn = name.scan(/\['[^\[]*'\]/).last
-        xn.gsub!(/[#{Regexp.quote("'[]")}]/,'')
+        xn.gsub!(/[#{Regexp.quote("'[]")}]/, '') unless xn.nil?
         "#{xn}_#{index}"
       end
 
@@ -66,12 +87,12 @@ module Watobo #:nodoc: all
         parms = []
         @mapping = {}
         begin
-          iterate(nil, hash, 0) {|k, v|
-
-            mname = index_name(k, parms.length)
-            puts "[#{mname}] --> #{k} : #{v}"
-            @mapping[mname] = k
-            parms << JSONParameter.new(:name => mname, :value => v)
+          iterate(nil, hash, 0) {|p|
+            mname = index_name(p[:name], parms.length)
+            p[:id] = Digest::MD5.hexdigest(p[:name])
+            #puts "[#{mname}] --> #{p[:name]} : #{p[:value]}"
+            @mapping[p[:id]] = p[:name]
+            parms << JSONParameter.new(p)
           }
 
         rescue => bang
@@ -89,23 +110,30 @@ module Watobo #:nodoc: all
           object.each do |k, v|
             new_base = "#{base}['#{k}']"
             if v.is_a?(Hash)
-              yield [new_base, v] if block_given?
+              p = {name: new_base, value: v, type: :HASH}
+              yield p if block_given?
               iterate(new_base, v, index, &block)
             elsif v.is_a?(Array)
-              yield [new_base, v] if block_given?
+              p = {name: new_base, value: v, type: :ARRAY}
+              yield p if block_given?
               iterate(new_base, v, index, &block)
             else
-              yield [new_base, v] if block_given?
+              p = {name: new_base, value: v, type: v.class.to_s.upcase.to_sym}
+              yield p if block_given?
             end
           end
         elsif object.is_a?(Array)
           object.each_with_index do |v, i|
             new_base = "#{base}[#{i}]"
-            yield [new_base, v] if block_given?
+            #yield [new_base, v] if block_given?
+            p = {name: new_base, value: v, type: :ARRAY}
+            yield p if block_given?
             iterate(new_base, v, index, &block)
           end
         else
-          yield [base, object] if block_given?
+          #yield [base, object] if block_given?
+          p = {name: base, value: object, type: object.class.to_s.upcase.to_sym}
+          yield p if block_given?
         end
       end
 
@@ -136,7 +164,7 @@ if __FILE__ == $0
   end
 
   root = RootDummy.new
-  json = Watobo::HTTP::Json.new(root)
+  json = Watobo::HTTPData::Json.new(root)
 
   puts json.to_s
 

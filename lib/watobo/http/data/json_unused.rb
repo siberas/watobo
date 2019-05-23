@@ -8,9 +8,7 @@ module Watobo #:nodoc: all
         s = @root.body.nil? ? "" : @root.body
       end
 
-      def clear
-        @root.set_body ''
-      end
+
 
       def set(parm)
         json = @root.body.nil? ? '' : @root.body.to_s

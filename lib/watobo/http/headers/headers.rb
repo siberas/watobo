@@ -1,13 +1,14 @@
 # @private
-module Watobo#:nodoc: all
+module Watobo #:nodoc: all
   module HTTP
     class Headers
+      SKIP_HEADERS = %w( Connection Content-Length ).map{|m| m.upcase }
       def to_s
         s = []
-        @cookies.each_value do |v|
+        @headers.each_value do |v|
           s << "#{v.name}=#{v.value}"
         end
-        s.join("; ")
+        s.join("\n")
       end
 
       def inspect
@@ -15,31 +16,26 @@ module Watobo#:nodoc: all
       end
 
       def empty?
-        @cookies.empty?
+        @headers.empty?
       end
 
       def clear
-        @cookies.clear
-        @root.removeCookies
+        @headers.clear
       end
 
       def to_a
-        cookies = []
-        raw_cookies do |c|
-          cookies << Watobo::Cookie.new(c)
-        end
-        cookies
+        binding.pry
+        @headers.values
       end
 
       def each(&block)
-        @cookies.each_value do |cookie|
-          yield cookie if block_given?
+        @headers.each_value do |h|
+          yield h if block_given?
         end
       end
 
-      def set(parm)
-        @cookies[parm.name.to_sym] = parm
-        @root.set_header("Cookie", self.to_s)
+      def set(param)
+        @root.set_header(param.name, param.value)
       end
 
       def has_parm?(parm_name)
@@ -50,73 +46,53 @@ module Watobo#:nodoc: all
 
       def parameters(&block)
         params = []
-        raw_cookies do |cprefs|
-          cookie = Watobo::CookieParameter.new(cprefs)
-          yield cookie if block_given?
-          params << cookie
-
-        end
-        params
+        @headers.each_value do | h |
+        yield h if block_given?
+        params << h
+      end
+      params
       end
 
       def initialize(root)
         @root = root
-        @cookies = {}
+        @headers = {}
 
-        init_cookies
+        init_header_params
 
       end
 
       private
 
-      def init_cookies
-        raw_cookies do |rc|
-          if rc.has_key? :name
-            @cookies[rc[:name].to_sym] = Watobo::Cookie.new(rc)
-          end
-        end
-      end
+      def init_header_params
+        raw_headers = @root.headers
+        raw_headers.shift
 
-      def raw_cookies(&block)
-        rcs = []
-        @root.headers.each do |line|
+        raw_headers.each do |line|
           begin
-            if line =~ /^(Set\-)?Cookie2?: (.*)/i then
-              clist = $2.split(";")
-              cookie_prefs = { :secure => false, :http_only => false }
-              cookie_prefs[:secure] = true if line =~ /secure/i
-              cookie_prefs[:http_only] = true if line =~ /httponly/i
+            # skip cookies because they are handled by Cookies class.
+            next if line =~ /^(Set\-)?Cookie2?: (.*)/i
+            i = line.index(":")
 
-              clist.each do |c|
-                c.strip!
-                i = c.index("=")
+            next if i.nil?
 
-                # skip cookie options
-                next if i.nil?
+            name = line[0..i - 1]
+            next if SKIP_HEADERS.include?( name.upcase )
+            value = i < line.length ? line[i + 1..-1] : ""
+            header_prefs = {}
+            header_prefs[:name] = name.strip
+            header_prefs[:value] = value.strip
 
-                name = c[0..i-1]
-                value = i < c.length ? c[i+1..-1] : ""
-                cookie_prefs[:name] = name.strip
-                cookie_prefs[:value] = value.strip
-                #cookie = Watobo::CookieParameter.new(cookie_prefs)
-                yield cookie_prefs if block_given?
-                rcs << cookie_prefs
-              end
-            end
-          rescue => bang
-            puts bang
-            puts bang.backtrace
-            puts line
+            @headers[name] = Watobo::HeaderParameter.new(header_prefs)
+
           end
         end
 
-        return rcs
-
       end
+
 
       module Mixin
-        def cookies
-          @cookies ||= Cookies.new(self)
+        def headers
+          @headers ||= Headers.new(self)
         end
       end
     end

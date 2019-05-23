@@ -57,7 +57,7 @@ module Watobo #:nodoc: all
     class ConversationTable < FXTable
       #    class ConversationTable < FXColoredTable
 
-      attr :filter
+      attr :filter, :current_chat_list
 
       attr_accessor :autoscroll
       attr_accessor :url_decode
@@ -428,7 +428,7 @@ module Watobo #:nodoc: all
           ps << rup
         end
 
-        if chat.request.method =~ /POST/ and !chat.request.body.nil? then
+        if chat.request.method =~ /(POST|PUT)/i and !chat.request.body.nil? then
           post_parms_string = ''
           post_parms_string << chat.request.body
           ps << "&&" unless ps.empty?
@@ -488,8 +488,16 @@ module Watobo #:nodoc: all
         self.clearItems
         initColumns()
         adjustCellWidth()
-        Watobo::Chats.filtered(@filter) do |chat|
-          add_chat_row(chat)
+
+
+       # Watobo::Chats.filtered(@filter) do |chat|
+       #   add_chat_row(chat)
+       # end
+
+        @current_chat_list.each do |chat|
+          if Watobo::Chats.match?(chat, @filter)
+            add_chat_row(chat)
+          end
         end
       end
 

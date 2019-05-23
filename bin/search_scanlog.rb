@@ -3,9 +3,9 @@ if $0 == __FILE__
   inc_path = File.expand_path(File.join(File.dirname(__FILE__), "..", "lib"))
   $: << inc_path
 end
-require 'trollop'
+require 'optimist'
 
-OPTS=Trollop::options do
+OPTS=Optimist::options do
   version "#{$0} 0.1 (c) 2014 siberas"
   opt :project, "Projectname", :type => :string
   opt :session, "Sessionname", :type => :string
@@ -13,9 +13,9 @@ OPTS=Trollop::options do
   opt :url, "URL pattern", :type => :string, :default => "*"
 end
 
-Trollop.die :project, "Need project name" unless OPTS[:project]
-Trollop.die :session, "Need session name" unless OPTS[:session]
-Trollop.die :logname, "Need session name" unless OPTS[:logname]
+Optimist.die :project, "Need project name" unless OPTS[:project]
+Optimist.die :session, "Need session name" unless OPTS[:session]
+Optimist.die :logname, "Need session name" unless OPTS[:logname]
 
 require 'watobo'
 

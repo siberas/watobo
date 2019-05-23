@@ -5,11 +5,12 @@ require 'fox16'
 include Fox
 
 require 'watobo'
-require 'watobo/dev/plugin_loader'
+require 'watobo/plugin_loader'
 
+$plugin_filter = ARGV[0] ? ARGV[0] : ''
 module Watobo
   module Gui
-    PluginLoader.new
+    PluginLoader.new $plugin_filter
     application.create
     application.run
   end

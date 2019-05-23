@@ -312,14 +312,7 @@ module Watobo#:nodoc: all
           @table.scrollUp() unless @table.nil?
         }
 
-        
-        
-         
 
-        
-        
-        
-        
         @filter_info.connect(SEL_LEFTBUTTONPRESS){
           filter = @table.nil? ? {} : @table.filter
          dlg = Watobo::Gui::ConversationFilterDialog.new(self, filter)
@@ -388,7 +381,7 @@ module Watobo#:nodoc: all
         text << "None" if hide.empty?
         
         unless @table.nil?
-          text << "\n#{@table.numRows}/#{Watobo::Chats.length}"
+          text << "\n#{@table.numRows}/#{@table.current_chat_list.length}"
         end
         text
       end

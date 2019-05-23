@@ -5,7 +5,7 @@ module Watobo
       def self.create_request(request)
         cURL = [ 'curl -X ' + request.method.upcase ]
         cURL << request.url_string
-        request.headers.each do |h|
+        request.headers[1..-1].each do |h|
           hname = h.gsub(/:.*/,'').downcase
           cURL << '-H "' + h.strip + '"' unless REMOVE_HEADERS.include?(hname)
         end

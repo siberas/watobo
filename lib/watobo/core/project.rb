@@ -413,8 +413,8 @@ module Watobo#:nodoc: all
       #setDefaults()
 
       # reset counters
-      Watobo::Chat.new([],[]).resetCounters
-      Watobo::Finding.new([],[]).resetCounters
+      Watobo::Chat.resetCounters
+      Watobo::Finding.resetCounters
 
       # UPDATE SETTINGS
       @settings.update(project_settings)

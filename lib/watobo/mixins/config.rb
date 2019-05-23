@@ -5,10 +5,11 @@ module Watobo
     # Filename of default location
     # @return [String]
     def filename
-      stack = @owner.to_s.split('::')
-
+      stack = ( @owner.is_a?(Class) ? @owner.to_s : @owner.class.to_s ).split('::')
       clazz_name = stack.pop
       grp_name = stack.pop
+
+      subdir = grp_name.nil? ? '' : Watobo::Utils.snakecase(grp_name)
 
       cname = Watobo::Utils.snakecase(clazz_name)
 

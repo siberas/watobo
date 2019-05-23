@@ -54,7 +54,7 @@ module Watobo#:nodoc: all
         false
       end
 
-      def parameters(&block)
+      def parameters(*opts, &block)
         params = []
 
         return params unless @root.is_xml?

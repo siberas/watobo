@@ -6,6 +6,8 @@ module Watobo#:nodoc: all
     include Watobo::Constants
     include Watobo::Subscriber
 
+    attr :settings
+
     @@settings = Hash.new
     @@proxy = Hash.new
 
@@ -98,6 +100,7 @@ module Watobo#:nodoc: all
         if current_prefs[:update_contentlength] == true and request.has_body? then
           #puts request.body.unpack("H*")[0]
           #puts (request.body.unpack("H*")[0].length / 2).to_s
+
           request.fix_content_length()
           #puts "New: #{request.content_length}"
           #puts request.body.encoding

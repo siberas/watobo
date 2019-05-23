@@ -121,8 +121,8 @@ module Watobo#:nodoc: all
         request.clear_parameters
         
         self.numRows.times do |i|
-          name = CGI.escape(self.getItemText(i, 1))
-          location = self.getItemText(i, 0)
+          #name = CGI.escape(self.getItemText(i, 1))
+          #location = self.getItemText(i, 0)
           parm = self.getItemData(i, 0)
           parm.value = self.getItemText(i, 2).unpack("C*").pack("C*").strip 
           request.set parm
@@ -144,6 +144,7 @@ module Watobo#:nodoc: all
         # addParmList("REQ", ["URL=#{request.url}"])
 
         @request.parameters.each do |parm|
+          next unless parm.is_value?
           add_parm parm
         end
 
@@ -281,7 +282,7 @@ module Watobo#:nodoc: all
           self.setItemData(lastRowIndex, 0, parm)
           n = parm.name.nil? ? "" : CGI.unescape(parm.name)
           self.setItemText(lastRowIndex, 1, n) 
-          self.setItemText(lastRowIndex, 2, parm.value)
+          self.setItemText(lastRowIndex, 2, parm.value.to_s)
          
           3.times do |i|
             self.getItem(lastRowIndex, i).justify = FXTableItem::LEFT

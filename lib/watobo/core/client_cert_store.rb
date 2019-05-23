@@ -113,6 +113,8 @@ module Watobo#:nodoc: all
       @client_certs.each do |site, cinfo|
         data = {}
         # TODO: set default :save_pw to false and include switch to client cert dialog
+        # TODO: use gnome-keyring as password-store
+        #    - https://github.com/mvz/gir_ffi-gnome_keyring
         save_pw = cinfo.has_key?(:save_pw) ? cinfo[:save_pw] : true
         [:certificate_file, :key_file, :type, :password, :insert ].each do |k|
           val = cinfo[k]

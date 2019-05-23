@@ -52,6 +52,7 @@ module Watobo#:nodoc: all
           rescue => bang
             puts "ERROR!! #{Module.nesting[0].name}"
             puts bang
+            puts bang.backtrace
           end
         end
         

@@ -27,6 +27,7 @@ module Watobo #:nodoc: all
 
       def parameters(&block)
         parms = []
+       # binding.pry
         @root.get_parms.each do |p|
           p.strip!
           i = p.index("=")

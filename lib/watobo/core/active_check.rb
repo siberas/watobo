@@ -207,27 +207,6 @@ module Watobo #:nodoc: all
       end
     end
 
-    def cancel_UNUSED()
-      @@status = :stopped
-      @inner_pool.each do |thr|
-        begin
-          if thr.alive?
-            puts "Stopping #{thr}" if $DEBUG
-
-            Thread.kill(thr) #.kill if not thr.kill?
-
-          end
-          @inner_pool.delete(thr)
-        rescue => bang
-          puts "could not kill thread #{thr}"
-          puts bang
-          puts bang.backtrace if $DEBUG
-        end
-      end
-      @inner_pool_cv.signal
-
-    end
-
     def stop()
       # TODO: real stop/pause function
       cancel()
@@ -270,53 +249,6 @@ module Watobo #:nodoc: all
       puts "[#{self}] #{msg}"
     end
 
-    # +++ run_checks  +++
-    # + function: wrapper function for doRequest(r). Needed for additional checks like smartchecks.
-    #
-    # :run_passive_checks false,
-    # :do_login
-
-    def run_checks_UNUSED(chat, opts={})
-      begin
-        # reset() # reset variables first
-        @@status = :running
-        check_opts = {:run_passive_checks => false}
-        check_opts.update opts
-        @settings.update opts
-
-        updateSessionSettings(opts)
-        #  puts @session.to_yaml
-
-        @@proxy = opts[:proxy] if opts[:proxy]
-        #   @@max_checks = opts[:max_parallel_checks] if opts.has_key? :max_parallel_checks
-        @@max_checks = Watobo::Conf::Scanner.max_parallel_checks
-
-        do_test(chat) { |request, response|
-          begin
-
-            if request and response then
-              if check_opts[:run_passive_checks] then
-
-                nc = Watobo::Chat.new(request, response, :id => 0)
-                #   @project.runPassiveModules(nc)
-
-              end
-
-            end
-          rescue => bang
-            puts bang
-            puts bang.backtrace if $DEBUG
-          end
-
-        }
-
-      rescue => bang
-        puts bang
-        puts bang.backtrace if $DEBUG
-
-      end
-
-    end
 
     def check_name
       info = self.class.instance_variable_get("@info")

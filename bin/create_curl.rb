@@ -7,7 +7,7 @@ require 'optimist'
 require 'pry'
 
 OPTS = Optimist::options do
-  version "#{$0} 0.1 (c) 2014 siberas"
+  version "#{$0} 1.0 (c) 2019 siberas"
   opt :project, "Projectname", :type => :string
   opt :session, "Sessionname", :type => :string
   opt :chatid, "ChatId", :type => :string
