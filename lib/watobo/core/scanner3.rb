@@ -46,6 +46,7 @@ module Watobo #:nodoc: all
             task = @tasks.deq
             begin
               # puts "RUNNING #{task[:module]}"
+              print '*'
               request, response = task[:check].call()
 
               next if response.nil?
@@ -75,6 +76,7 @@ module Watobo #:nodoc: all
                 end
               end
 
+              # TODO
               chat = Chat.new(request, response, :id => 0, :chat_source => prefs[:chat_source])
               notify(:new_chat, chat)
               unless prefs[:scanlog_name].nil? or prefs[:scanlog_name].empty?
@@ -287,7 +289,7 @@ module Watobo #:nodoc: all
                     sleep 1
                   end
                   # TODO: make sleep configurable via "scanner settings"
-                  sleep 0.3
+                  #sleep 0.3
                   task = {:module => ac,
                           :check => check
                   }

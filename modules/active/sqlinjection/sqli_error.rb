@@ -68,7 +68,7 @@ EOF
           def generateChecks(chat)
             
             begin
-              chat.request.parameters( :url, :wwwform, :json ) do |parm|
+              chat.request.parameters() do |parm|
                 # puts "#{Module.nesting[0].name}: run check on chat-id (#{chat.id}) with parm (#{parm})"
                 #@sql_checks.each do |check, pattern|
                 test_values = []

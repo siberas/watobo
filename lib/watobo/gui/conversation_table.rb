@@ -100,11 +100,17 @@ module Watobo #:nodoc: all
       def current_chat
         # puts currentRow
         if currentRow >= 0
-          chatid = getRowText(currentRow).to_i
-          chat = Watobo::Chats.get_by_id(chatid)
+          #chatid = getRowText(currentRow).to_i
+          #chat = Watobo::Chats.get_by_id(chatid)
+          chat = chat_at_row(currentRow)
           return chat
         end
         return nil
+      end
+
+      def chat_at_row(row)
+        index = @col_order.index(TABLE_COL_SSL)
+        getItemData(row, index)
       end
 
       def chat_visible?(chat)
@@ -407,6 +413,7 @@ module Watobo #:nodoc: all
 
         index = @col_order.index(TABLE_COL_SSL)
         self.setItemIcon(lastRowIndex, index, TBL_ICON_LOCK) if chat.request.is_ssl?
+        setItemData(lastRowIndex, index, chat)
 
         index = @col_order.index(TABLE_COL_METHOD)
 

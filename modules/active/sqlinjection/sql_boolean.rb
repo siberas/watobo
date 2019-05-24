@@ -87,7 +87,7 @@ EOF
 
 
               checks.each do |check_true, check_false|
-                chat.request.parameters(:url, :wwwform, :xml, :json) do |param|
+                chat.request.parameters() do |param|
                   checker = proc {
                     begin
 

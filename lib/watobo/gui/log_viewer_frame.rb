@@ -9,13 +9,18 @@ module Watobo #:nodoc: all
 
       def reload
         initScanTable
+        # return false unless Watobo::DataStore.respond_to?( :scans )
         Watobo::DataStore.scans.sort_by {|f| File.ctime(f).to_i}.each do |file|
           lastRowIndex = @scanTable.getNumRows
           @scanTable.appendRows(1)
           @scanTable.setItemText(lastRowIndex, 0, File.basename(file))
           @scanTable.setItemData(lastRowIndex, 0, file)
-          @scanTable.setItemText(lastRowIndex, 1, File.ctime(file).strftime("%F/%T"))
-
+          @scanTable.setItemText(lastRowIndex, 1, File.ctime(file).strftime("%T %F"))
+          2.times do |i|
+            item = @scanTable.getItem(lastRowIndex, i)
+            item.justify = FXTableItem::LEFT unless item.nil?
+            @scanTable.fitColumnsToContents(i)
+          end
 
         end
       end
@@ -24,24 +29,35 @@ module Watobo #:nodoc: all
         super(owner, prefs)
 
         @scan_chats = []
-        FXLabel.new(self, "Scan-Logs")
 
-        frame = FXVerticalFrame.new(self, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y | FRAME_SUNKEN | FRAME_GROOVE, :padding => 0)
+        frame = FXHorizontalFrame.new(self, :opts => LAYOUT_FILL_X | FRAME_SUNKEN) #| FRAME_GROOVE)
+        FXLabel.new(frame, "Scan-Logs")
 
-        @scanTable = FXTable.new(frame, :opts => FRAME_SUNKEN | TABLE_COL_SIZABLE | TABLE_ROW_SIZABLE | LAYOUT_FILL_X | LAYOUT_FILL_Y | TABLE_READONLY | LAYOUT_SIDE_TOP, :padding => 2)
+        # @refresh_btn = FXButton.new(frame, "\tNew Project\tNew Project.", :icon => ICON_ADD_PROJECT, :padding => 0)
+        @refresh_btn = FXButton.new(frame, "refresh", :opts => BUTTON_NORMAL | LAYOUT_RIGHT)
+        @refresh_btn.connect(SEL_COMMAND) {reload}
+
+        @scanTable = FXTable.new(self, :opts => TABLE_COL_SIZABLE | TABLE_ROW_SIZABLE | LAYOUT_FILL_X | LAYOUT_FILL_Y | TABLE_READONLY | LAYOUT_SIDE_TOP, :padding => 2)
 
         @scanTable.connect(SEL_COMMAND) do |sender, sel, item|
-          row = item.row
-          @scanTable.selectRow(row, false)
-          scan_name = @scanTable.getItemText(row, 0)
+          begin
+            row = item.row
+            @scanTable.selectRow(row, false)
+            scan_name = @scanTable.getItemText(row, 0)
 
-          @scan_chats = Watobo::DataStore.load_scan(scan_name)
+            getApp().beginWaitCursor()
+            @scan_chats = Watobo::DataStore.load_scan(scan_name)
 
-          notify(:show_chats, @scan_chats)
+            notify(:show_chats, @scan_chats)
+          rescue => bang
+            puts bang
+            puts bang.backtrace if $DEBUG
+          ensure
+            getApp().endWaitCursor()
+          end
+
         end
-
         initScanTable
-
       end
 
       private
@@ -52,15 +68,11 @@ module Watobo #:nodoc: all
 
         @scanTable.setColumnText(0, "Name")
         @scanTable.setColumnText(1, "Date")
-        #@scanTable.setColumnText(2, "Duration")
-        #@scanTable.setColumnText(3, "Checksum")
 
         @scanTable.rowHeader.width = 0
         @scanTable.setColumnWidth(0, 100)
 
         @scanTable.setColumnWidth(1, 200)
-        #@scanTable.setColumnWidth(2, 80)
-        #@scanTable.setColumnWidth(3, 300)
 
       end
 

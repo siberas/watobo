@@ -138,11 +138,6 @@ EOF
                       sqli_stop = Time.now().to_i
                     end
                   rescue Timeout::Error
-                    timeout_counter += 1
-                    #     puts "[#{self}] Hit Timeout after #{timeout_t} seconds (#{timeout_counter})."
-                    #     puts test
-                    #     puts
-                    #     puts "... retry after #{max_t} seconds ..."
 
                     sqli_stop = Time.now().to_i
                     output << "Hit Timeout after #{sqli_start - sqli_stop} seconds\n"
@@ -167,14 +162,12 @@ EOF
                     addFinding(test_request, test_response,
                                :check_pattern => "#{test_value}",
                                :chat => chat,
-                               :title => "[#{parm[:name]}] - #{path}",
+                               :title => "[#{parm.name}] - #{path}",
                                :proof_pattern => "",
-                               :test_item => parm[:name],
+                               :test_item => parm.name,
                                :class => "SQL-Injection (Time-based)",
                                :output => output
                     )
-                    #readlines
-                    break
 
                   end
 

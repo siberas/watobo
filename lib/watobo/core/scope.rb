@@ -94,6 +94,7 @@ module Watobo #:nodoc: all
       }
 
       @scope[site] = scope_details
+      save
       return true
     end
   end

@@ -255,6 +255,7 @@ module Watobo #:nodoc: all
       # SHOW CHAT
       #
       def showChat(chat)
+        return false if chat.nil?
         @last_chat = chat
         @mre_button.enabled = true
         @fuzz_button.enabled = true
@@ -278,6 +279,7 @@ module Watobo #:nodoc: all
               end
         @quickViewTitle.text = "Chat-ID: #{chat.id} (#{src})"
         @quickViewSubTitle.text = ""
+        true
       end
 
       #
@@ -1522,9 +1524,15 @@ module Watobo #:nodoc: all
             #  puts "right click on row #{row} of #{@chatTable.numRows}"
             if row >= 0 and row < @chatTable.numRows then
 
-              @chatTable.selectRow(row, false)
+              @chatTable.selectRow(row, true)
+              # because currentRow != selected row we have to set it manually
+              # otherwise current_chat would use the false row item
+              @chatTable.setCurrentItem(row, 1, true)
+
               chatid = @chatTable.getRowText(row).to_i
-              chat = Watobo::Chats.get_by_id(chatid)
+
+              #chat = Watobo::Chats.get_by_id(chatid)
+              chat = sender.current_chat
 
               showChat(chat)
 
@@ -1563,7 +1571,7 @@ module Watobo #:nodoc: all
 
                 # EXCLUDE SUBMENU
                 exclude_submenu = FXMenuPane.new(self) do |sub|
-                  chat = Watobo::Chats.get_by_id(chatid)
+                 # chat = Watobo::Chats.get_by_id(chatid)
 
                   target = FXMenuCheck.new(sub, "Chat (#{chatid})")
 
@@ -1587,7 +1595,7 @@ module Watobo #:nodoc: all
 
                 # COPY SUBMENU
                 copy_submenu = FXMenuPane.new(self) do |sub|
-                  chat = Watobo::Chats.get_by_id(chatid)
+                  #chat = Watobo::Chats.get_by_id(chatid)
                   url = chat.request.url.to_s
                   #  puts url
                   url_string = "URL: #{url.slice(0, 35)}"
@@ -1604,7 +1612,8 @@ module Watobo #:nodoc: all
                   }
                   target = FXMenuCommand.new(sub, "Site: #{chat.request.site}")
                   target.connect(SEL_COMMAND) {
-                    site = Watobo::Chats.get_by_id(chatid).request.site
+                    #site = Watobo::Chats.get_by_id(chatid).request.site
+                    site = chat.request.site
 
                     types = [FXWindow.stringType]
                     if acquireClipboard(types)
@@ -1649,7 +1658,8 @@ module Watobo #:nodoc: all
                 copy_submenu = FXMenuPane.new(self) do |sub|
                  target = FXMenuCommand.new(sub, "cURL")
                   target.connect(SEL_COMMAND) {
-                    request = Watobo::Chats.get_by_id(chatid).request
+                    #request = Watobo::Chats.get_by_id(chatid).request
+                    request = chat.request
                     curl = Watobo::Utils::Curl.create_request(request)
 
                     types = [FXWindow.stringType]
@@ -1991,12 +2001,9 @@ module Watobo #:nodoc: all
           # purge viewers
           @request_viewer.setText('')
           @response_viewer.setText('')
-          row = item.row
 
-          chatid = @chatTable.getRowText(row).to_i
-          @chatTable.selectRow(row, false)
-          # @logText.appendText("selected ID: (#{chatid})\n")
-          chat = Watobo::Chats.get_by_id chatid
+          chat = sender.current_chat
+
           showChat(chat) unless chat.nil?
 
         rescue => bang

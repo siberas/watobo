@@ -135,7 +135,7 @@ module Watobo #:nodoc: all
 
       @valid_param_locations = [:url, :data, :wwwform, :xml, :cookies, :json, :headers, :body]
       # Base Object behaves like an empty parameter set
-      @data = @json = @url = @json = nil #Watobo::HTTPData::Base.new
+      @data = @json = @url = @json = @xml = nil #Watobo::HTTPData::Base.new
       if r.respond_to? :push
         #puts "Create REQUEST from ARRAY"
         self.concat r

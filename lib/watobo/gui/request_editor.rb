@@ -79,7 +79,7 @@ module Watobo #:nodoc: all
                   begin
                     jb = JSON.parse(string2decode)
                     out = JSON.pretty_generate jb
-                    replace_text(sender, out)
+                    @textbox.replaceText(pos, len, out)
                   rescue => bang
                     out = "Could prettify response :(\n\n"
                     out << bang.to_s
