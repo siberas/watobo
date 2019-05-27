@@ -110,9 +110,9 @@ module Watobo#:nodoc: all
         end
         
         types = [ FXWindow.stringType ]
-        if acquireClipboard(types)
-          @clipboard_text = entries.join("\n")
-        end        
+        #if acquireClipboard(types)
+        #  @clipboard_text = entries.join("\n")
+        #end
       end
 
       def parseRequest
@@ -169,10 +169,10 @@ module Watobo#:nodoc: all
         addKeyHandler(self)
         
         @clipboard_text = ""
-        self.connect(SEL_CLIPBOARD_REQUEST) do
+        #self.connect(SEL_CLIPBOARD_REQUEST) do
         # setDNDData(FROM_CLIPBOARD, FXWindow.stringType, Fox.fxencodeStringData(@clipboard_text))
-          setDNDData(FROM_CLIPBOARD, FXWindow.stringType, @clipboard_text + "\x00" )
-        end
+        #  setDNDData(FROM_CLIPBOARD, FXWindow.stringType, @clipboard_text + "\x00" )
+        #end
 
         self.connect(SEL_DOUBLECLICKED) do |sender, sel, data|
           row = sender.getCurrentRow
@@ -308,7 +308,8 @@ module Watobo#:nodoc: all
       def onTableClick(sender, sel, item)
         begin
           row = item.row
-          self.selectRow(row, false)
+         # self.selectRow(row, false)
+          setCurrentItem(row, 2)
           self.startInput(row,2)
         rescue => bang
           puts bang

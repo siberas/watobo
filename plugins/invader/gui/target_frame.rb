@@ -34,14 +34,18 @@ module Watobo #:nodoc: all
             @chat = nil
 
             super(owner, opts)
+            FXLabel.new(self, "Request")
             splitter = FXSplitter.new(self, LAYOUT_FILL_X | LAYOUT_FILL_Y | SPLITTER_HORIZONTAL | SPLITTER_REVERSED | SPLITTER_TRACKING)
 
             @editor = RequestEditor.new(splitter, :opts => FRAME_THICK | FRAME_SUNKEN | LAYOUT_FILL_X | LAYOUT_FILL_Y, :padding => 0)
 
-            @tabBook = FXTabBook.new(splitter, nil, 0, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|LAYOUT_RIGHT)
+            mode_frame = FXVerticalFrame.new(splitter, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_RAISED)
+            FXLabel.new(mode_frame, "Select Mode:")
+            @tabBook = FXTabBook.new(mode_frame, nil, 0, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|LAYOUT_RIGHT)
 
             FXTabItem.new(@tabBook, "Parameters", nil)
             rframe = FXVerticalFrame.new(@tabBook, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_RAISED)
+
             frame = FXVerticalFrame.new(rframe, :opts => FRAME_SUNKEN | LAYOUT_FILL_X | LAYOUT_FILL_Y)
             @all_chk = FXCheckButton.new(frame, "All", nil, 0, JUSTIFY_LEFT|JUSTIFY_TOP|ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
             @all_chk.checkState = false
