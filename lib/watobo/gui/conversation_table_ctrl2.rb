@@ -192,12 +192,12 @@ module Watobo#:nodoc: all
        # @foption_res.connect(SEL_COMMAND){ update_text_filter }
 
         @foption_comment = FXCheckButton.new(pattern_frame, "&Comment", nil, 0, ICON_BEFORE_TEXT|LAYOUT_SIDE_RIGHT)
-        state = ( filter.has_key?(:negate_pattern_search) and filter[:negate_pattern_search] )
+        state = ( filter.has_key?(:comment_pattern) and not filter[:comment_pattern].empty? )
         @foption_comment.setCheck state
 
         frame = FXVerticalFrame.new(loc_frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
         @negate_pattern_search = FXCheckButton.new(frame, "Negate", nil, 0, ICON_BEFORE_TEXT|LAYOUT_SIDE_LEFT)
-        state = ( filter.has_key?(:negate_pattern_search) and not filter[:negate_pattern_search_pattern].empty? )
+        state = ( filter.has_key?(:negate_pattern_search) and filter[:negate_pattern_search] )
         @negate_pattern_search.setCheck state
 
        buttons = FXHorizontalFrame.new(main, :opts => LAYOUT_FILL_X)
