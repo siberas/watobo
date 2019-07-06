@@ -15,9 +15,13 @@ module Watobo #:nodoc: all
             doc = Nokogiri.XML(rc.body)
             rc.set_body doc.to_xml
           elsif rc.is_json?
+            begin
             jb = JSON.parse(rc.body)
             rc.set_body JSON.pretty_generate jb
-
+            rescue => bang
+              puts bang if $DEBUG
+              rc = request.copy
+            end
           end
         end
         setText(rc)

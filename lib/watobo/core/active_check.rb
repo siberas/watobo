@@ -62,8 +62,8 @@ module Watobo #:nodoc: all
         new_details[:tstamp] = now
 
         id_string = ''
-        id_string << request.site
-        id_string << request.path
+        id_string << request.site.to_s
+        id_string << request.path.to_s
         id_string << new_details[:test_item] if new_details[:test_item]
         id_string << new_details[:class] if new_details[:class]
         id_string << new_details[:title] if new_details[:title]
@@ -218,14 +218,14 @@ module Watobo #:nodoc: all
         #puts t_response.status
         status = t_response.status
         return false, t_request, t_response if status.empty?
-        return true, t_request, t_response if status =~ /^403/
+        #return true, t_request, t_response if status =~ /^403/
         return false, t_request, t_response if status =~ /^40\d/
         if status =~ /^50\d/
           # puts "* ignore server errors #{Watobo::Conf::Scanner.ignore_server_errors.class}"
           return false, t_request, t_response if Watobo::Conf::Scanner.ignore_server_errors
         end
 
-        #puts @settings[:custom_error_patterns] 
+        #puts @settings[:custom_error_patterns]
 
         if @settings.has_key? :custom_error_patterns
           @settings[:custom_error_patterns].each do |pat|
@@ -241,6 +241,8 @@ module Watobo #:nodoc: all
 
         return true, t_request, t_response
       rescue => bang
+        puts bang
+        puts bang.backtrace if $DEBUG
       end
       return false, nil, nil
     end

@@ -276,6 +276,8 @@ module Watobo #:nodoc: all
       @max_tasks = 1000
 
       # start check generation in seperate thread
+      # TIMING of request is controlled here via limitation of the generation thread
+      #
       Thread.new {
         begin
           set_status GENERATION_STARTED

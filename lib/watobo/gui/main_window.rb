@@ -13,7 +13,7 @@ module Watobo #:nodoc: all
 
       attr :interceptor
       attr :default_settings
-      attr :watobo_base
+      attr :watobo_baseseq
       attr :active_project
       attr :iproxy
 
@@ -611,6 +611,13 @@ module Watobo #:nodoc: all
         @findings_tree.reload()
         @sites_tree.reload()
         #@chatTable.clearItems()
+      end
+
+      def onOpenSequencer(sender, sel, ptr)
+        sequencer_dlg = Watobo::Gui::SequencerDlg.new(FXApp.instance)
+        sequencer_dlg.create
+        sequencer_dlg.show(Fox::PLACEMENT_SCREEN)
+
       end
 
       def onOpenInterceptor(sender, sel, ptr)
@@ -1358,6 +1365,9 @@ module Watobo #:nodoc: all
 
         @open_interceptor_button = FXButton.new(tools_bar, "\tOpen Interceptor\tOpen Interceptor.", :icon => ICON_INTERCEPTOR, :padding => 0)
         @open_interceptor_button.connect(SEL_COMMAND, method(:onOpenInterceptor))
+
+        @open_sequencer_button = FXButton.new(tools_bar, "\tOpen Sequencer\tOpen Sequencer.", :icon => ICON_SEQUENCER, :padding => 0)
+        @open_sequencer_button.connect(SEL_COMMAND, method(:onOpenSequencer))
         # dummy button for siberas logo
         FXButton.new(top_bar, nil, :icon => Watobo::Gui::Icons::SIBERAS_ICON, :opts => FRAME_NONE | LAYOUT_SIDE_RIGHT)
 

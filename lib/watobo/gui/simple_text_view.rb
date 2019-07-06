@@ -60,6 +60,7 @@ module Watobo
         @event_dispatcher_listeners = Hash.new
 
         super(owner, opts)
+
         # Construct some hilite styles
         @style = 1 # default style
         @max_len = 0

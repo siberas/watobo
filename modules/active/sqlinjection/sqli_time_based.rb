@@ -79,8 +79,8 @@ EOF
 
             sqli_patterns.each do |sql|
               # get ALL parameters
-              chat.request.parameters() do |parm|
-
+              chat.request.parameters() do |p|
+                parm = p.copy
 
                 checker = proc {
                   test_request = nil

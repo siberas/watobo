@@ -60,6 +60,7 @@ module Watobo #:nodoc: all
       def parameters(&block)
 
         return nil unless @root.is_json?
+        return nil unless @root.has_body?
 
         hash = JSON.parse(@root.body.strip)
         ps = parse(hash)
