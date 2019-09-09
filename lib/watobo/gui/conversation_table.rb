@@ -57,7 +57,7 @@ module Watobo #:nodoc: all
     class ConversationTable < FXTable
       #    class ConversationTable < FXColoredTable
 
-      attr :filter
+      attr :filter, :current_chat_list
 
       attr_accessor :autoscroll
       attr_accessor :url_decode
@@ -100,11 +100,17 @@ module Watobo #:nodoc: all
       def current_chat
         # puts currentRow
         if currentRow >= 0
-          chatid = getRowText(currentRow).to_i
-          chat = Watobo::Chats.get_by_id(chatid)
+          #chatid = getRowText(currentRow).to_i
+          #chat = Watobo::Chats.get_by_id(chatid)
+          chat = chat_at_row(currentRow)
           return chat
         end
         return nil
+      end
+
+      def chat_at_row(row)
+        index = @col_order.index(TABLE_COL_SSL)
+        getItemData(row, index)
       end
 
       def chat_visible?(chat)
@@ -407,6 +413,7 @@ module Watobo #:nodoc: all
 
         index = @col_order.index(TABLE_COL_SSL)
         self.setItemIcon(lastRowIndex, index, TBL_ICON_LOCK) if chat.request.is_ssl?
+        setItemData(lastRowIndex, index, chat)
 
         index = @col_order.index(TABLE_COL_METHOD)
 
@@ -428,7 +435,7 @@ module Watobo #:nodoc: all
           ps << rup
         end
 
-        if chat.request.method =~ /POST/ and !chat.request.body.nil? then
+        if chat.request.method =~ /(POST|PUT)/i and !chat.request.body.nil? then
           post_parms_string = ''
           post_parms_string << chat.request.body
           ps << "&&" unless ps.empty?
@@ -488,8 +495,16 @@ module Watobo #:nodoc: all
         self.clearItems
         initColumns()
         adjustCellWidth()
-        Watobo::Chats.filtered(@filter) do |chat|
-          add_chat_row(chat)
+
+
+       # Watobo::Chats.filtered(@filter) do |chat|
+       #   add_chat_row(chat)
+       # end
+
+        @current_chat_list.each do |chat|
+          if Watobo::Chats.match?(chat, @filter)
+            add_chat_row(chat)
+          end
         end
       end
 

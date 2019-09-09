@@ -7,6 +7,9 @@ module Watobo#:nodoc: all
     #    :ssl_client_cert
     #    :ssl_client_key
     #    :extra_chain_certs
+    #    :password
+    #    :save_pw [Bool]
+    #    :insert [Bool]
 
     def self.clear
       @client_certs.clear
@@ -100,12 +103,25 @@ module Watobo#:nodoc: all
       end
     end
 
+    def self.get_subject( site )
+      cert = self.get(site)
+      cert.certificate.subject.to_s
+    end
+
     def self.save
       out = {}
       @client_certs.each do |site, cinfo|
         data = {}
-        [:certificate_file, :key_file, :type ].each do |k|
-          data[k] = cinfo[k]
+        # TODO: set default :save_pw to false and include switch to client cert dialog
+        # TODO: use gnome-keyring as password-store
+        #    - https://github.com/mvz/gir_ffi-gnome_keyring
+        save_pw = cinfo.has_key?(:save_pw) ? cinfo[:save_pw] : true
+        [:certificate_file, :key_file, :type, :password, :insert ].each do |k|
+          val = cinfo[k]
+          if k == :password and !cinfo[:password].strip.empty?
+            val = save_pw ? cinfo[:password] : ''
+          end
+          data[k] = val
         end
         out[site] = data
       end

@@ -1,5 +1,5 @@
 # @private 
-module Watobo#:nodoc: all
+module Watobo #:nodoc: all
   class FileSessionStore < SessionStore
     def num_chats
       get_file_list(@conversation_path, "*-chat*").length
@@ -15,7 +15,7 @@ module Watobo#:nodoc: all
 
       finding_file = File.join("#{@findings_path}", "#{finding.id}-finding.mrs")
       unless File.exist?(finding_file)
-        save_finding(finding_file, finding)       
+        save_finding(finding_file, finding)
         return true
       end
       false
@@ -30,22 +30,22 @@ module Watobo#:nodoc: all
       File.delete file if File.exist? file
 
     end
-    
+
     def save_finding(fname, finding)
-      File.open(fname, 'wb'){|f|
+      File.open(fname, 'wb') {|f|
         f.print Marshal::dump(finding.to_h)
-        }
+      }
     end
-    
+
     def save_chat(file, chat)
-      File.open(file, 'wb'){|f|
+      File.open(file, 'wb') {|f|
         f.print Marshal::dump(chat.to_h)
-        }
+      }
     end
 
     def update_finding(finding)
       finding_file = File.join("#{@findings_path}", "#{finding.id}-finding.mrs")
-      
+
       if File.exist?(finding_file) then
         save_finding(finding_file, finding)
       end
@@ -75,24 +75,36 @@ module Watobo#:nodoc: all
     end
 
     def list_scans
-      Dir["#{@scanlog_path}/*"].map{ |x| File.basename(x) }.sort
+      Dir["#{@scanlog_path}/*"].map {|x| x}.sort
     end
 
-    def each_scan(scan_name, &block)
-      scan_dir = File.join(@scanlog_path, scan_name)
-      return nil unless File.exist? scan_dir
-      list = get_file_list(scan_dir, "log_*")
-      list.each do |fname|
+    alias :scans :list_scans
+
+    # @param scan_name [String] the scan location. This can be the shortened scan name of
+    # the current project directory, or an absolute directory
+    # @yield chat [Chat]
+    # @returns scan-chats [Array]
+    def load_scan(scan_name, &block)
+      scan_chats = []
+      scan_dir = scan_name
+      unless File.exist?(scan_dir)
+        scan_dir = File.join(@scanlog_path, scan_name)
+        return nil unless File.exist? scan_dir
+      end
+
+      get_file_list(scan_dir, "log_*").each do |fname|
         #puts
         chat = nil
         if fname =~ /\.mrs$/
           chat = Watobo::Utils.loadChatMarshal(fname)
         elsif fname =~ /\.yml$/
-          chat = Watobo::Utils.loadChatYAML(fname) unless list.include?(fname.gsub(/yml$/,'mrs'))
+          chat = Watobo::Utils.loadChatYAML(fname) unless list.include?(fname.gsub(/yml$/, 'mrs'))
         end
         next if chat.nil?
         yield chat if block_given?
+        scan_chats << chat
       end
+      scan_chats
     end
 
     # add_scan_log
@@ -104,24 +116,24 @@ module Watobo#:nodoc: all
       return false unless chat.respond_to? :request
       return false unless chat.respond_to? :response
       begin
-      
+
         return false if scan_name.nil?
         return false if scan_name.empty?
-        
-        scan_name_clean = scan_name.gsub(/[:\\\/\.]*/, '_')
+
+        scan_name_clean = scan_name.gsub(/[:\\\/\.]+/, '_')
         # puts ">> scan_name"
         path = File.join(@scanlog_path, scan_name_clean)
 
         Dir.mkdir path unless File.exist? path
 
-        file = File.join( path, 'log_' + Time.now.to_f.to_s + '.mrs')
+        file = File.join(path, 'log_' + Time.now.to_f.to_s + '.mrs')
 
         unless File.exist?(file)
-          File.open(file, 'wb') { |fh|
+          File.open(file, 'wb') {|fh|
             fh.print Marshal::dump(chat.to_h)
           }
         end
-      
+
         return true
       rescue => bang
         puts bang
@@ -133,13 +145,13 @@ module Watobo#:nodoc: all
     def add_chat(chat)
       return false unless chat_valid? chat
       chat_file = File.join("#{@conversation_path}", "#{chat.id}-chat.mrs")
-      
+
       unless File.exist?(chat_file)
-        File.open(chat_file, "wb") { |fh|
+        File.open(chat_file, "wb") {|fh|
           fh.print Marshal::dump(chat.to_h)
         }
-      chat.file = chat_file
-      return true
+        chat.file = chat_file
+        return true
       end
       return false
     end
@@ -152,7 +164,7 @@ module Watobo#:nodoc: all
         if fname =~ /\.mrs$/
           chat = Watobo::Utils.loadChatMarshal(fname)
         elsif fname =~ /\.yml$/
-          chat = Watobo::Utils.loadChatYAML(fname) unless list.include?(fname.gsub(/yml$/,'mrs'))    
+          chat = Watobo::Utils.loadChatYAML(fname) unless list.include?(fname.gsub(/yml$/, 'mrs'))
         end
         next if chat.nil?
         yield chat if block_given?
@@ -166,7 +178,7 @@ module Watobo#:nodoc: all
         if fname =~ /\.mrs$/
           f = Watobo::Utils.loadFindingMarshal(fname)
         elsif fname =~ /\.yml$/
-          f = Watobo::Utils.loadFindingYAML(fname) unless list.include?(fname.gsub(/yml$/,'mrs'))
+          f = Watobo::Utils.loadFindingYAML(fname) unless list.include?(fname.gsub(/yml$/, 'mrs'))
         end
         next if f.nil?
         yield f if block_given?
@@ -212,7 +224,7 @@ module Watobo#:nodoc: all
       @log_path = File.expand_path(File.join(@session_path, Watobo::Conf::Datastore.event_logs_dir))
       @scanlog_path = File.expand_path(File.join(@session_path, Watobo::Conf::Datastore.scan_logs_dir))
 
-      [ @conversation_path, @findings_path, @log_path, @scanlog_path ].each do |folder|
+      [@conversation_path, @findings_path, @log_path, @scanlog_path].each do |folder|
         if not File.exist?(folder) then
           puts "create path #{folder}"
           begin
@@ -229,13 +241,13 @@ module Watobo#:nodoc: all
 
       @log_file = File.join(@log_path, session_name + ".log")
 
-    #     @chat_files = get_file_list(@conversation_path, "*-chat")
-    #     @finding_files = get_file_list(@findings_path, "*-finding")
+      #     @chat_files = get_file_list(@conversation_path, "*-chat")
+      #     @finding_files = get_file_list(@findings_path, "*-finding")
     end
 
     def save_session_settings(group, session_settings)
       # puts ">> save_session_settings <<"
-      file = Watobo::Utils.snakecase group.gsub(/\.yml/,'')
+      file = Watobo::Utils.snakecase group.gsub(/\.yml/, '')
       file << ".yml"
 
       session_file = File.join(@session_config_path, file)
@@ -247,7 +259,7 @@ module Watobo#:nodoc: all
 
     def load_session_settings(group)
       # puts ">> load_session_settings : #{group}"
-      file = Watobo::Utils.snakecase group.gsub(/\.yml/,'')
+      file = Watobo::Utils.snakecase group.gsub(/\.yml/, '')
       file << ".yml"
 
       session_file = File.join(@session_config_path, file)
@@ -260,7 +272,7 @@ module Watobo#:nodoc: all
 
     def save_project_settings(group, project_settings)
       # puts ">> save_project_settings : #{group}"
-      file = Watobo::Utils.snakecase group.gsub(/\.yml/,'')
+      file = Watobo::Utils.snakecase group.gsub(/\.yml/, '')
       file << ".yml"
 
       project_file = File.join(@project_config_path, file)
@@ -273,7 +285,7 @@ module Watobo#:nodoc: all
 
     def load_project_settings(group)
       # puts ">> load_project_settings : #{group}"
-      file = Watobo::Utils.snakecase group.gsub(/\.yml/,'')
+      file = Watobo::Utils.snakecase group.gsub(/\.yml/, '')
       file << ".yml"
 
       project_file = File.join(@project_config_path, file)
@@ -293,23 +305,23 @@ module Watobo#:nodoc: all
       l
     end
 
-    def logger( message, prefs = {} )
-      opts = { :sender => "unknown", :level => Watobo::Constants::LOG_INFO }
+    def logger(message, prefs = {})
+      opts = {:sender => "unknown", :level => Watobo::Constants::LOG_INFO}
       opts.update prefs
       return false if @log_file.nil?
       begin
         t = Time.now
         now = t.strftime("%m/%d/%Y @ %H:%M:%S")
-        log_message = [ now ]
+        log_message = [now]
         log_message << "#{opts[:sender]}"
         if message.is_a? Array
           log_message << message.join("\n| ")
           log_message << "\n-"
         else
-        log_message << message
+          log_message << message
         end
         @log_lock.synchronize do
-          File.open(@log_file,"a") do |lfh|
+          File.open(@log_file, "a") do |lfh|
             lfh.puts log_message.join("|")
           end
         end
@@ -328,8 +340,8 @@ module Watobo#:nodoc: all
     end
 
     def get_file_list(path, pattern)
-      fl = Dir["#{path}/#{pattern}"].sort_by{ |x| File.basename(x).sub(/[^0-9]*/,'').to_i }
-      
+      fl = Dir["#{path}/#{pattern}"].sort_by {|x| File.basename(x).sub(/[^0-9]*/, '').to_i}
+
       fl
     end
 

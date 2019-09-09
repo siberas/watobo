@@ -1,6 +1,6 @@
 # @private
 module Watobo#:nodoc: all
-  module HTTP
+  module HTTPData
     class Xml
 
       module Mixin
@@ -24,21 +24,27 @@ module Watobo#:nodoc: all
         
         doc = Nokogiri::XML(@root.body.strip)
         namespaces = doc.collect_namespaces
-        parent = doc.xpath("//#{parm.parent}", namespaces).first
+        #parent = doc.xpath("//#{parm.parent}", namespaces).first
+        parent = doc.css("//#{parm.parent}").first
+        #binding.pry
         if parent.nil?
           puts "* could not find parent node #{parm.parent}"
           return false
         end
         
-        parm_name = parm.namespace.nil? ? "" : parm.namespace
-        parm_name << parm.name
+        #parm_name = parm.namespace.nil? ? "" : parm.namespace
+        #parm_name << parm.name
+
         # find node
-        node = parent.xpath("//#{parm_name}", namespaces).first
+        #node = parent.xpath("//#{parm_name}", namespaces).first
+
+        #node = parent.css("//#{parm_name}").first
+        node = parent.css("#{parm.name}").first
         if node.nil?
           puts "* node does not exist #{parm_name}"
         end
         
-        child = node.children.first
+        child = node.nil? ? nil : node.children.first
         if child.nil?
           child = Nokogiri::XML::Text.new(parm.value, node)
           node.add_child child
@@ -54,7 +60,7 @@ module Watobo#:nodoc: all
         false
       end
 
-      def parameters(&block)
+      def parameters(*opts, &block)
         params = []
 
         return params unless @root.is_xml?
@@ -64,7 +70,7 @@ module Watobo#:nodoc: all
 
             p[:value] = val
             parent_name = ""
-            unless n.parent.namespace.nil?
+            unless n.parent.namespace.nil? || n.parent.namespace.prefix.nil?
               parent_name << n.parent.namespace.prefix
               parent_name << ":"  
             end

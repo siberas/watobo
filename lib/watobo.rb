@@ -49,7 +49,6 @@ if ENV['DEV_ENV']
     load File.join(ENV['HOME'], '.watobo', 'devgems.rb')
   rescue LoadError
     puts '* something went wrong while initialising the development environment.'
-    exit
   end
 else
   print "[N/A]\n"
@@ -71,7 +70,7 @@ require 'watobo/interceptor'
 require 'watobo/sockets'
 
 # WORKAROUND FOR LINUX :(
-dont_know_why_REQUIRE_hangs = Mechanize.new
+#dont_know_why_REQUIRE_hangs = Mechanize.new
 
 # @private 
 module Watobo #:nodoc: all #:nodoc: all

@@ -15,6 +15,7 @@ module Watobo #:nodoc: all
         @prefs = prefs
       end
 
+
       def fuzzels(fuzzers, index=0, result=nil)
         begin
           unless fuzzers[index].nil?

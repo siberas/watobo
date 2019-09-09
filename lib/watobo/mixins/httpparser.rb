@@ -737,6 +737,7 @@ module Watobo #:nodoc: all
             if $DEBUG
               puts bang.backtrace
               puts self.to_yaml
+              binding.pry if binding.respond_to? :pry
             end
             return nil
           end

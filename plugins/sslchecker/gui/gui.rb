@@ -27,8 +27,6 @@ module Watobo#:nodoc: all
           request << "Proxy-Connection: close\r\n"
           request << "User-Agent: Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.1.4322; .NET CLR 2.0.50727)\r\n"
           request << "\r\n"
-          
-          puts request
 
           chat = Watobo::Chat.new(request, [], :id => 0)
 

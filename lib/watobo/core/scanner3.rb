@@ -7,9 +7,12 @@ module Watobo #:nodoc: all
 
     SCANNER_READY = 0x0000
     SCANNER_RUNNING = 0x0001
+    SCANNER_FINISHED = 0x0002
 
     GENERATION_STARTED = 0x0100
     GENERATION_FINISHED = 0x0200
+
+
     class Worker
       include Watobo::Constants
       include Watobo::Subscriber
@@ -43,6 +46,7 @@ module Watobo #:nodoc: all
             task = @tasks.deq
             begin
               # puts "RUNNING #{task[:module]}"
+              print '*'
               request, response = task[:check].call()
 
               next if response.nil?
@@ -72,8 +76,10 @@ module Watobo #:nodoc: all
                 end
               end
 
+              # TODO
+              chat = Chat.new(request, response, :id => 0, :chat_source => prefs[:chat_source])
+              notify(:new_chat, chat)
               unless prefs[:scanlog_name].nil? or prefs[:scanlog_name].empty?
-                chat = Chat.new(request, response, :id => 0, :chat_source => prefs[:chat_source])
                 Watobo::DataStore.add_scan_log(chat, prefs[:scanlog_name])
               end
             rescue => bang
@@ -150,30 +156,14 @@ module Watobo #:nodoc: all
     end
 
     def finished?
-      # puts "num_waiting: #{@tasks.num_waiting}"
-      # puts "workers: #{@workers.length}"
-      # puts "generation finished? #{generation_finished?.class}"
-      # puts "num tasks: #{@tasks.size}"
-      # puts "running workers: #{running_workers}"
-      return true if (
-      status_running? &&
-          (@tasks.num_waiting == @workers.length) &&
-          (@tasks.size == 0) &&
-          generation_finished?
-      )
-      false
+
+      status == SCANNER_FINISHED
+
     end
 
     def running?()
 
-      return false if (
-      status_running? &&
-          (@tasks.num_waiting == @workers.length) &&
-          (@tasks.size == 0) &&
-          generation_finished?
-      )
-      return true if status_running?
-      return false
+      status == SCANNER_RUNNING
     end
 
     def stop()
@@ -188,6 +178,7 @@ module Watobo #:nodoc: all
             Thread.kill @ctrl_thread
           end
         end
+        set_status SCANNER_FINISHED
         print "[OK]\n"
       rescue => bang
         print "[OUTCH]\n"
@@ -196,20 +187,7 @@ module Watobo #:nodoc: all
       end
     end
 
-    def cancel()
-      begin
-        @workers.each do |w|
-          w.stop
-        end
-      rescue => bang
-        puts bang
-        puts bang.backtrace if $DEBUG
-      end
-    end
-
-    def continue()
-      # TODO
-    end
+    alias :cancel :stop
 
     def progress
       @task_count_lock.synchronize do
@@ -233,7 +211,7 @@ module Watobo #:nodoc: all
       sum
     end
 
-    def run(check_prefs={})
+    def run(check_prefs = {})
       # @sites_online.clear
       @uniqueRequests = Hash.new
       set_status_running
@@ -251,6 +229,10 @@ module Watobo #:nodoc: all
                 #puts "[]#{self}] stopping worker #{w}"
                 w.stop
               }
+
+              notify(:state_changed, SCANNER_FINISHED)
+              notify(:scanner_finished)
+              @status = SCANNER_FINISHED
               # suizide!
               Thread.exit
             rescue => bang
@@ -294,6 +276,8 @@ module Watobo #:nodoc: all
       @max_tasks = 1000
 
       # start check generation in seperate thread
+      # TIMING of request is controlled here via limitation of the generation thread
+      #
       Thread.new {
         begin
           set_status GENERATION_STARTED
@@ -306,6 +290,8 @@ module Watobo #:nodoc: all
                   while @tasks.size > @max_tasks
                     sleep 1
                   end
+                  # TODO: make sleep configurable via "scanner settings"
+                  #sleep 0.3
                   task = {:module => ac,
                           :check => check
                   }
@@ -324,7 +310,7 @@ module Watobo #:nodoc: all
 
     end
 
-    def initialize(chat_list=[], active_checks=[], passive_checks=[], prefs={})
+    def initialize(chat_list = [], active_checks = [], passive_checks = [], prefs = {})
       @chat_list = chat_list
       @active_checks = []
       @passive_checks = passive_checks
@@ -337,6 +323,7 @@ module Watobo #:nodoc: all
       @status_lock = Mutex.new
 
       @task_count_lock = Mutex.new
+      @new_chat_notify = Mutex.new
       @task_counter = {}
 
       @ctrl_thread = nil
@@ -373,7 +360,7 @@ module Watobo #:nodoc: all
         @chat_list.each_with_index do |chat, index|
           #print "."
           check.updateCounters(chat, @prefs)
-          puts "* [#{index+1}] CheckCounter for Chat-ID #{chat.id}: #{check.check_name} - #{check.numChecks}"
+          puts "* [#{index + 1}] CheckCounter for Chat-ID #{chat.id}: #{check.check_name} - #{check.numChecks}"
         end
 
         # @numTotalChecks += check.numChecks
@@ -422,6 +409,12 @@ module Watobo #:nodoc: all
           @task_count_lock.synchronize do
             cn = m.check_name
             @task_counter[cn][:progress] += 1
+          end
+        }
+
+        w.subscribe(:new_chat) {|c|
+          @new_chat_notify.synchronize do
+            notify(:new_chat, c)
           end
         }
 

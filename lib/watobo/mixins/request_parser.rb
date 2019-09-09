@@ -113,7 +113,7 @@ module Watobo#:nodoc: all
           eoh = text.index("\n\n") unless text.nil?
 
           unless eoh.nil?
-            header = text.slice(0, eoh).split("\n").map{|h| "#{h}\r\n"}
+            header = text.slice(0, eoh).split("\n").map{|h| "#{h.strip}\r\n"}
             body = text.slice(eoh+2, text.length-1)
           else
             header = text.split(/\n/).map{|h| "#{h}\r\n"}

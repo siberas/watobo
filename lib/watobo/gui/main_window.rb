@@ -13,7 +13,7 @@ module Watobo #:nodoc: all
 
       attr :interceptor
       attr :default_settings
-      attr :watobo_base
+      attr :watobo_baseseq
       attr :active_project
       attr :iproxy
 
@@ -245,7 +245,7 @@ module Watobo #:nodoc: all
       end
 
       def update_conversation_table()
-        #@chatTable.showConversation(Watobo::Chats.to_a)
+        @chatTable.showConversation(Watobo::Chats.to_a)
         @chatTable.apply_filter(@conversation_table_ctrl.filter)
         @conversation_table_ctrl.update_text
         return true
@@ -255,6 +255,7 @@ module Watobo #:nodoc: all
       # SHOW CHAT
       #
       def showChat(chat)
+        return false if chat.nil?
         @last_chat = chat
         @mre_button.enabled = true
         @fuzz_button.enabled = true
@@ -278,6 +279,7 @@ module Watobo #:nodoc: all
               end
         @quickViewTitle.text = "Chat-ID: #{chat.id} (#{src})"
         @quickViewSubTitle.text = ""
+        true
       end
 
       #
@@ -458,6 +460,18 @@ module Watobo #:nodoc: all
         end
       end
 
+      def open_plugin_invader(chat)
+        begin
+          invader = Watobo::Plugin::Invader::Gui.new(chat)
+          invader.create
+          invader.show(Fox::PLACEMENT_SCREEN)
+        rescue => bang
+          puts "!!! could not open invader"
+          puts bang
+          puts bang.backtrace
+        end
+      end
+
       def open_plugin_crawler(chat)
         begin
           plugin = Watobo::Plugin::Crawler::Gui.new(FXApp.instance, @project, chat)
@@ -597,6 +611,13 @@ module Watobo #:nodoc: all
         @findings_tree.reload()
         @sites_tree.reload()
         #@chatTable.clearItems()
+      end
+
+      def onOpenSequencer(sender, sel, ptr)
+        sequencer_dlg = Watobo::Gui::SequencerDlg.new(FXApp.instance)
+        sequencer_dlg.create
+        sequencer_dlg.show(Fox::PLACEMENT_SCREEN)
+
       end
 
       def onOpenInterceptor(sender, sel, ptr)
@@ -789,7 +810,7 @@ module Watobo #:nodoc: all
         puts '* update status bar'
         update_status_bar()
 
-        @browserView = BrowserPreview.new(Watobo::Interceptor.proxy)
+
 
 
         @chatTable.show
@@ -797,6 +818,8 @@ module Watobo #:nodoc: all
         @sites_tree.reload
         @findings_tree.show
         @findings_tree.reload
+
+        @log_viewer_frame.reload
 
         @chatTable.apply_filter(@conversation_table_ctrl.filter)
         @conversation_table_ctrl.update_text
@@ -807,6 +830,10 @@ module Watobo #:nodoc: all
 
         puts "* starting interceptor"
         Watobo::Interceptor.start
+
+        #TODO: reactivate browser preview
+
+       # @browserView = BrowserPreview.new(Watobo::Interceptor.proxy)
 
         puts "Project Started"
         puts "Active Modules: #{Watobo::ActiveModules.length}"
@@ -1338,6 +1365,9 @@ module Watobo #:nodoc: all
 
         @open_interceptor_button = FXButton.new(tools_bar, "\tOpen Interceptor\tOpen Interceptor.", :icon => ICON_INTERCEPTOR, :padding => 0)
         @open_interceptor_button.connect(SEL_COMMAND, method(:onOpenInterceptor))
+
+        @open_sequencer_button = FXButton.new(tools_bar, "\tOpen Sequencer\tOpen Sequencer.", :icon => ICON_SEQUENCER, :padding => 0)
+        @open_sequencer_button.connect(SEL_COMMAND, method(:onOpenSequencer))
         # dummy button for siberas logo
         FXButton.new(top_bar, nil, :icon => Watobo::Gui::Icons::SIBERAS_ICON, :opts => FRAME_NONE | LAYOUT_SIDE_RIGHT)
 
@@ -1360,6 +1390,11 @@ module Watobo #:nodoc: all
         frame = FXVerticalFrame.new(tab_frame, :opts => LAYOUT_FILL_Y | LAYOUT_FILL_X | FRAME_SUNKEN, :padding => 0)
         @sites_tree = Watobo::Gui::SitesTree.new(frame, self, nil)
 
+        ftab = FXTabItem.new(@treeTabbook, "Logs", nil)
+        ftab.setFont(FXFont.new(getApp(), "helvetica", 12, FONTWEIGHT_BOLD, FONTENCODING_DEFAULT))
+        tab_frame = FXVerticalFrame.new(@treeTabbook, :opts => LAYOUT_FIX_WIDTH | LAYOUT_FILL_Y | FRAME_RAISED, :width => 100)
+        @log_viewer_frame = LogViewerFrame.new(tab_frame, :opts => LAYOUT_FILL_Y | LAYOUT_FILL_X | FRAME_SUNKEN, :padding => 0)
+
         @treeTabbook.connect(SEL_COMMAND) {|sender, sel, item|
           case item
             when 0
@@ -1379,6 +1414,11 @@ module Watobo #:nodoc: all
 
         subscribeFindingsTree()
         subscribeSitesTree()
+
+        @log_viewer_frame.subscribe(:show_chats) do |chats|
+          @chatTable.showConversation(chats)
+          @conversation_table_ctrl.update_text
+        end
 
         # S W I T C H E R
         @switcher = FXSwitcher.new(splitter, LAYOUT_FILL_X | LAYOUT_FILL_Y, :padding => 0)
@@ -1494,9 +1534,15 @@ module Watobo #:nodoc: all
             #  puts "right click on row #{row} of #{@chatTable.numRows}"
             if row >= 0 and row < @chatTable.numRows then
 
-              @chatTable.selectRow(row, false)
+              @chatTable.selectRow(row, true)
+              # because currentRow != selected row we have to set it manually
+              # otherwise current_chat would use the false row item
+              @chatTable.setCurrentItem(row, 1, true)
+
               chatid = @chatTable.getRowText(row).to_i
-              chat = Watobo::Chats.get_by_id(chatid)
+
+              #chat = Watobo::Chats.get_by_id(chatid)
+              chat = sender.current_chat
 
               showChat(chat)
 
@@ -1504,24 +1550,28 @@ module Watobo #:nodoc: all
 
                 # SEND TO SUBMENU
                 submenu = FXMenuPane.new(self) do |sendto_menu|
+                  target = FXMenuCommand.new(sendto_menu, "Invader")
+                  target.connect(SEL_COMMAND) {
+                    open_plugin_invader(chat)
+                  }
 
-                  target = FXMenuCommand.new(sendto_menu, "Fuzzer...")
+                  target = FXMenuCommand.new(sendto_menu, "Fuzzer")
                   target.connect(SEL_COMMAND) {
                     openFuzzer(chat)
                   }
-                  target = FXMenuCommand.new(sendto_menu, "Manual Request...")
+                  target = FXMenuCommand.new(sendto_menu, "Manual Request")
                   target.connect(SEL_COMMAND) {
                     open_manual_request_editor(chat)
                   }
-                  target = FXMenuCommand.new(sendto_menu, "SQLmap...")
+                  target = FXMenuCommand.new(sendto_menu, "SQLmap")
                   target.connect(SEL_COMMAND) {
                     open_plugin_sqlmap(chat)
                   }
-                  target = FXMenuCommand.new(sendto_menu, "Crawler...")
+                  target = FXMenuCommand.new(sendto_menu, "Crawler")
                   target.connect(SEL_COMMAND) {
                     open_plugin_crawler(chat)
                   }
-                  target = FXMenuCommand.new(sendto_menu, "JWT...")
+                  target = FXMenuCommand.new(sendto_menu, "JWT")
                   target.connect(SEL_COMMAND) {
                     open_plugin_jwt(chat)
                   }
@@ -1531,7 +1581,7 @@ module Watobo #:nodoc: all
 
                 # EXCLUDE SUBMENU
                 exclude_submenu = FXMenuPane.new(self) do |sub|
-                  chat = Watobo::Chats.get_by_id(chatid)
+                 # chat = Watobo::Chats.get_by_id(chatid)
 
                   target = FXMenuCheck.new(sub, "Chat (#{chatid})")
 
@@ -1555,7 +1605,7 @@ module Watobo #:nodoc: all
 
                 # COPY SUBMENU
                 copy_submenu = FXMenuPane.new(self) do |sub|
-                  chat = Watobo::Chats.get_by_id(chatid)
+                  #chat = Watobo::Chats.get_by_id(chatid)
                   url = chat.request.url.to_s
                   #  puts url
                   url_string = "URL: #{url.slice(0, 35)}"
@@ -1572,7 +1622,8 @@ module Watobo #:nodoc: all
                   }
                   target = FXMenuCommand.new(sub, "Site: #{chat.request.site}")
                   target.connect(SEL_COMMAND) {
-                    site = Watobo::Chats.get_by_id(chatid).request.site
+                    #site = Watobo::Chats.get_by_id(chatid).request.site
+                    site = chat.request.site
 
                     types = [FXWindow.stringType]
                     if acquireClipboard(types)
@@ -1612,6 +1663,25 @@ module Watobo #:nodoc: all
 
                 #  info = FXMenuCommand.new(menu_pane, "Details..." )
                 #info.connect(SEL_COMMAND) { display_info_for(item) }
+
+                # COPY SUBMENU
+                copy_submenu = FXMenuPane.new(self) do |sub|
+                 target = FXMenuCommand.new(sub, "cURL")
+                  target.connect(SEL_COMMAND) {
+                    #request = Watobo::Chats.get_by_id(chatid).request
+                    request = chat.request
+                    curl = Watobo::Utils::Curl.create_request(request)
+
+                    types = [FXWindow.stringType]
+                    if acquireClipboard(types)
+                      @clipboard_text = curl
+                    end
+                  }
+
+                end
+                FXMenuCascade.new(menu_pane, "Code", nil, copy_submenu)
+
+
 
                 menu_pane.create
                 menu_pane.popup(nil, event.root_x, event.root_y)
@@ -1941,12 +2011,9 @@ module Watobo #:nodoc: all
           # purge viewers
           @request_viewer.setText('')
           @response_viewer.setText('')
-          row = item.row
 
-          chatid = @chatTable.getRowText(row).to_i
-          @chatTable.selectRow(row, false)
-          # @logText.appendText("selected ID: (#{chatid})\n")
-          chat = Watobo::Chats.get_by_id chatid
+          chat = sender.current_chat
+
           showChat(chat) unless chat.nil?
 
         rescue => bang

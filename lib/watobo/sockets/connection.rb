@@ -110,7 +110,7 @@ module Watobo#:nodoc: all
           
             ctx.cert = current_prefs[:ssl_client_cert]
             ctx.key = current_prefs[:ssl_client_key]
-            if $DEBUG
+            if $DEBUG && ENV['WATOBO_DEBUG'].to_s =~ /cert/i
                         puts "[SSLconnect] Client Certificates"
                         puts "= CERT ="
                        # puts @ctx.cert.methods.sort
@@ -127,7 +127,7 @@ module Watobo#:nodoc: all
 
           @socket.connect
           @socket.setsockopt( Socket::SOL_SOCKET, Socket::SO_KEEPALIVE, 1)
-          puts "[SSLconnect]: #{@socket.state}" if $DEBUG
+          puts "[SSLconnect]: #{@socket.state}" if ( $DEBUG && ENV[WATOBO_DEBUG].to_s =~ /ssl/i
           return socket
         rescue => bang
           if current_prefs[:ssl_cipher].nil?

@@ -12,6 +12,8 @@ require 'watobo/gui/utils/init_icons'
 require 'watobo/gui/mixins/events'
 require 'watobo/gui/mixins/gui_settings'
 
+require 'pry'
+
 gui_path = File.expand_path(File.join(Watobo.plugin_path, "..", "lib", "watobo", "gui"))
 
 Dir.glob("#{gui_path}/*.rb").each do |cf|
@@ -25,8 +27,8 @@ end
 require 'watobo/gui/templates/plugin'
 require 'watobo/gui/templates/plugin2'
 require 'watobo/gui/templates/plugin_base'
+require 'watobo/gui/plugin_board'
+require 'watobo/gui/utils/load_plugins'
 
-
-require File.join(Watobo.plugin_path, 'jwt', 'jwt')
 
 require File.join(File.dirname(__FILE__), 'plugin_loader', 'gui','main')

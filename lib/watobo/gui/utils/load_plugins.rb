@@ -15,14 +15,17 @@ module Watobo#:nodoc: all
     end
 
     module Utils
-      def self.load_plugins(project=nil)
+      def self.load_plugins(project=nil, filter='.*')
         raise ArgumentError, "Need a project" unless project
         # this is the old plugin style
         plugin_dirs = [ "#{Watobo.plugin_path}" ]
         plugin_dirs << File.join(Watobo.working_directory, "plugins")
 
         plugin_dirs.each do |pdir|
+
         Dir["#{pdir}/*"].each do |sub|
+          puts "FILTER #{sub} / #{filter}"
+          next unless sub =~ /#{filter}/i
           if File.ftype(sub) == "directory"
             pgf = File.join(sub, "gui.rb")
             if File.exist? pgf
@@ -80,7 +83,7 @@ module Watobo#:nodoc: all
                   #
                   plugin_class = plugin.slice(0..0).upcase + plugin.slice(1..-1).downcase
                   class_name = "Watobo::Plugin::#{group_class}::Gui::Main"
-                  #puts class_name
+                  puts class_name
                   class_constant = Watobo.class_eval(class_name)
 
 
@@ -104,6 +107,8 @@ module Watobo#:nodoc: all
                   # TODO: In later versions - if all plugins are switched to the new style - this will not be necessary here
 
                     gui = pclass.create_gui()
+
+                  puts pclass.class
                     # puts gui.class
                     Watobo::Gui.add_plugin pclass
 

@@ -30,6 +30,21 @@ module Watobo #:nodoc: all
       @prefs.clone
     end
 
+    # @returns value type [Const] valid values Bool, String, Hash, Array
+    def type
+      @prefs[:type]
+    end
+
+    def is_value?
+      t = @prefs[:type]
+      return true if t.nil?
+      return true if t.upcase.to_sym == :STRING
+      return true if t.upcase.to_sym == :INTEGER
+      #return false if t.upcase.to_sym == :HASH
+      #return false if t.upcase.to_sym == :ARRAY
+      false
+    end
+
     def to_s
       "#{name}=#{value}"
     end
@@ -75,8 +90,23 @@ module Watobo #:nodoc: all
   end
 
   class JSONParameter < Parameter
+    def id
+      @prefs[:id]
+    end
+
     def initialize(prefs)
       prefs[:location] = :json
+      super prefs
+    end
+  end
+
+  class HeaderParameter < Parameter
+    def id
+      @prefs[:id]
+    end
+
+    def initialize(prefs)
+      prefs[:location] = :header
       super prefs
     end
   end

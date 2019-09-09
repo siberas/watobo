@@ -92,6 +92,11 @@ module Watobo#:nodoc: all
         frame = FXHorizontalFrame.new(gbframe, :opts => LAYOUT_FILL_X, :padding => 0)
         @enable_smart_scan = FXCheckButton.new(frame, "Enable Smart Scan ", nil, 0, JUSTIFY_LEFT|JUSTIFY_TOP|ICON_BEFORE_TEXT)
         @enable_smart_scan.checkState = @settings[:smart_scan]
+        fxtext = FXText.new(frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|TEXT_WORDWRAP)
+        fxtext.backColor = fxtext.parent.backColor
+        fxtext.disable
+        text = "If Smart Scan is enabled the scanner will reduce the number of checks."
+        fxtext.setText(text)
 
 
         gbox = FXGroupBox.new(scroll_area, "DNS Sensor", LAYOUT_SIDE_LEFT|FRAME_GROOVE|LAYOUT_FILL_X, 0, 0, 0, 80)
@@ -119,8 +124,7 @@ module Watobo#:nodoc: all
         fxtext = FXText.new(gbframe, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|TEXT_WORDWRAP)
         fxtext.backColor = fxtext.parent.backColor
         fxtext.disable
-        text = "If Smart Scan is enabled the scanner will reduce the number of checks."
-        fxtext.setText(text)
+
         
         gbox = FXGroupBox.new(scroll_area, "Response Codes", LAYOUT_SIDE_LEFT|FRAME_GROOVE|LAYOUT_FILL_X, 0, 0, 0, 50)
         gbframe = FXVerticalFrame.new(gbox, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)

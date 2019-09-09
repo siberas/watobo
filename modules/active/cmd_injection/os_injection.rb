@@ -46,7 +46,7 @@ EOF
             begin
 
 
-              @parm_list = chat.request.parameters(:data, :url, :json)
+              @parm_list = chat.request.parameters
               @parm_list.each do |param|
                 checks = []
                 checks.concat @injections

@@ -54,10 +54,12 @@ EOF
             #  Check GET-Parameters
             #
             begin
-              urlParmNames(chat).each do |parm|
+              chat.request.parameters.each do |test_parm|
+
+                parm = test_parm.copy
                 vint = nil
                 # first check if parameter is integer value
-                value = chat.request.get_parm_value(parm)
+                value = parm.value.is_a?( String ) ? parm.value : parm.value.to_s
                 if value.strip =~ /^\d+$/ then
                 #  puts "*!* #"
                   vint = value.to_i
@@ -82,8 +84,9 @@ EOF
                       
                       test = chat.copyRequest
                       # also need to check if altered parm will change response
-                      new_value = "#{vint+1}"
-                      test.replace_get_parm(parm,new_value)
+                      parm = test_parm.copy
+                      parm.value = "#{vint+1}"
+                      test.set parm
                       test_request,test_response = doRequest(test,:default => true)
                       hash_3 = Watobo::Utils.responseHash(test_request, test_response)
                    #   puts "Hash 1: #{hash_1}"
@@ -93,8 +96,9 @@ EOF
                       if hash_1 == hash_2 and hash_1 != hash_3 then # same hashes? now we can start the test
                         test = chat.copyRequest
                         # first add one to the original value and append "-1"
-                        new_value = "#{vint+1}-1"
-                        test.replace_get_parm(parm,new_value)
+                        parm = test_parm.copy
+                        parm.value = "#{vint+1}-1"
+                        test.set parm
                         test_request,test_response = doRequest(test,:default => true)
                         
                         hash_test = Watobo::Utils.responseHash(test_request, test_response)
@@ -120,67 +124,6 @@ EOF
                   
                 end
                 
-              end
-              
-              postParmNames(chat).each do |parm|
-                vint = nil
-                # first check if parameter is integer value
-                value = chat.request.post_parm_value(parm)
-                if value.strip =~ /^\d+$/ then
-                  vint = value.to_i
-                end
-                
-                if vint then
-                  checker = proc {
-                    test_request = nil
-                    test_response = nil
-                    #puts "* found integer post parameter #{parm}"
-                    # first do request double time to check if hashes are the same
-                    test = chat.copyRequest
-                    test_request,test_response = doRequest(test, :default => true)
-                    hash_1 = Watobo::Utils.responseHash(test_request, test_response)
-                    hash_ref = Watobo::Utils.responseHash(test_request, test_response)
-                    test = chat.copyRequest
-                    test_request,test_response = doRequest(test, :default => true)
-                    hash_2 = Watobo::Utils.responseHash(test_request, test_response)
-                    # also need to check if altered parm will change response
-                    test = chat.copyRequest                   
-                    new_value = "#{vint+1}"
-                    test.replace_get_parm(parm,new_value)
-                    test_request,test_response = doRequest(test,:default => true)
-                    hash_3 = Watobo::Utils.responseHash(test_request, test_response)
-                  #  puts
-                  #  puts "#{value}, #{new_value}, #{parm}"
-                  #  puts "Hash 1: #{hash_1}"
-                  #  puts "Hash 2: #{hash_2}"
-                  #  puts "Hash 3: #{hash_3}"
-                    
-                    # if hash_1 == hash_2 then
-                    if hash_1 == hash_2 and hash_1 != hash_3 then # same hashes? now we can start the test
-                      test = chat.copyRequest
-                      # first add one to the original value and append "-1"
-                      new_value = "#{vint+1}-1"
-                      test.replace_post_parm(parm,new_value)
-                      test_request,test_response = doRequest(test, :default => true)
-                      
-                      hash_test = Watobo::Utils.responseHash(test_request, test_response)
-                   #   puts "Hash Test: #{hash_test}"
-                      if hash_test == hash_ref then
-                      #  test_chat = Chat.new(test, test_response, :id => chat.id)
-                        path = "/" + test_request.path
-                        addFinding(test_request, test_response,
-                                   :check_pattern => "#{parm}",
-                        :chat => chat,
-                        :title => "[#{parm}] - #{path}"
-                        )
-                        
-                        
-                      end
-                    end
-                    [ test_request, test_response ]
-                  }
-                  yield checker
-                end
               end
               
             rescue => bang

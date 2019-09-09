@@ -10,7 +10,7 @@ module Watobo#:nodoc: all
     attr :details
     attr :request
     attr :response
-    def resetCounters()
+    def self.resetCounters()
       @@numFindings = 0
       @@max_id = 0
     end

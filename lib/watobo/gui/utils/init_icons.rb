@@ -21,6 +21,10 @@ module Watobo#:nodoc: all
       ICON_LOGIN_WIZZARD =  Watobo::Gui.load_gui_icon("User.ico")
       ICON_DIFFER =  Watobo::Gui.load_gui_icon("monitor.ico")
 
+      ICON_SEQUENCER = Watobo::Gui.load_gui_icon("applications_24x24.ico")
+      ICON_SEQUENCER_MEDIUM = Watobo::Gui.load_gui_icon("applications_24x24.ico")
+      ICON_SEQUENCER_SMALL = Watobo::Gui.load_gui_icon("applications_16x16.ico")
+
       ICON_INTERCEPTOR = Watobo::Gui.load_gui_icon("interceptor_24x24.ico")
 
       ICON_START = Watobo::Gui.load_gui_icon("Play_24x24.ico")

@@ -86,10 +86,10 @@ module Watobo #:nodoc: all
                   # puts ">> #{new_uri}"
                   test.replaceFileExt(new_uri)
                    puts test.url
-                  status, test_request, test_response = fileExists?(test, @prefs)
+                  fexist, test_request, test_response = fileExists?(test, @prefs)
 
 
-                  if status == true
+                  if fexist == true
 
                     puts "FileFinder >> #{test.url}"
 

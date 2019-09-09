@@ -31,7 +31,7 @@ module Watobo#:nodoc: all
         def do_test(chat)
           begin
             #  puts "running module: #{Module.nesting[0].name}"
-            chat.request.parameters(:url, :wwwform, :xml, :json) do |parm|
+            chat.request.parameters() do |parm|
 
                 @possible_parm_names.each do |pattern|
                   
@@ -52,6 +52,7 @@ module Watobo#:nodoc: all
           rescue => bang
             puts "ERROR!! #{Module.nesting[0].name}"
             puts bang
+            puts bang.backtrace
           end
         end
         

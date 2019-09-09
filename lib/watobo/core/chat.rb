@@ -11,7 +11,7 @@ module Watobo#:nodoc: all
     @@lock = Mutex.new
 
     public
-    def resetCounters()
+    def self.resetCounters()
       @@numChats = 0
       @@max_id = 0
     end
@@ -31,6 +31,14 @@ module Watobo#:nodoc: all
 
     def tstop()
       @settings[:tstop]
+    end
+
+    def checksum()
+      @checksum ||= Watobo::Utils.response_checksum(@request, @response)
+    end
+
+    def duration
+      @duration ||= (( tstop - tstart ) * 1000).round(2)
     end
 
     def id()
@@ -75,8 +83,8 @@ module Watobo#:nodoc: all
         @settings = {
           :source => CHAT_SOURCE_UNDEF,
           :id => -1,
-          :start => 0,
-          :stop => -1,
+          :tstart => 0,
+          :tstop => -1,
           :comment => '',
           :tested => false
         }

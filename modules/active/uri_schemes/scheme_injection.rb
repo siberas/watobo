@@ -52,9 +52,9 @@ EOF
             begin
               #
 
-              @parm_list = chat.request.parameters(:data, :url, :json)
+              @parm_list = chat.request.parameters()
               @parm_list.concat @additional_parms
-              @parm_list.each do |parm|
+              @parm_list.each do |test_parm|
                 #log_console( "#{parm.location} - #{parm.name} = #{parm.value}")
 
                 checks = []
@@ -66,17 +66,13 @@ EOF
                     checks << [scheme.dup, "#{scheme}://#{check_id}.#{Watobo::Conf::Scanner.dns_sensor}.#{fext}", check_id]
                   end
                 end
-                checker = proc {
-                  results = {}
-                  rating = 0
-                  test_request = nil
-                  test_response = nil
 
-                  checks.each do |scheme, check, check_id|
+                checks.each do |scheme, check, check_id|
+                  parm = test_parm.copy
+                  checker = proc {
+                    test_request = nil
+                    test_response = nil
 
-                    # accept only one (escape) char between check_id and check string
-                    proof = "#{check_id}([^#{Regexp.quote(check)}]?(#{Regexp.quote(check)}){1})"
-                    next if results.has_key? scheme
                     test = chat.copyRequest
 
                     parm.value = CGI.escape(check)
@@ -84,16 +80,11 @@ EOF
 
                     test_request, test_response = doRequest(test)
 
-                    puts test_request
-                    puts '#############################'
 
-
-                  end
-
-                  [test_request, test_response]
-                }
-                yield checker
-
+                    [test_request, test_response]
+                  }
+                  yield checker
+                end
               end
 
             rescue => bang

@@ -1,10 +1,12 @@
 # @private 
-module Watobo#:nodoc: all
+module Watobo #:nodoc: all
 
   class Session
 
     include Watobo::Constants
     include Watobo::Subscriber
+
+    attr :settings
 
     @@settings = Hash.new
     @@proxy = Hash.new
@@ -16,7 +18,7 @@ module Watobo#:nodoc: all
     @@login_in_progress = false
 
 
-    def runLogin(chat_list, prefs={})
+    def runLogin(chat_list, prefs = {})
       #puts @session.object_id
       @@login_mutex.synchronize do
         begin
@@ -53,7 +55,7 @@ module Watobo#:nodoc: all
 
     # sendHTTPRequest
     # returns Socket, ResponseHeader
-    def sendHTTPRequest(request, prefs={})
+    def sendHTTPRequest(request, prefs = {})
       begin
         @lasterror = nil
         response_header = nil
@@ -73,7 +75,7 @@ module Watobo#:nodoc: all
         hostip = IPSocket.getaddress(host)
         # update current preferences, prefs given here are stronger then global settings!
         current_prefs = Hash.new
-        [:update_session, :update_sids, :update_contentlength, :ssl_cipher, :www_auth, :client_certificates, :egress_handler ].each do |k|
+        [:update_session, :update_sids, :update_contentlength, :ssl_cipher, :www_auth, :client_certificates, :egress_handler].each do |k|
           current_prefs[k] = prefs[k].nil? ? @session[k] : prefs[k]
         end
 
@@ -98,6 +100,7 @@ module Watobo#:nodoc: all
         if current_prefs[:update_contentlength] == true and request.has_body? then
           #puts request.body.unpack("H*")[0]
           #puts (request.body.unpack("H*")[0].length / 2).to_s
+
           request.fix_content_length()
           #puts "New: #{request.content_length}"
           #puts request.body.encoding
@@ -116,9 +119,9 @@ module Watobo#:nodoc: all
         end
 
 
-        #request.add_header("Via", "Watobo") if use_proxy
-        #puts request
-        # puts "=============="
+          #request.add_header("Via", "Watobo") if use_proxy
+          #puts request
+          # puts "=============="
       rescue SocketError
         puts "!!! unknown hostname #{host}"
         puts request.first
@@ -168,17 +171,17 @@ module Watobo#:nodoc: all
           tcp_socket = nil
           #  timeout(6) do
           #puts "* no proxy - direct connection"
-          tcp_socket = TCPSocket.new( host, port )
+          tcp_socket = TCPSocket.new(host, port)
           #optval = [1, 5000].pack("I_2")
           #tcp_socket.setsockopt Socket::SOL_SOCKET, Socket::SO_RCVTIMEO, optval
           #tcp_socket.setsockopt Socket::SOL_SOCKET, Socket::SO_SNDTIMEO, optval    
-          tcp_socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)    
+          tcp_socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
           #tcp_socket.setsockopt Socket::SOL_SOCKET, Socket::SO_KEEPALIVE, 1
-          tcp_socket.setsockopt(Socket::SOL_SOCKET,Socket::SO_REUSEADDR, true)
+          tcp_socket.setsockopt(Socket::SOL_SOCKET, Socket::SO_REUSEADDR, true)
 
           tcp_socket.sync = true
 
-          socket =  tcp_socket
+          socket = tcp_socket
           if request.is_ssl?
             ssl_prefs = {}
             ssl_prefs[:ssl_cipher] = current_prefs[:ssl_cipher] if current_prefs.has_key? :ssl_cipher
@@ -226,8 +229,8 @@ module Watobo#:nodoc: all
             request.set_header("Connection", "close") #if not use_proxy
 
             data = request.join
-            unless request.has_body? 
-              data << "\r\n" unless data =~ /\r\n\r\n$/ 
+            unless request.has_body?
+              data << "\r\n" unless data =~ /\r\n\r\n$/
             end
 
             #  puts "\n*** SENDING ..."
@@ -240,12 +243,11 @@ module Watobo#:nodoc: all
             #  end
 
 
-
             #puts "= SESSION ="
             #puts data
             #puts data.unpack("H*")[0]#.gsub(/0d0a/,"0d0a\n")
             # puts "---"
-            unless socket.nil?                
+            unless socket.nil?
               socket.print data
               socket.flush
               response_header = readHTTPHeader(socket, current_prefs)
@@ -299,14 +301,14 @@ module Watobo#:nodoc: all
       @session[:valid_sids]
     end
 
-    def setSIDCache(new_cache = {} )
+    def setSIDCache(new_cache = {})
       @session[:valid_sids] = new_cache if new_cache.is_a? Hash
     end
 
     # +++ doRequest(request)  +++
     # + function:
     #
-    def doRequest(request, opts={} )
+    def doRequest(request, opts = {})
       begin
         ott_cache = Watobo::OTTCache.acquire(request)
         @session.update opts
@@ -338,12 +340,12 @@ module Watobo#:nodoc: all
             next unless csrf_response.has_body?
 
             csrf_response.unchunk!
-            csrf_response.unzip! 
+            csrf_response.unzip!
 
             @sid_cache.update_sids(csrf_request.site, [csrf_response.body]) if @session[:update_sids] == true
 
             # updateCSRFCache(csrf_cache, csrf_request, [csrf_response.body]) if csrf_response.content_type =~ /text\//
-            ott_cache.update_tokens( [csrf_response.body]) if csrf_response.content_type =~ /text\//
+            ott_cache.update_tokens([csrf_response.body]) if csrf_response.content_type =~ /text\//
 
             # socket.close
             closeSocket(socket)
@@ -369,12 +371,12 @@ module Watobo#:nodoc: all
             #request.extend Watobo::Mixin::Shaper::Web10
 
             loc_header = response.headers("Location:").first
-            new_location = loc_header.gsub(/^[^:]*:/,'').strip
+            new_location = loc_header.gsub(/^[^:]*:/, '').strip
             unless new_location =~ /^http/
               if new_location =~ /^\//
-                new_location = request.proto + "://" + request.site  + new_location      
+                new_location = request.proto + "://" + request.site + new_location
               else
-                new_location = request.proto + "://" + request.site + "/" + request.dir + "/" + new_location.sub(/^[\.\/]*/,'')
+                new_location = request.proto + "://" + request.site + "/" + request.dir + "/" + new_location.sub(/^[\.\/]*/, '')
               end
             end
 
@@ -406,7 +408,7 @@ module Watobo#:nodoc: all
         #socket.close
         closeSocket(socket)
 
-      rescue  => bang
+      rescue => bang
         #  puts "! Error in doRequest"
         puts "! Module #{Module.nesting[0].name}"
         puts bang
@@ -425,7 +427,7 @@ module Watobo#:nodoc: all
       return Request.new(request), response
     end
 
-    def addProxy(prefs=nil)
+    def addProxy(prefs = nil)
 
       proxy = nil
       unless prefs.nil?
@@ -444,7 +446,7 @@ module Watobo#:nodoc: all
       @@settings
     end
 
-    def getProxy(site=nil)
+    def getProxy(site = nil)
       unless site.nil?
         return @@proxy[site] unless @@proxy[site].nil?
       end
@@ -462,31 +464,31 @@ module Watobo#:nodoc: all
     # :update_valid_sids => false,
     # :update_sids => false,
     # :update_contentlength => true
-    def initialize( session_id=nil, prefs={} )
+    def initialize(session_id = nil, prefs = {})
 
       @event_dispatcher_listeners = Hash.new
       #     @session = {}
 
       session = nil
 
-      session = ( session_id.is_a? Integer ) ? session_id : session_id.object_id
+      session = (session_id.is_a? Integer) ? session_id : session_id.object_id
       session = Digest::MD5.hexdigest(Time.now.to_f.to_s) if session_id.nil?
 
       @sid_cache = Watobo::SIDCache.acquire(session)
 
       unless @@settings.has_key? session
         @@settings[session] = {
-          :logout_signatures => [],
-          :logout_content_types => Hash.new,
-          :update_valid_sids => false,
-          :update_sids => false,
-          :update_otts => false,           
-          :update_session => true,
-          :update_contentlength => true,
-          :login_chats => [],
-          :www_auth => Hash.new,
-          :client_certificates => {},
-          :proxy_auth => Hash.new
+            :logout_signatures => [],
+            :logout_content_types => Hash.new,
+            :update_valid_sids => false,
+            :update_sids => false,
+            :update_otts => false,
+            :update_session => true,
+            :update_contentlength => true,
+            :login_chats => [],
+            :www_auth => Hash.new,
+            :client_certificates => {},
+            :proxy_auth => Hash.new
         }
       end
       @session = @@settings[session] # shortcut to settings
@@ -494,7 +496,7 @@ module Watobo#:nodoc: all
 
       #  @valid_csrf_tokens = Hash.new
 
-      addProxy( prefs[:proxy] ) if prefs.is_a? Hash and prefs[:proxy]
+      addProxy(prefs[:proxy]) if prefs.is_a? Hash and prefs[:proxy]
 
       @socket = nil
 
@@ -507,18 +509,18 @@ module Watobo#:nodoc: all
       # TODO: Implement switches for Logging, Debugging, ...
     end
 
-    def readHTTPBody(socket, response, request, prefs={})
+    def readHTTPBody(socket, response, request, prefs = {})
       clen = response.content_length
       data = ""
 
       begin
         if response.is_chunked?
-          Watobo::HTTPSocket.readChunkedBody(socket) { |c|
+          Watobo::HTTPSocket.readChunkedBody(socket) {|c|
             data += c
           }
-        elsif  clen > 0
+        elsif clen > 0
           #  puts "* read #{clen} bytes for body"
-          Watobo::HTTPSocket.read_body(socket, :max_bytes => clen) { |c|
+          Watobo::HTTPSocket.read_body(socket, :max_bytes => clen) {|c|
 
             data += c
             break if data.length == clen
@@ -533,7 +535,7 @@ module Watobo#:nodoc: all
         end
 
         response.push data unless data.empty?
-        unless prefs[:ignore_logout]==true  or @session[:logout_signatures].empty?
+        unless prefs[:ignore_logout] == true or @session[:logout_signatures].empty?
           notify(:logout, self) if loggedOut?(response)
         end
 
@@ -556,10 +558,10 @@ module Watobo#:nodoc: all
       response_header = nil
       auth_method = "NTLM"
       begin
-        head_request = request.copy         
-        head_request.setMethod(:head)         
-        head_request.removeBody         
-        head_request.removeHeader("Content-Length")         
+        head_request = request.copy
+        head_request.setMethod(:head)
+        head_request.removeBody
+        head_request.removeHeader("Content-Length")
         data = head_request.join + "\r\n"
 
         socket.print data
@@ -577,7 +579,7 @@ module Watobo#:nodoc: all
         ntlm_challenge = nil
         t1 = Watobo::NTLM::Message::Type1.new()
         %w(workstation domain).each do |a|
-          t1.send("#{a}=",'')
+          t1.send("#{a}=", '')
           t1.enable(a.to_sym)
         end
 
@@ -630,9 +632,9 @@ module Watobo#:nodoc: all
                  :workstation => Watobo::UTF16.encode_utf16le(Socket.gethostname)
         }
 
-        t3 = t2.response( creds,            
+        t3 = t2.response(creds,
                          {:ntlmv2 => true}
-                        )
+        )
 
         auth_request = request.copy
 
@@ -674,7 +676,7 @@ module Watobo#:nodoc: all
       end
     end
 
-    def sslConnect(tcp_socket, current_prefs = {} )
+    def sslConnect(tcp_socket, current_prefs = {})
       begin
         #          @ctx = OpenSSL::SSL::SSLContext.new()
         #          @ctx.key = nil
@@ -687,7 +689,7 @@ module Watobo#:nodoc: all
 
           ctx.cert = current_prefs[:ssl_client_cert]
           ctx.key = current_prefs[:ssl_client_key]
-          if $DEBUG
+          if $DEBUG && ENV['WATOBO_DEBUG'].to_s =~ /ssl/i
             puts "[SSLconnect] Client Certificates"
             puts "= CERT ="
             # puts @ctx.cert.methods.sort
@@ -697,17 +699,29 @@ module Watobo#:nodoc: all
             puts "= KEY ="
             puts ctx.key.display
             puts "---"
-          end                 
+          end
 
         end
         # @ctx.tmp_dh_callback = proc { |*args|
         #  OpenSSL::PKey::DH.new(128)
         #}
         if current_prefs.has_key? :client_certificate
+
           ccp = current_prefs[:client_certificate]
           ctx.cert = ccp[:ssl_client_cert]
           ctx.key = ccp[:ssl_client_key]
           ctx.extra_chain_cert = ccp[:extra_chain_certs] if ccp.has_key?(:extra_chain_certs)
+
+          if $DEBUG && ENV['WATOBO_DEBUG'].to_s =~ /cert/i
+            puts "[SSLconnect] Client Certificates"
+            puts "= CERT ="
+            puts ctx.cert.display
+            puts "---"
+            p
+            puts "= KEY ="
+            puts ctx.key.display
+            puts "---"
+          end
         end
 
         socket = OpenSSL::SSL::SSLSocket.new(tcp_socket, ctx)
@@ -720,13 +734,13 @@ module Watobo#:nodoc: all
 
         socket.connect
         #socket.setsockopt( Socket::SOL_SOCKET, Socket::SO_KEEPALIVE, 1)
-        puts "[SSLconnect]: #{socket.state}" if $DEBUG
+        puts "[SSLconnect]: #{socket.state}" if ($DEBUG && ENV['WATOBO_DEBUG'].to_s =~ /ssl/i)
         return socket
       rescue OpenSSL::SSL::SSLError => e
         # puts "[SSLconnect] Failure"
         # puts e      
-        raise e    
-        #return nil
+        raise e
+          #return nil
       rescue => bang
         if current_prefs[:ssl_cipher].nil?
           puts "[SSLconnect] ... gr#!..*peep*.. "
@@ -750,10 +764,10 @@ module Watobo#:nodoc: all
         request.extend Watobo::Mixin::Shaper::Web10
         #  timeout(6) do
 
-        tcp_socket = TCPSocket.new( proxy.host, proxy.port)
-        tcp_socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)    
+        tcp_socket = TCPSocket.new(proxy.host, proxy.port)
+        tcp_socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
         #tcp_socket.setsockopt( Socket::SOL_SOCKET, Socket::SO_KEEPALIVE, 1)
-        tcp_socket.setsockopt(Socket::SOL_SOCKET,Socket::SO_REUSEADDR, true)
+        tcp_socket.setsockopt(Socket::SOL_SOCKET, Socket::SO_REUSEADDR, true)
         tcp_socket.sync = true
         #  end
         #  puts "* sslProxyConnect"
@@ -811,7 +825,7 @@ module Watobo#:nodoc: all
 
 
             if cl > 0
-              Watobo::HTTPSocket.read_body(tcp_socket) { |d|
+              Watobo::HTTPSocket.read_body(tcp_socket) {|d|
                 # puts d
               }
             end
@@ -825,10 +839,10 @@ module Watobo#:nodoc: all
             return socket, response_header if ntlm_challenge.nil? or ntlm_challenge == ""
 
             t2 = Watobo::NTLM::Message.decode64(ntlm_challenge)
-            t3 = t2.response( { :user => proxy.username,
-                                :password => proxy.password,
-                                :domain => proxy.domain },
-                                { :workstation => proxy.workstation, :ntlmv2 => true } )
+            t3 = t2.response({:user => proxy.username,
+                              :password => proxy.password,
+                              :domain => proxy.domain},
+                             {:workstation => proxy.workstation, :ntlmv2 => true})
             request.removeHeader("Proxy-Authorization")
 
             msg = "NTLM " + t3.encode64
@@ -848,7 +862,7 @@ module Watobo#:nodoc: all
             rcode = 0
             response_header = readHTTPHeader(tcp_socket)
             rcode = response_header.status
-            if rcode =~/^200/ # Ok
+            if rcode =~ /^200/ # Ok
               puts "[ProxyAuth-NTLM] Authorization Successful" if $DEBUG
               socket = sslConnect(tcp_socket, prefs)
               return socket, response_header
@@ -861,7 +875,7 @@ module Watobo#:nodoc: all
               puts "[SSLconnect] NTLM Authentication"
               puts ">  #{rcode} <"
               return nil, response_header
-            end              
+            end
           end
         end # END OF PROXY AUTH
 
@@ -951,7 +965,7 @@ module Watobo#:nodoc: all
         return response_header
       end
 
-      Watobo::HTTPSocket.read_body(tcp_socket, :max_bytes => clen){ |d|
+      Watobo::HTTPSocket.read_body(tcp_socket, :max_bytes => clen) {|d|
         #puts d
       }
 
@@ -1004,7 +1018,7 @@ module Watobo#:nodoc: all
     ##################################################
     #    doProxyRequest
     ################################################
-    def doProxyRequest(request, proxy, prefs={})
+    def doProxyRequest(request, proxy, prefs = {})
 
       begin
         tcp_socket = nil
@@ -1016,10 +1030,10 @@ module Watobo#:nodoc: all
         auth_request.extend Watobo::Mixin::Shaper::Web10
         #  timeout(6) do
 
-        tcp_socket = TCPSocket.new( proxy.host, proxy.port)
-        tcp_socket.setsockopt( Socket::SOL_SOCKET, Socket::SO_KEEPALIVE, 1)
+        tcp_socket = TCPSocket.new(proxy.host, proxy.port)
+        tcp_socket.setsockopt(Socket::SOL_SOCKET, Socket::SO_KEEPALIVE, 1)
         tcp_socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
-        tcp_socket.setsockopt(Socket::SOL_SOCKET,Socket::SO_REUSEADDR, true)    
+        tcp_socket.setsockopt(Socket::SOL_SOCKET, Socket::SO_REUSEADDR, true)
         tcp_socket.sync = true
         #  end
 
@@ -1067,7 +1081,7 @@ module Watobo#:nodoc: all
       return nil
     end
 
-    def loggedOut?(response, prefs={})
+    def loggedOut?(response, prefs = {})
       begin
         return false if @session[:logout_signatures].empty?
         response.each do |line|
@@ -1083,7 +1097,7 @@ module Watobo#:nodoc: all
       return false
     end
 
-    def error_response(msg, comment=nil)
+    def error_response(msg, comment = nil)
       er = []
       er << "HTTP/1.1 555 Watobo Error\r\n"
       #er << "WATOBO: #{msg.gsub(/\r?\n/," ").strip}\r\n"
@@ -1094,7 +1108,7 @@ module Watobo#:nodoc: all
       er << "Connection: close\r\n"
       er << "\r\n"
       unless comment.nil?
-        body = "<html><head><title>Watobo Error</title></head><body><H1>#{msg}</H1></br><H2>#{comment.gsub(/\r?\n/,"</br>")}</H2></body></html>" 
+        body = "<html><head><title>Watobo Error</title></head><body><H1>#{msg}</H1></br><H2>#{comment.gsub(/\r?\n/, "</br>")}</H2></body></html>"
         er << body
       end
       er.extend Watobo::Mixin::Parser::Url
@@ -1104,7 +1118,7 @@ module Watobo#:nodoc: all
       er
     end
 
-    def readHTTPHeader(socket, prefs={})
+    def readHTTPHeader(socket, prefs = {})
 
       header = []
       msg = nil
@@ -1116,7 +1130,7 @@ module Watobo#:nodoc: all
           header.push line
         end
       rescue Errno::ECONNRESET
-        msg = "<html><head><title>WATOBO</title></head><body>WATOBO: Connection Reset By Peer</body></html>"           
+        msg = "<html><head><title>WATOBO</title></head><body>WATOBO: Connection Reset By Peer</body></html>"
       rescue Timeout::Error
         msg = "<html><head><title>WATOBO</title></head><body>WATOBO: Timeout</body></html>"
       rescue => bang
@@ -1125,12 +1139,12 @@ module Watobo#:nodoc: all
       end
 
       unless msg.nil?
-        header = [ "HTTP/1.1 502 Bad Gateway\r\n"]
-        header <<  "Server: WATOBO\r\n"
+        header = ["HTTP/1.1 502 Bad Gateway\r\n"]
+        header << "Server: WATOBO\r\n"
         header << "Date: #{Time.now.to_s}\r\n"
         header << "Content-Length: #{msg.length.to_i}\r\n"
         header << "Content-Type: text/html\r\n"
-        header <<  "\r\n"
+        header << "\r\n"
         header << "#{msg}"
       end
 
@@ -1157,7 +1171,7 @@ module Watobo#:nodoc: all
         elsif socket.respond_to? :close
           socket.close
         end
-        return true 
+        return true
       rescue => bang
         puts bang
         puts bang.backtrace if $DEBUG
@@ -1165,27 +1179,26 @@ module Watobo#:nodoc: all
       false
     end
 
-    def updateSessionSettings(settings={})
+    def updateSessionSettings(settings = {})
       [
-        :ssl_client_cert,
-        :ssl_client_key,
-        :ssl_client_pass,
-        :csrf_requests,
-        :valid_sids,
-        :sid_patterns,
-        :logout_signatures,
-        :logout_content_types,
-        :update_valid_sids,
-        :update_sids,
-        :update_session,
-        :update_contentlength,
-        :login_chats,
-        :follow_redirect
+          :ssl_client_cert,
+          :ssl_client_key,
+          :ssl_client_pass,
+          :csrf_requests,
+          :valid_sids,
+          :sid_patterns,
+          :logout_signatures,
+          :logout_content_types,
+          :update_valid_sids,
+          :update_sids,
+          :update_session,
+          :update_contentlength,
+          :login_chats,
+          :follow_redirect
       ].each do |k|
         @session[k] = settings[k] if settings.has_key? k
       end
     end
-
 
 
     # this function updates specific patterns of a request, e.g. CSRF Tokens
@@ -1195,7 +1208,7 @@ module Watobo#:nodoc: all
     # patterns - pattern expressions, similar to session-id-patterns, e.g.  /name="(sessid)" value="([0-9a-zA-Z!-]*)"/
     def updateRequestPattern(request, cache, patterns)
 
-      request.map!{ |line|
+      request.map! {|line|
         res = line
         patterns.each do |pat|
           begin
@@ -1212,7 +1225,9 @@ module Watobo#:nodoc: all
                   #      puts "---"
                   # dummy = Regexp.quote(old_value)
                   res = line.gsub!(/#{old_value}/, cache[sid_key])
-                  if not res then puts "!!!could not update sid (#{sid_key})"; end
+                  if not res then
+                    puts "!!!could not update sid (#{sid_key})";
+                  end
                   #     puts "->#{line}"
                 end
               end
@@ -1228,7 +1243,7 @@ module Watobo#:nodoc: all
     end
 
     def applySessionSettings(prefs)
-      [ :update_valid_sids, :update_session, :update_contentlength, :valid_sids, :sid_patterns, :logout_signatures ].each do |v|
+      [:update_valid_sids, :update_session, :update_contentlength, :valid_sids, :sid_patterns, :logout_signatures].each do |v|
         @@settings[v] = prefs[v] if prefs[v]
       end
     end

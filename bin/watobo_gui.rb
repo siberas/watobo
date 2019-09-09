@@ -12,6 +12,9 @@ puts "     brought to you by siberas http://www.siberas.de"
 puts
 puts "#############################################################"
 
+
+require 'pry'
+
 require 'watobo'
 require 'watobo/gui'
 
