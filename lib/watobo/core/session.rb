@@ -75,7 +75,7 @@ module Watobo #:nodoc: all
         hostip = IPSocket.getaddress(host)
         # update current preferences, prefs given here are stronger then global settings!
         current_prefs = Hash.new
-        [:update_session, :update_sids, :update_contentlength, :ssl_cipher, :www_auth, :client_certificates, :egress_handler].each do |k|
+        [:update_session, :update_sids, :update_contentlength, :ssl_cipher, :www_auth, :client_certificates, :egress_handler, :no_connection_close ].each do |k|
           current_prefs[k] = prefs[k].nil? ? @session[k] : prefs[k]
         end
 
@@ -226,7 +226,9 @@ module Watobo #:nodoc: all
           else
             # puts "========== Add Headers"
 
-            request.set_header("Connection", "close") #if not use_proxy
+            unless current_prefs.has_key?(:no_connection_close) && current_prefs[:no_connection_close] == true
+              request.set_header("Connection", "close")
+            end
 
             data = request.join
             unless request.has_body?

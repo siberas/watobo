@@ -611,7 +611,8 @@ module Watobo #:nodoc: all
                          # :csrf_patterns => @project.getCSRFPatterns(),
                          :update_sids => @updateSID.checked?,
                          :follow_redirect => @followRedirect.checked?,
-                         :egress_handler => egress_handler
+                         :egress_handler => egress_handler,
+                         :no_connection_close => true
         }
 
         prefs.update current_prefs
