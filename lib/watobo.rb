@@ -46,9 +46,14 @@ if ENV['DEV_ENV']
   puts '+ loading devgems ...'
   begin
     require 'devenv'
-    load File.join(ENV['HOME'], '.watobo', 'devgems.rb')
-  rescue LoadError
+    devgems =  File.join( File.expand_path(ENV['HOME']), '.watobo', 'devgems.rb')
+    puts "+ loading devgem file #{devgems}"
+    #load devgems
+    require_relative devgems
+  rescue LoadError => bang
     puts '* something went wrong while initialising the development environment.'
+    puts bang
+    puts bang.backtrace
   end
 else
   print "[N/A]\n"

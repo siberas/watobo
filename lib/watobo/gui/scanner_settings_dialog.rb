@@ -48,6 +48,8 @@ module Watobo#:nodoc: all
           list_box.setItemData(list_item, item)
           list_box.sortItems()        
         end
+
+        showListBox(list_box) if $DEBUG
       end
       
       def selectScanlogDirectory(sender, sel, item)
@@ -62,9 +64,17 @@ module Watobo#:nodoc: all
       
       def removePattern(list_box)
         index = list_box.currentItem
-        #puts index
+        puts "Remove Item #{index}: #{list_box.getItem(index).data}" if $DEBUG
         if  index >= 0
           list_box.removeItem(index)
+        end
+        showListBox(list_box) if $DEBUG
+      end
+
+      def showListBox(list_box)
+
+        list_box.each do |item|
+          puts item.data
         end
       end
       

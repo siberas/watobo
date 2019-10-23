@@ -165,6 +165,28 @@ module Watobo #:nodoc: all
       return nil
     end
 
+    def self.get_by_response(response)
+      @chats_lock.synchronize do
+        @chats.each do |c|
+          if c.response.object_id == response.object_id
+            return c
+          end
+        end
+      end
+      return nil
+    end
+
+    def self.get_by_request(request)
+      @chats_lock.synchronize do
+        @chats.each do |c|
+          if c.request.object_id == request.object_id
+            return c
+          end
+        end
+      end
+      return nil
+    end
+
     def self.each(&block)
       if block_given?
         @chats_lock.synchronize do

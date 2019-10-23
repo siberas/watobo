@@ -24,4 +24,8 @@ client
 version
 configuration
 bootstrap
+api_v3
+api_v2
+api_v1
+api
 

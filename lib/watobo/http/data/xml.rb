@@ -18,6 +18,8 @@ module Watobo#:nodoc: all
       end
 
       def set(parm)
+        puts "xml set parm:"
+        puts parm
         return false unless parm.location == :xml
        # puts "= set "
        # puts parm.to_yaml
@@ -106,11 +108,12 @@ module Watobo#:nodoc: all
 
           # check if doc has a body element
           start = doc
-          doc.traverse { |node|
-            if node.name =~ /^body$/i
-            start = node
-            end
-          }
+        #  doc.traverse { |node|
+        #    if node.name =~ /^body$/i
+        #    start = node
+        #    end
+        #  }
+
           start.traverse { |node|
              if node.children.size == 0 and node.is_a? Nokogiri::XML::Element
                yield node if block_given?

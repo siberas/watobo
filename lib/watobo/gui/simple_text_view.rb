@@ -76,7 +76,7 @@ module Watobo
         # Construct some hilite styles
         hs_green = FXHiliteStyle.new
         hs_green.normalForeColor = FXRGBA(255, 255, 255, 255) #FXColor::Red
-        hs_green.normalBackColor = FXRGBA(0, 255, 0, 1) # FXColor::White
+        hs_green.normalBackColor = FXRGBA(0x8b, 0, 0, 1) # FXColor::White
         hs_green.style = FXText::STYLE_BOLD
 
         hs_red = FXHiliteStyle.new

@@ -4,6 +4,7 @@ module Watobo#:nodoc: all
     class QuickScanOptionsFrame < FXVerticalFrame
       def options()
         csrf_requests = Watobo::OTTCache.requests(@target_chat)
+        egress_handler = @egress_chk.checked? ? @egress_handlers.getItem(@egress_handlers.currentItem) : ''
         
         o = Hash.new
         o[:enable_logging] = @logScanChats.checked?
@@ -15,6 +16,7 @@ module Watobo#:nodoc: all
         o[:use_orig_request] = @useOriginalRequest.checked?
         o[:detect_logout] = @detectLogout.checked?
         o[:follow_redirect] = @followRedirects.checked?
+        o[:egress_handler] = egress_handler
         puts o.to_yaml if $DEBUG
         o
       end
@@ -88,6 +90,29 @@ module Watobo#:nodoc: all
         #  @csrf_dialog_label.enabled = false
         @csrf_dialog_btn.disable
         @csrf_dialog_btn.enable if @csrfToken.checked?
+
+        #
+        # Egress Settings
+        frame = FXGroupBox.new(self, "Use Egress Handler", LAYOUT_SIDE_TOP|FRAME_GROOVE|LAYOUT_FILL_X, 0, 0, 0, 0)
+        egress_frame = FXHorizontalFrame.new(frame,:opts => LAYOUT_FILL_X|LAYOUT_SIDE_TOP, :padding => 0)
+        @egress_chk = FXCheckButton.new(egress_frame, "Egress", nil, 0, JUSTIFY_LEFT|JUSTIFY_TOP|ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
+        #@csrfToken.checkState = false
+        @egress_chk.checkState = prefs.has_key?(:egress_handler) && !prefs[:egress_handler].empty?
+
+        @egress_handlers = FXComboBox.new(egress_frame, 5, nil, 0, COMBOBOX_STATIC|FRAME_SUNKEN|FRAME_THICK|LAYOUT_SIDE_TOP)
+
+        @egress_handlers.clearItems
+        @egress_chk.disable
+        @egress_handlers.disable
+
+        if Watobo::EgressHandlers.length > 0
+          @egress_chk.enable
+          @egress_handlers.enable
+          #@egress_btn.enable
+          Watobo::EgressHandlers.list {|h|
+            @egress_handlers.appendItem(h.to_s, nil)
+          }
+        end
       end
 
       private

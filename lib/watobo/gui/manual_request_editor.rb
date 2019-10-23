@@ -116,7 +116,12 @@ module Watobo #:nodoc: all
       end
 
       def onBtnQuickScan(sender, sel, item)
-        dlg = Watobo::Gui::QuickScanDialog.new(self, :target_chat => @chat, :enable_one_time_tokens => @updateCSRF.checked?)
+        dlg_prefs = { :target_chat => @chat, :enable_one_time_tokens => @updateCSRF.checked? }
+        egress_handler = @egress.checked? ? @egress_handlers.getItem(@egress_handlers.currentItem) : ''
+        dlg_prefs[:egress_handler] = egress_handler
+
+        dlg = Watobo::Gui::QuickScanDialog.new(self, dlg_prefs)
+
         scan_chats = []
         if sender.text =~ /Cancel/i
           @scanner.cancel() if @scanner.respond_to? :cancel

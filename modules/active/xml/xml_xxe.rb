@@ -36,18 +36,18 @@ module Watobo #:nodoc: all
               :measure => measure
           )
 
-          def initialize(project, prefs={})
+          def initialize(project, prefs = {})
             super(project, prefs)
 
           end
 
           def generateChecks(chat)
             begin
-              if (chat.request.content_type =~ /xml/) and chat.request.has_body?
-                # first we do a request with an
+               if (chat.request.content_type =~ /xml/) and chat.request.has_body?
+               # first we do a request with an
                 base = chat.copyRequest
                 base_request, base_response = doRequest(base)
-                return unless base_response.has_body?
+
                 create_entity_packets(chat.request.body).each do |packet|
                   checker = proc {
                     begin
@@ -58,15 +58,26 @@ module Watobo #:nodoc: all
                       test_request, test_response = doRequest(test)
                       #puts test_response.status
 
-                      if test_response.has_body? and test_response.body == base_response.body
+                      if test_response.has_body? and base_response.has_body?
 
-                        addFinding(test_request, test_response,
-                                   :test_item => "ENTITY",
-                                   :check_pattern => "ENTITY",
-                                   :chat => chat,
-                                   :title => "[#{chat.request.path}] - ENTITY",
-                                   :debug => true
-                        )
+                        if test_response.body == base_response.body
+                          addFinding(test_request, test_response,
+                                     :test_item => "ENTITY",
+                                     :check_pattern => "ENTITY",
+                                     :chat => chat,
+                                     :title => "[#{chat.request.path}] - ENTITY",
+                                     :debug => true
+                          )
+                        elsif test_response.status_code =~ /2\d\d/
+                          addFinding(test_request, test_response,
+                                     :test_item => "ENTITY",
+                                     :check_pattern => "ENTITY",
+                                     :chat => chat,
+                                     :title => "[#{chat.request.path}] - ENTITY",
+                                     :debug => true,
+                                     :rating => VULN_RATING_MEDIUM
+                          )
+                        end
                       end
                     rescue => bang
                       puts bang
@@ -91,18 +102,24 @@ module Watobo #:nodoc: all
 
             xmlbase = Nokogiri::XML(xml_string)
             xmlbase.traverse do |node|
-              if node.text?
+              begin
+                node.content = 'XXE' if node.text.strip.empty?
                 #next if node.parent.namespace.nil?
                 unless node.text.strip.empty?
                   xml = Nokogiri::XML(xml_string)
                   xml.create_internal_subset("#{node.parent.name}", nil, nil)
                   node_name = ""
-                  node_name << "#{node.parent.namespace.prefix}:" if node.parent.namespace.respond_to? :prefix
+                  if node.parent.respond_to?(:namespace)
+                    node_name << "#{node.parent.namespace.prefix}:" if node.parent.namespace.respond_to? :prefix
+                  end
                   node_name << "#{node.parent.name}"
                   add_entity(xml, "#{node_name}", "#{node.parent.name}", "#{node.text}")
                   xml_packets << xml
 
+
                 end
+              rescue => bang
+                puts bang
               end
             end
             xml_packets
