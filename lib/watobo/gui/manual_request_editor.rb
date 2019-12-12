@@ -613,6 +613,7 @@ module Watobo #:nodoc: all
                          :follow_redirect => @followRedirect.checked?,
                          :egress_handler => egress_handler,
                          :no_connection_close => true
+
         }
 
         prefs.update current_prefs

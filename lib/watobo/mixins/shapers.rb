@@ -429,6 +429,8 @@ module Watobo #:nodoc: all
           end
         end
 
+        alias :setBody :setData
+
         def setMethod(method)
           m = method.is_a?(Symbol) ? method.to_s.upcase : method
           self.first.gsub!(/(^[^[:space:]]{1,}) /, "#{m} ")

@@ -153,6 +153,7 @@ module Watobo #:nodoc: all
         puts "!!! TRANSPARENT MODE ENABLED !!!" if transparent?
 
         @t_server = Thread.new(@intercept_srv) { |server|
+
           while (new_session = server.accept)
             #  new_session.sync = true
             new_sender = Watobo::Session.new(@target)

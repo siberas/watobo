@@ -59,7 +59,7 @@ module Watobo #:nodoc: all
       end
 
       def onEncodeURL(sender, sel, item)
-        setText(Base64.strict_decode64(@text))
+        setText(CGI::escape(@textbox.text))
       end
 
       def onDecodeURL(sender, sel, item)

@@ -2,6 +2,8 @@
 #Encoding: UTF-8
 require 'rubygems'
 
+$SAFE = 0
+
 # TODO: use a different environment variable to disable bundler on load
 # usefull if you want to use your own gems for private plugins
 #

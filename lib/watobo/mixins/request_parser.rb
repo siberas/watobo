@@ -168,7 +168,8 @@ module Watobo#:nodoc: all
 
           unless body.nil?
             request.push "\r\n"
-            request.push body.strip
+            # don't strip body! Some requests need a CRLF at the end, e.g. Response Smuggling
+            request.push body #.strip
           end
 
           request.fixupContentLength() if options[:update_content_length] == true

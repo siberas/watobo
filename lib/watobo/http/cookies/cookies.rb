@@ -51,10 +51,8 @@ module Watobo#:nodoc: all
       def parameters(&block)
         params = []
         raw_cookies do |cprefs|
-          cookie = Watobo::CookieParameter.new(cprefs)
-          yield cookie if block_given?
-          params << cookie
-
+          params << Watobo::CookieParameter.new(cprefs.clone)
+          yield params.last if block_given?
         end
         params
       end
@@ -80,6 +78,7 @@ module Watobo#:nodoc: all
       def raw_cookies(&block)
         rcs = []
         @root.headers.each do |line|
+
           begin
             if line =~ /^(Set\-)?Cookie2?: (.*)/i then
               clist = $2.split(";")
@@ -99,8 +98,9 @@ module Watobo#:nodoc: all
                 cookie_prefs[:name] = name.strip
                 cookie_prefs[:value] = value.strip
                 #cookie = Watobo::CookieParameter.new(cookie_prefs)
-                yield cookie_prefs if block_given?
                 rcs << cookie_prefs
+                yield cookie_prefs.clone if block_given?
+
               end
             end
           rescue => bang

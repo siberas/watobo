@@ -276,6 +276,7 @@ module Watobo#:nodoc: all
       private
       
       def add_parm(parm)
+        puts "+ add param [#{parm.location}, #{parm.name}, #{parm.value}]"
         lastRowIndex = self.getNumRows
           self.appendRows(1)
           self.setItemText(lastRowIndex, 0, parm.location.to_s)

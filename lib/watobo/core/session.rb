@@ -75,7 +75,7 @@ module Watobo #:nodoc: all
         hostip = IPSocket.getaddress(host)
         # update current preferences, prefs given here are stronger then global settings!
         current_prefs = Hash.new
-        [:update_session, :update_sids, :update_contentlength, :ssl_cipher, :www_auth, :client_certificates, :egress_handler, :no_connection_close ].each do |k|
+        [:skip_body, :update_session, :update_sids, :update_contentlength, :ssl_cipher, :www_auth, :client_certificates, :egress_handler, :no_connection_close].each do |k|
           current_prefs[k] = prefs[k].nil? ? @session[k] : prefs[k]
         end
 
@@ -250,6 +250,7 @@ module Watobo #:nodoc: all
             #puts data.unpack("H*")[0]#.gsub(/0d0a/,"0d0a\n")
             # puts "---"
             unless socket.nil?
+              puts data if $DEBUG
               socket.print data
               socket.flush
               response_header = readHTTPHeader(socket, current_prefs)
@@ -334,7 +335,9 @@ module Watobo #:nodoc: all
             next if socket.nil?
             #  p "*"
             #    csrf_response = readHTTPHeader(socket)
-            readHTTPBody(socket, csrf_response, csrf_request, opts)
+            unless opts.has_key?(:skip_body) and opts[:skip_body] == true
+              readHTTPBody(socket, csrf_response, csrf_request, opts)
+            end
 
             # response = Response.new(csrf_response)
 
