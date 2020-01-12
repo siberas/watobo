@@ -28,13 +28,16 @@ module Watobo#:nodoc: all
         fs[:url_pattern] = @foption_url.checked? ? pattern : ''
         fs[:request_pattern] = @foption_req.checked? ? pattern : ''
         fs[:response_pattern] = @foption_res.checked? ? pattern : ''
+        fs[:comment_pattern] = @foption_comment.checked? ? pattern : ''
+        fs[:negate_pattern_search] = @negate_pattern_search.checked?
         
         mime_types = []
         mime_types << "html" if @mime_html.checked?
         mime_types << "css" if @mime_css.checked?
         mime_types << "flash" if @mime_flash.checked?
         mime_types << "script" if @mime_script.checked?
-        mime_types << "xml" if @mime_xml.checked?  
+        mime_types << "xml" if @mime_xml.checked?
+        mime_types << "json" if @mime_json.checked?
         fs[:mime_types] = mime_types
         
         status_codes = []
@@ -85,11 +88,14 @@ module Watobo#:nodoc: all
         f = FXVerticalFrame.new(matrix, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
         mime_types_gb = FXGroupBox.new(f, "MIME Types", LAYOUT_SIDE_RIGHT|FRAME_GROOVE|LAYOUT_FILL_X|LAYOUT_FILL_Y, 0, 0, 0, 0)
         mime_types_frame = FXVerticalFrame.new(mime_types_gb, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
-        
-        
-        
+
+
+        @mime_json = FXCheckButton.new(mime_types_frame, "JSON", nil, 0, ICON_BEFORE_TEXT|LAYOUT_SIDE_LEFT)
+        state = filter.has_key?(:mime_types) ? filter[:mime_types].include?("json") : false
+        @mime_json.setCheck(state)
+
         @mime_html = FXCheckButton.new(mime_types_frame, "HTML", nil, 0, ICON_BEFORE_TEXT|LAYOUT_SIDE_LEFT)
-        state = filter.has_key?(:mime_types) ? filter[:mime_types].include?("html") : false 
+        state = filter.has_key?(:mime_types) ? filter[:mime_types].include?("html") : false
         @mime_html.setCheck(state)
         
         @mime_css = FXCheckButton.new(mime_types_frame, "CSS", nil, 0, ICON_BEFORE_TEXT|LAYOUT_SIDE_LEFT)
@@ -107,22 +113,23 @@ module Watobo#:nodoc: all
         @mime_flash = FXCheckButton.new(mime_types_frame, "Flash", nil, 0, ICON_BEFORE_TEXT|LAYOUT_SIDE_LEFT)
         state = filter.has_key?(:mime_types) ? filter[:mime_types].include?("flash") : false
         @mime_flash.setCheck(state)
+
         
         f = FXVerticalFrame.new(matrix, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
         status_codes_gb = FXGroupBox.new(f, "Status Codes", LAYOUT_SIDE_RIGHT|FRAME_GROOVE|LAYOUT_FILL_X|LAYOUT_FILL_Y, 0, 0, 0, 0)
         status_codes_frame = FXVerticalFrame.new(status_codes_gb, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
         @status_2 = FXCheckButton.new(status_codes_frame, "2xx", nil, 0, ICON_BEFORE_TEXT|LAYOUT_SIDE_LEFT)
-        state = filter.has_key?(:status_codes) ? filter[:status_codes].include?("^2") : false
+        state = filter.has_key?(:status_codes) ? filter[:status_codes].include?("^2") : true
         @status_2.setCheck(state)
         
         @status_3 = FXCheckButton.new(status_codes_frame, "3xx", nil, 0, ICON_BEFORE_TEXT|LAYOUT_SIDE_LEFT)
-        state = filter.has_key?(:status_codes) ? filter[:status_codes].include?("^3") : false
+        state = filter.has_key?(:status_codes) ? filter[:status_codes].include?("^3") : true
         @status_3.setCheck(state)
         @status_4 = FXCheckButton.new(status_codes_frame, "4xx", nil, 0, ICON_BEFORE_TEXT|LAYOUT_SIDE_LEFT)
-        state = filter.has_key?(:status_codes) ? filter[:status_codes].include?("^4") : false
+        state = filter.has_key?(:status_codes) ? filter[:status_codes].include?("^4") : true
         @status_4.setCheck(state)
         @status_5 = FXCheckButton.new(status_codes_frame, "5xx", nil, 0, ICON_BEFORE_TEXT|LAYOUT_SIDE_LEFT)
-        state = filter.has_key?(:status_codes) ? filter[:status_codes].include?("^5") : false
+        state = filter.has_key?(:status_codes) ? filter[:status_codes].include?("^5") : true
         @status_5.setCheck(state)
         
         
@@ -147,10 +154,10 @@ module Watobo#:nodoc: all
         # PATTERN
         f = FXVerticalFrame.new(matrix, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
         pattern_gb = FXGroupBox.new(f, "Pattern", LAYOUT_SIDE_RIGHT|FRAME_GROOVE|LAYOUT_FILL_X|LAYOUT_FILL_Y, 0, 0, 0, 0)
-        pattern_frame = FXVerticalFrame.new(pattern_gb, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
+        frame = FXVerticalFrame.new(pattern_gb, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
       
         
-        @text_filter = FXTextField.new(pattern_frame, 40, nil, 0, FRAME_SUNKEN|FRAME_THICK|LAYOUT_FILL_X)
+        @text_filter = FXTextField.new(frame, 40, nil, 0, FRAME_SUNKEN|FRAME_THICK|LAYOUT_FILL_X)
         @text_filter.setFocus()
         @text_filter.setDefault()
        
@@ -161,12 +168,16 @@ module Watobo#:nodoc: all
           true
         }
         
-        [ :url_pattern, :request_pattern, :response_pattern ].each do |k|
+        [ :url_pattern, :request_pattern, :response_pattern, :comment_pattern ].each do |k|
           if filter.has_key? k
             @text_filter.text = filter[k] unless filter[k].empty?
           end
         end
-        # filterOptionsFrame =FXHorizontalFrame.new(fbox, LAYOUT_FILL_X)
+        loc_frame = FXHorizontalFrame.new(frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
+
+        pattern_frame = FXVerticalFrame.new(loc_frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
+
+       # filterOptionsFrame =FXHorizontalFrame.new(fbox, LAYOUT_FILL_X)
         @foption_url = FXCheckButton.new(pattern_frame, "&URL", nil, 0, ICON_BEFORE_TEXT|LAYOUT_SIDE_LEFT)
         state = ( filter.has_key?(:url_pattern) and not filter[:url_pattern].empty? )
         @foption_url.setCheck(state)
@@ -179,7 +190,16 @@ module Watobo#:nodoc: all
         state = ( filter.has_key?(:response_pattern) and not filter[:response_pattern].empty? )
         @foption_res.setCheck state
        # @foption_res.connect(SEL_COMMAND){ update_text_filter }
-         
+
+        @foption_comment = FXCheckButton.new(pattern_frame, "&Comment", nil, 0, ICON_BEFORE_TEXT|LAYOUT_SIDE_RIGHT)
+        state = ( filter.has_key?(:comment_pattern) and not filter[:comment_pattern].empty? )
+        @foption_comment.setCheck state
+
+        frame = FXVerticalFrame.new(loc_frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
+        @negate_pattern_search = FXCheckButton.new(frame, "Negate", nil, 0, ICON_BEFORE_TEXT|LAYOUT_SIDE_LEFT)
+        state = ( filter.has_key?(:negate_pattern_search) and filter[:negate_pattern_search] )
+        @negate_pattern_search.setCheck state
+
        buttons = FXHorizontalFrame.new(main, :opts => LAYOUT_FILL_X)
           @accept_btn = FXButton.new(buttons, "&Apply", nil, self, ID_ACCEPT,
         FRAME_RAISED|FRAME_THICK|LAYOUT_RIGHT|LAYOUT_CENTER_Y)
@@ -218,15 +238,15 @@ module Watobo#:nodoc: all
       def update_text
        @filter_info.text = filter_text
        @filter_info.appendText "     "
-       @filter_info.appendStyledText("click to change", 1)
+       @filter_info.appendStyledText("click to change", 3)
        
      end
      
-     def text=(t)
-       @filter_info.text = t
-       @filter_info.appendText "     "
-       @filter_info.appendStyledText("click to change", 1)
-     end
+     #def text=(t)
+     #  @filter_info.text = t
+     #  @filter_info.appendText "     "
+     #  @filter_info.appendStyledText("click to change", 3)
+     #end
       
       def default_filter
         fs = {
@@ -244,6 +264,7 @@ module Watobo#:nodoc: all
         fs[:hidden_extensions] = true
         fs[:show_extensions] = false
         fs[:show_extension_patterns] = %w(jsp php asp aspx)
+        fs[:comment_pattern] = ''
         fs
         
       end
@@ -273,10 +294,15 @@ module Watobo#:nodoc: all
         hs_red.normalBackColor = @filter_info.backColor
         hs_red.style = FXText::STYLE_BOLD
 
+        hs_blue = FXHiliteStyle.new
+        hs_blue.normalForeColor = FXRGBA(0,0,255,1)
+        hs_blue.normalBackColor = @filter_info.backColor
+        hs_blue.style = FXText::STYLE_BOLD
+
         # Enable the style buffer for this text widget
         @filter_info.styled = true
         # Set the styles
-        @filter_info.hiliteStyles = [ hs_green, hs_red]
+        @filter_info.hiliteStyles = [ hs_green, hs_red, hs_blue]
         
        # @filter_info.setText(filter_text)
        update_text
@@ -301,14 +327,7 @@ module Watobo#:nodoc: all
           @table.scrollUp() unless @table.nil?
         }
 
-        
-        
-         
 
-        
-        
-        
-        
         @filter_info.connect(SEL_LEFTBUTTONPRESS){
           filter = @table.nil? ? {} : @table.filter
          dlg = Watobo::Gui::ConversationFilterDialog.new(self, filter)
@@ -377,7 +396,7 @@ module Watobo#:nodoc: all
         text << "None" if hide.empty?
         
         unless @table.nil?
-          text << "\n#{@table.numRows}/#{Watobo::Chats.length}"
+          text << "\n#{@table.numRows}/#{@table.current_chat_list.length}"
         end
         text
       end
@@ -410,7 +429,7 @@ module Watobo#:nodoc: all
       end
 
       def update_text_filter
-        if @foption_url.checked? or @foption_req.checked? or @foption_res.checked?
+        if @foption_url.checked? or @foption_req.checked? or @foption_res.checked? or @foption_comment.checked?
         @text_filter.enable
         else
         @text_filter.disable

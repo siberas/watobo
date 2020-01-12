@@ -22,7 +22,7 @@ module Watobo #:nodoc: all
         if text.is_a? String
           normalized_text = text.gsub(/[^[:print:]]/, ".")
         elsif text.respond_to? :has_body?
-          if text.content_type =~ /(xml)/
+          if text.has_body? and text.content_type =~ /(xml)/
             body = text.body.force_encoding('iso-8859-1').encode('utf-8')
             doc = Nokogiri::XML(body, &:noblanks)
             fbody = doc.to_xhtml(indent: 3, indent_text: " ")
@@ -348,6 +348,10 @@ module Watobo #:nodoc: all
        # tab_frame = FXVerticalFrame.new(@tabBook, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_RAISED)
        # @viewers << Watobo::Gui::TableEditorFrame.new(tab_frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_SUNKEN|FRAME_THICK, :padding => 0)
         @viewers << JsonViewer.new(@tabBook, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_RAISED)
+
+        FXTabItem.new(@tabBook, "Custom", nil)
+        @viewers << CustomViewer.new(@tabBook, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_RAISED)
+
       end
 
     end

@@ -54,9 +54,12 @@ EOD
               bearer = chat.request.headers(' Bearer ')[0]
               return true if bearer.nil?
 
+              bearer_header = bearer.match(/^([^\s]*):/)[1]
               jwt = bearer.match(/Bearer (.*)/)[1]
               jh, jp, js = jwt.split('.')
               jh = JSON.parse(Base64.decode64(jh))
+
+
               jp = JSON.parse(Base64.decode64(jp))
 
               # remove 'alg' from original header
@@ -76,7 +79,7 @@ EOD
 
                 new_auth_header = "Bearer #{token}"
 
-                test_request.set_header 'Authorization', new_auth_header
+                test_request.set_header bearer_header, new_auth_header
 
                 request, response = doRequest(test_request)
 

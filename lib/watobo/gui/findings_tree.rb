@@ -42,8 +42,8 @@ module Watobo #:nodoc: all
         expand_findings
         @expandeds.each do |t|
           site, text = t.split("|")
-          if (site = self.findItem(site, nil, SEARCH_FORWARD|SEARCH_NOWRAP))
-            if (node = self.findItem(text, site, SEARCH_FORWARD|SEARCH_NOWRAP))
+          if (site = self.findItem(site, nil, SEARCH_FORWARD | SEARCH_NOWRAP))
+            if (node = self.findItem(text, site, SEARCH_FORWARD | SEARCH_NOWRAP))
               self.expandTree(node)
             else
               @expandeds.delete t
@@ -115,7 +115,7 @@ module Watobo #:nodoc: all
           site = nil
           # puts "add finding"
           if not hidden?(finding) then
-            site = self.findItem(finding.request.site, nil, SEARCH_FORWARD|SEARCH_IGNORECASE)
+            site = self.findItem(finding.request.site, nil, SEARCH_FORWARD | SEARCH_IGNORECASE)
 
             if not site then
               # found new site
@@ -131,45 +131,45 @@ module Watobo #:nodoc: all
 
             end
 
-            finding_type=""
+            finding_type = ""
 
             case finding.details[:type]
-              when FINDING_TYPE_INFO
-                finding_type = "Info"
-                icon = @icon_info_info
+            when FINDING_TYPE_INFO
+              finding_type = "Info"
+              icon = @icon_info_info
 
-              when FINDING_TYPE_HINT
-                finding_type = "Hints"
-                icon = @icon_hints_info
+            when FINDING_TYPE_HINT
+              finding_type = "Hints"
+              icon = @icon_hints_info
 
-              when FINDING_TYPE_VULN
-                finding_type = "Vulnerabilities"
-                icon = @icon_vuln_bp
+            when FINDING_TYPE_VULN
+              finding_type = "Vulnerabilities"
+              icon = @icon_vuln_bp
 
-                if finding.details[:rating] == VULN_RATING_LOW
-                  icon = @icon_vuln_low
-                  #  puts "low-rating-vuln"
-                end
-                if finding.details[:rating] == VULN_RATING_MEDIUM
-                  icon = @icon_vuln_medium
-                end
-                if finding.details[:rating] == VULN_RATING_HIGH
-                  icon = @icon_vuln_high
-                end
-                if finding.details[:rating] == VULN_RATING_CRITICAL
-                  icon = @icon_vuln_critical
-                end
+              if finding.details[:rating] == VULN_RATING_LOW
+                icon = @icon_vuln_low
+                #  puts "low-rating-vuln"
+              end
+              if finding.details[:rating] == VULN_RATING_MEDIUM
+                icon = @icon_vuln_medium
+              end
+              if finding.details[:rating] == VULN_RATING_HIGH
+                icon = @icon_vuln_high
+              end
+              if finding.details[:rating] == VULN_RATING_CRITICAL
+                icon = @icon_vuln_critical
+              end
             end
 
-            sub_tree = self.findItem(finding_type, site, SEARCH_FORWARD|SEARCH_IGNORECASE|SEARCH_NOWRAP)
+            sub_tree = self.findItem(finding_type, site, SEARCH_FORWARD | SEARCH_IGNORECASE | SEARCH_NOWRAP)
             if sub_tree and sub_tree.parent == site and finding.details[:class]
               class_item = nil
 
               # don't use findItem here because of nested collisions
               sub_tree.each do |c|
-               if c.text =~ /^#{Regexp.quote(finding.details[:class])}/
-                 class_item = c
-               end
+                if c.text =~ /^#{Regexp.quote(finding.details[:class])}/
+                  class_item = c
+                end
               end
               #class_item = self.findItem(finding.details[:class], sub_tree, SEARCH_FORWARD|SEARCH_IGNORECASE|SEARCH_NOWRAP|SEARCH_PREFIX)
 
@@ -177,7 +177,7 @@ module Watobo #:nodoc: all
                 class_item = self.appendItem(sub_tree, finding.details[:class], icon, icon)
                 self.setItemData(class_item, :finding_class)
               end
-              title_item = self.findItem(finding.details[:title], class_item, SEARCH_FORWARD|SEARCH_IGNORECASE|SEARCH_NOWRAP)
+              title_item = self.findItem(finding.details[:title], class_item, SEARCH_FORWARD | SEARCH_IGNORECASE | SEARCH_NOWRAP)
               if not title_item or title_item.parent != class_item
                 title_item = self.appendItem(class_item, finding.details[:title], nil, nil)
                 self.setItemData(title_item, :title)
@@ -186,7 +186,7 @@ module Watobo #:nodoc: all
               #   puts title_item
               resource = finding.request.path_ext
 
-              request_item = self.findItem(resource, title_item, SEARCH_FORWARD|SEARCH_IGNORECASE|SEARCH_NOWRAP)
+              request_item = self.findItem(resource, title_item, SEARCH_FORWARD | SEARCH_IGNORECASE | SEARCH_NOWRAP)
               if not request_item or request_item.parent != title_item
                 text = "/" + resource
                 request_item = self.appendItem(title_item, text)
@@ -222,7 +222,7 @@ module Watobo #:nodoc: all
 
         @event_dispatcher_listeners = Hash.new
 
-        super(parent, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|LAYOUT_TOP|LAYOUT_RIGHT|TREELIST_SHOWS_LINES|TREELIST_SHOWS_BOXES|TREELIST_ROOT_BOXES|TREELIST_EXTENDEDSELECT)
+        super(parent, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y | LAYOUT_TOP | LAYOUT_RIGHT | TREELIST_SHOWS_LINES | TREELIST_SHOWS_BOXES | TREELIST_ROOT_BOXES | TREELIST_EXTENDEDSELECT)
 
         useRegularIcons()
 
@@ -315,16 +315,21 @@ module Watobo #:nodoc: all
 
               target.check = @show_scope_only
 
-              target.connect(SEL_COMMAND) { |ts, sl, it|
+              target.connect(SEL_COMMAND) {|ts, sl, it|
                 @show_scope_only = ts.checked?
-                reload
+                begin
+                  getApp().beginWaitCursor()
+                  reload
+                ensure
+                  getApp().endWaitCursor()
+                end
               }
 
               target = FXMenuCheck.new(menu_pane, "hide false-positives")
 
               target.check = @hide_false_positives
 
-              target.connect(SEL_COMMAND) { |ts, sl, it|
+              target.connect(SEL_COMMAND) {|ts, sl, it|
                 @hide_false_positives = ts.checked?
                 reload
               }
@@ -372,16 +377,16 @@ module Watobo #:nodoc: all
                       reload
 
                       site_item = cat_item = class_item = nil
-                      site_item = self.findItem(fsite, nil, SEARCH_FORWARD|SEARCH_IGNORECASE)
+                      site_item = self.findItem(fsite, nil, SEARCH_FORWARD | SEARCH_IGNORECASE)
 
                       unless site_item.nil?
                         self.expandTree(site_item)
-                        cat_item = self.findItem(fcat, site_item, SEARCH_FORWARD|SEARCH_IGNORECASE)
+                        cat_item = self.findItem(fcat, site_item, SEARCH_FORWARD | SEARCH_IGNORECASE)
                       end
 
                       unless cat_item.nil?
                         self.expandTree(cat_item)
-                        class_item = self.findItem(fclass, cat_item, SEARCH_FORWARD|SEARCH_IGNORECASE)
+                        class_item = self.findItem(fclass, cat_item, SEARCH_FORWARD | SEARCH_IGNORECASE)
                       end
 
 
@@ -401,16 +406,16 @@ module Watobo #:nodoc: all
                       notify(:unset_false_positive, findings)
                       reload
                       site_item = cat_item = class_item = nil
-                      site_item = self.findItem(fsite, nil, SEARCH_FORWARD|SEARCH_IGNORECASE)
+                      site_item = self.findItem(fsite, nil, SEARCH_FORWARD | SEARCH_IGNORECASE)
 
                       unless site_item.nil?
                         self.expandTree(site_item)
-                        cat_item = self.findItem(fcat, site_item, SEARCH_FORWARD|SEARCH_IGNORECASE)
+                        cat_item = self.findItem(fcat, site_item, SEARCH_FORWARD | SEARCH_IGNORECASE)
                       end
 
                       unless cat_item.nil?
                         self.expandTree(cat_item)
-                        class_item = self.findItem(fclass, cat_item, SEARCH_FORWARD|SEARCH_IGNORECASE)
+                        class_item = self.findItem(fclass, cat_item, SEARCH_FORWARD | SEARCH_IGNORECASE)
                       end
 
 
@@ -477,11 +482,11 @@ module Watobo #:nodoc: all
                       notify(:set_false_positive, findings)
                       reload
                       site_item = cat_item = class_item = nil
-                      site_item = self.findItem(fsite, nil, SEARCH_FORWARD|SEARCH_IGNORECASE)
+                      site_item = self.findItem(fsite, nil, SEARCH_FORWARD | SEARCH_IGNORECASE)
 
                       unless site_item.nil?
                         self.expandTree(site_item)
-                        cat_item = self.findItem(fcat, site_item, SEARCH_FORWARD|SEARCH_IGNORECASE)
+                        cat_item = self.findItem(fcat, site_item, SEARCH_FORWARD | SEARCH_IGNORECASE)
                       end
 
                       unless cat_item.nil?
@@ -496,11 +501,11 @@ module Watobo #:nodoc: all
                       notify(:unset_false_positive, findings)
                       reload
                       site_item = cat_item = class_item = nil
-                      site_item = self.findItem(fsite, nil, SEARCH_FORWARD|SEARCH_IGNORECASE)
+                      site_item = self.findItem(fsite, nil, SEARCH_FORWARD | SEARCH_IGNORECASE)
 
                       unless site_item.nil?
                         self.expandTree(site_item)
-                        cat_item = self.findItem(fcat, site_item, SEARCH_FORWARD|SEARCH_IGNORECASE)
+                        cat_item = self.findItem(fcat, site_item, SEARCH_FORWARD | SEARCH_IGNORECASE)
                       end
 
                       unless cat_item.nil?
@@ -564,7 +569,7 @@ module Watobo #:nodoc: all
         self.each do |site|
           expandTree site
           %w(Vulnerabilities Hints Info).each do |item|
-            f = self.findItem(item, site, SEARCH_FORWARD|SEARCH_IGNORECASE)
+            f = self.findItem(item, site, SEARCH_FORWARD | SEARCH_IGNORECASE)
             expandTree(f) unless site.nil?
           end
         end

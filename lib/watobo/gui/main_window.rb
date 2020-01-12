@@ -13,7 +13,7 @@ module Watobo #:nodoc: all
 
       attr :interceptor
       attr :default_settings
-      attr :watobo_base
+      attr :watobo_baseseq
       attr :active_project
       attr :iproxy
 
@@ -23,11 +23,11 @@ module Watobo #:nodoc: all
 
           mrtk.create
 
-          mrtk.subscribe(:show_browser_preview) { |request, response|
+          mrtk.subscribe(:show_browser_preview) {|request, response|
             openBrowser(request, response)
           }
 
-          mrtk.subscribe(:new_chat) { |c|
+          mrtk.subscribe(:new_chat) {|c|
             Watobo::Chats.add c
           }
           mrtk.show(Fox::PLACEMENT_SCREEN)
@@ -40,23 +40,23 @@ module Watobo #:nodoc: all
       private
 
       def add_queue_timer(ms)
-        @update_timer = FXApp.instance.addTimeout(ms, :repeat => true){
+        @update_timer = FXApp.instance.addTimeout(ms, :repeat => true) {
 
-              unless @scanner.nil?
-                if @scanner.finished?
-                  @scan_running = false
-                  @status_lock.synchronize do
-                    @new_status = SCAN_FINISHED
-                  end
-                  @scanner = nil
-                end
-              end
-
+          unless @scanner.nil?
+            if @scanner.finished?
+              @scan_running = false
               @status_lock.synchronize do
-                unless @new_status.nil?
-                  update_status(@new_status)
-                end
+                @new_status = SCAN_FINISHED
               end
+              @scanner = nil
+            end
+          end
+
+          @status_lock.synchronize do
+            unless @new_status.nil?
+              update_status(@new_status)
+            end
+          end
         }
       end
 
@@ -73,7 +73,7 @@ module Watobo #:nodoc: all
       end
 
       #def loadDefaultS
-      def saveDefaultSettings_UNUSED(update_settings={})
+      def saveDefaultSettings_UNUSED(update_settings = {})
 
 =begin
         settings= Hash.new
@@ -143,7 +143,7 @@ module Watobo #:nodoc: all
       end
 
 
-      def saveSessionSettings_UNUSED(project=nil)
+      def saveSessionSettings_UNUSED(project = nil)
         begin
           #project.session_store.save_session_settings(project.session_settings)
           # Watobo::Conf::Scanner.save_session(project.session_store)
@@ -168,7 +168,7 @@ module Watobo #:nodoc: all
 #        end
       end
 
-      def saveProjectSettings_UNUSED(project=nil)
+      def saveProjectSettings_UNUSED(project = nil)
         begin
           # project.session_store.save_project_settings(project.scan_settings)
           return true
@@ -245,7 +245,7 @@ module Watobo #:nodoc: all
       end
 
       def update_conversation_table()
-        #@chatTable.showConversation(Watobo::Chats.to_a)
+        @chatTable.showConversation(Watobo::Chats.to_a)
         @chatTable.apply_filter(@conversation_table_ctrl.filter)
         @conversation_table_ctrl.update_text
         return true
@@ -255,6 +255,7 @@ module Watobo #:nodoc: all
       # SHOW CHAT
       #
       def showChat(chat)
+        return false if chat.nil?
         @last_chat = chat
         @mre_button.enabled = true
         @fuzz_button.enabled = true
@@ -264,7 +265,7 @@ module Watobo #:nodoc: all
         @last_request = chat.request
         @response_viewer.setText(chat.response)
         @last_response = chat.response
-        @switcher.current=0
+        @switcher.current = 0
         @lastViewed = chat
         src = case chat.source
                 when CHAT_SOURCE_INTERCEPT
@@ -278,6 +279,7 @@ module Watobo #:nodoc: all
               end
         @quickViewTitle.text = "Chat-ID: #{chat.id} (#{src})"
         @quickViewSubTitle.text = ""
+        true
       end
 
       #
@@ -458,6 +460,18 @@ module Watobo #:nodoc: all
         end
       end
 
+      def open_plugin_invader(chat)
+        begin
+          invader = Watobo::Plugin::Invader::Gui.new(chat)
+          invader.create
+          invader.show(Fox::PLACEMENT_SCREEN)
+        rescue => bang
+          puts "!!! could not open invader"
+          puts bang
+          puts bang.backtrace
+        end
+      end
+
       def open_plugin_crawler(chat)
         begin
           plugin = Watobo::Plugin::Crawler::Gui.new(FXApp.instance, @project, chat)
@@ -471,7 +485,7 @@ module Watobo #:nodoc: all
 
       def open_plugin_jwt(chat)
         begin
-          plugin = Watobo::Plugin::JWT::Gui.new( chat)
+          plugin = Watobo::Plugin::JWT::Gui.new(chat)
           plugin.create
           plugin.show(Fox::PLACEMENT_SCREEN)
         rescue => bang
@@ -484,17 +498,17 @@ module Watobo #:nodoc: all
         # addChatToTable(chat) if chatIsFiltered?(chat) == false
 
         #
-         @chatTable.addChat(chat) #if chatIsFiltered?(chat) == false
-       # @sites_tree.addChat(chat)
+        @chatTable.addChat(chat) #if chatIsFiltered?(chat) == false
+        # @sites_tree.addChat(chat)
       end
 
       def showPassiveModulestatus
-        @switcher.current=2
+        @switcher.current = 2
         @dashboard.tabBook.current = 1
       end
 
       def showActiveModulestatus
-        @switcher.current=2
+        @switcher.current = 2
         @dashboard.tabBook.current = 2
       end
 
@@ -508,12 +522,12 @@ module Watobo #:nodoc: all
       end
 
       def showLogs(sender, sel, ptr)
-        @switcher.current=1
+        @switcher.current = 1
         @log_viewer.show_logs
       end
 
-      def showConversation(sender=nil, sel=nil, item=nil)
-        @switcher.current=0
+      def showConversation(sender = nil, sel = nil, item = nil)
+        @switcher.current = 0
       end
 
       def openBrowser(request, response)
@@ -599,6 +613,13 @@ module Watobo #:nodoc: all
         #@chatTable.clearItems()
       end
 
+      def onOpenSequencer(sender, sel, ptr)
+        sequencer_dlg = Watobo::Gui::SequencerDlg.new(FXApp.instance)
+        sequencer_dlg.create
+        sequencer_dlg.show(Fox::PLACEMENT_SCREEN)
+
+      end
+
       def onOpenInterceptor(sender, sel, ptr)
         unless Watobo.project.nil?
           interceptor = Watobo::Gui::InterceptorUI.new(self, :opts => DECOR_ALL)
@@ -628,7 +649,7 @@ module Watobo #:nodoc: all
           @scan_button.enable
           @statusBar.statusInfoText = "Ready"
         end
-        @statusBar.bindAddress= Watobo::Conf::Interceptor.bind_addr.to_s
+        @statusBar.bindAddress = Watobo::Conf::Interceptor.bind_addr.to_s
         @statusBar.portNumber = Watobo::Conf::Interceptor.port.to_s
         @statusBar.forwardingProxy = "-"
         #  puts Watobo::Conf::ForwardingProxy.default_proxy
@@ -733,7 +754,7 @@ module Watobo #:nodoc: all
 
         subscribeProject()
 
-        @project.subscribe(:update_progress) { |up|
+        @project.subscribe(:update_progress) {|up|
           begin
             @progress_window.update_progress(up)
           rescue => bang
@@ -789,7 +810,7 @@ module Watobo #:nodoc: all
         puts '* update status bar'
         update_status_bar()
 
-        @browserView = BrowserPreview.new(Watobo::Interceptor.proxy)
+
 
 
         @chatTable.show
@@ -797,6 +818,8 @@ module Watobo #:nodoc: all
         @sites_tree.reload
         @findings_tree.show
         @findings_tree.reload
+
+        @log_viewer_frame.reload
 
         @chatTable.apply_filter(@conversation_table_ctrl.filter)
         @conversation_table_ctrl.update_text
@@ -808,6 +831,10 @@ module Watobo #:nodoc: all
         puts "* starting interceptor"
         Watobo::Interceptor.start
 
+        #TODO: reactivate browser preview
+
+       # @browserView = BrowserPreview.new(Watobo::Interceptor.proxy)
+
         puts "Project Started"
         puts "Active Modules: #{Watobo::ActiveModules.length}"
         puts "Passive Modules: #{Watobo::PassiveModules.length}"
@@ -815,7 +842,7 @@ module Watobo #:nodoc: all
         puts "Findings: #{Watobo::Findings.length}"
       end
 
-      def decryptPassword(enc_pw=nil, dlg_titel="Encrypted Password")
+      def decryptPassword(enc_pw = nil, dlg_titel = "Encrypted Password")
         bad_pass_count = 0
         dlg_canceled = false
         dec_pw = nil
@@ -997,7 +1024,7 @@ module Watobo #:nodoc: all
         # settings = @project.getScanPreferences()
         # puts settings.to_yaml
         # dlg = Watobo::Gui::ScannerSettingsDialog.new(self, settings, LAYOUT_FILL_X|LAYOUT_FILL_Y)
-        dlg = Watobo::Gui::ScannerSettingsDialog.new(self, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
+        dlg = Watobo::Gui::ScannerSettingsDialog.new(self, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y)
         if dlg.execute != 0 then
           # puts dlg.scanner_settings.to_yaml
           # @project.updateSettings(YAML.load(YAML.dump(dlg.scanner_settings)))
@@ -1026,7 +1053,7 @@ module Watobo #:nodoc: all
       end
 
       def openScopeDialog(sender, sel, ptr)
-        dlg = Watobo::Gui::EditScopeDialog.new(self, LAYOUT_FILL_X|LAYOUT_FILL_Y)
+        dlg = Watobo::Gui::EditScopeDialog.new(self, LAYOUT_FILL_X | LAYOUT_FILL_Y)
         if dlg.execute != 0 then
           Watobo::Gui.save_settings()
           refreshViewers()
@@ -1041,7 +1068,7 @@ module Watobo #:nodoc: all
           @scan_running = false
           @scanner = nil
         else
-          dlg = Watobo::Gui::FullScanDialog.new(self, @project, LAYOUT_FILL_X|LAYOUT_FILL_Y)
+          dlg = Watobo::Gui::FullScanDialog.new(self, @project, LAYOUT_FILL_X | LAYOUT_FILL_Y)
           if dlg.execute != 0 then
 
             @scan_running = true
@@ -1070,22 +1097,22 @@ module Watobo #:nodoc: all
 
             @scanner = Watobo::Scanner3.new(in_scope_chats, selected_modules, [], scan_prefs)
 
-            @scanner.subscribe(:progress) { |check|
+            @scanner.subscribe(:progress) {|check|
               @dashboard.progress(check)
 
             }
 
-            @scanner.subscribe(:module_finished) { |mod|
+            @scanner.subscribe(:module_finished) {|mod|
               @dashboard.module_finished(mod)
             }
 
-            @scanner.subscribe(:logger) { |level, message|
+            @scanner.subscribe(:logger) {|level, message|
               #@log_viewer.log(level, message)
               Watobo.log(message, :sender => 'Scanner')
             }
 
 
-            @scanner.subscribe(:new_finding) { |finding|
+            @scanner.subscribe(:new_finding) {|finding|
               begin
                 @project.addFinding(finding)
               rescue => bang
@@ -1176,7 +1203,7 @@ module Watobo #:nodoc: all
           setDNDData(FROM_CLIPBOARD, FXWindow.stringType, @clipboard_text + "\x00")
         end
 
-        menu_bar = FXMenuBar.new(self, :opts => LAYOUT_SIDE_TOP|LAYOUT_FILL_X)
+        menu_bar = FXMenuBar.new(self, :opts => LAYOUT_SIDE_TOP | LAYOUT_FILL_X)
 
         @menu_items = []
         file_menu_pane = FXMenuPane.new(self)
@@ -1197,7 +1224,7 @@ module Watobo #:nodoc: all
         FXMenuSeparator.new(file_menu_pane)
 
         submenu = FXMenuPane.new(self) do |session_menu|
-          Watobo::Gui.history.entries.sort_by { |id, he| he[:last_used] }.reverse.each do |i, h|
+          Watobo::Gui.history.entries.sort_by {|id, he| he[:last_used]}.reverse.each do |i, h|
             hname = h[:project_name] + " - " + h[:session_name] + " (#{Time.at(h[:last_used]).strftime("%Y-%m-%d %H:%M")})"
             history = FXMenuCommand.new(session_menu, hname)
             history.connect(SEL_COMMAND) do |sender, sel, item|
@@ -1237,10 +1264,10 @@ module Watobo #:nodoc: all
         @interceptor_menu.connect(SEL_COMMAND, method(:openInterceptorSettingsDialog))
 
         @www_auth_menu = FXMenuCommand.new(settings_menu_pane, "WWW-Auth...")
-        @www_auth_menu.connect(SEL_COMMAND) { openWwwAuthDialog() }
+        @www_auth_menu.connect(SEL_COMMAND) {openWwwAuthDialog()}
 
         @client_cert_menu = FXMenuCommand.new(settings_menu_pane, "Client Certificates...")
-        @client_cert_menu.connect(SEL_COMMAND) { open_client_cert_dialog() }
+        @client_cert_menu.connect(SEL_COMMAND) {open_client_cert_dialog()}
 
         #  pp_prefs = FXMenuCommand.new(settings_menu_pane, "Password Policy..." )
         #  pp_prefs.connect(SEL_COMMAND) { openPWPolicyDialog() }
@@ -1300,12 +1327,12 @@ module Watobo #:nodoc: all
 
         #  project_bar = FXToolBar.new(top_dock_site, tool_bar_shell, PACK_UNIFORM_WIDTH)
         #  FXToolBarGrip.new(project_bar, :opts => TOOLBARGRIP_SINGLE)
-        top_bar = FXHorizontalFrame.new(self, :opts => LAYOUT_FILL_X|FRAME_SUNKEN, :padding => 0)
-        project_bar = FXHorizontalFrame.new(top_bar, :opts => LAYOUT_FILL_X|PACK_UNIFORM_WIDTH|FRAME_NONE, :padding => 2)
+        top_bar = FXHorizontalFrame.new(self, :opts => LAYOUT_FILL_X | FRAME_SUNKEN, :padding => 0)
+        project_bar = FXHorizontalFrame.new(top_bar, :opts => LAYOUT_FILL_X | PACK_UNIFORM_WIDTH | FRAME_NONE, :padding => 2)
         @new_project_button = FXButton.new(project_bar, "\tNew Project\tNew Project.", :icon => ICON_ADD_PROJECT, :padding => 0)
         @new_project_button.connect(SEL_COMMAND, method(:onNewProject))
 
-        @scan_button = FXButton.new(project_bar, "\tStart Scan\tStart Scan.", :opts => FRAME_RAISED|FRAME_THICK, :icon => ICON_START, :padding => 0)
+        @scan_button = FXButton.new(project_bar, "\tStart Scan\tStart Scan.", :opts => FRAME_RAISED | FRAME_THICK, :icon => ICON_START, :padding => 0)
         @scan_button.disable
         # @start_scan_button.tipText = "Start Scan"
         @scan_button.connect(SEL_COMMAND, method(:startFullScan))
@@ -1338,29 +1365,37 @@ module Watobo #:nodoc: all
 
         @open_interceptor_button = FXButton.new(tools_bar, "\tOpen Interceptor\tOpen Interceptor.", :icon => ICON_INTERCEPTOR, :padding => 0)
         @open_interceptor_button.connect(SEL_COMMAND, method(:onOpenInterceptor))
+
+        @open_sequencer_button = FXButton.new(tools_bar, "\tOpen Sequencer\tOpen Sequencer.", :icon => ICON_SEQUENCER, :padding => 0)
+        @open_sequencer_button.connect(SEL_COMMAND, method(:onOpenSequencer))
         # dummy button for siberas logo
-        FXButton.new(top_bar, nil, :icon => Watobo::Gui::Icons::SIBERAS_ICON, :opts => FRAME_NONE|LAYOUT_SIDE_RIGHT)
+        FXButton.new(top_bar, nil, :icon => Watobo::Gui::Icons::SIBERAS_ICON, :opts => FRAME_NONE | LAYOUT_SIDE_RIGHT)
 
-        @statusBar = StatusBar.new(self, :opts => LAYOUT_FILL_X|LAYOUT_SIDE_BOTTOM, :padding => 0)
+        @statusBar = StatusBar.new(self, :opts => LAYOUT_FILL_X | LAYOUT_SIDE_BOTTOM, :padding => 0)
 
-        splitter = FXSplitter.new(self, :opts => LAYOUT_SIDE_TOP|LAYOUT_FILL_X|LAYOUT_FILL_Y|SPLITTER_TRACKING)
+        splitter = FXSplitter.new(self, :opts => LAYOUT_SIDE_TOP | LAYOUT_FILL_X | LAYOUT_FILL_Y | SPLITTER_TRACKING)
 
-        frame = FXVerticalFrame.new(splitter, :opts => LAYOUT_FILL_Y|LAYOUT_FIX_WIDTH|FRAME_SUNKEN, :padding => 0, :width => 200)
+        frame = FXVerticalFrame.new(splitter, :opts => LAYOUT_FILL_Y | LAYOUT_FIX_WIDTH | FRAME_SUNKEN, :padding => 0, :width => 200)
 
-        @treeTabbook = FXTabBook.new(frame, nil, 0, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|LAYOUT_RIGHT)
+        @treeTabbook = FXTabBook.new(frame, nil, 0, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y | LAYOUT_RIGHT)
 
         ftab = FXTabItem.new(@treeTabbook, "Findings", nil)
         ftab.setFont(FXFont.new(getApp(), "helvetica", 12, FONTWEIGHT_BOLD, FONTENCODING_DEFAULT))
-        tab_frame = FXVerticalFrame.new(@treeTabbook, :opts => LAYOUT_FIX_WIDTH|LAYOUT_FILL_Y|FRAME_RAISED, :width => 100)
-        frame = FXVerticalFrame.new(tab_frame, :opts => LAYOUT_FILL_Y|LAYOUT_FILL_X|FRAME_SUNKEN, :padding => 0)
+        tab_frame = FXVerticalFrame.new(@treeTabbook, :opts => LAYOUT_FIX_WIDTH | LAYOUT_FILL_Y | FRAME_RAISED, :width => 100)
+        frame = FXVerticalFrame.new(tab_frame, :opts => LAYOUT_FILL_Y | LAYOUT_FILL_X | FRAME_SUNKEN, :padding => 0)
         @findings_tree = Watobo::Gui::FindingsTree.new(frame, self, nil)
         stab = FXTabItem.new(@treeTabbook, "  Sites  ", nil)
         stab.setFont(FXFont.new(getApp(), "helvetica", 12, FONTWEIGHT_BOLD, FONTENCODING_DEFAULT))
-        tab_frame = FXVerticalFrame.new(@treeTabbook, :opts => LAYOUT_FIX_WIDTH|LAYOUT_FILL_Y|FRAME_RAISED, :width => 100)
-        frame = FXVerticalFrame.new(tab_frame, :opts => LAYOUT_FILL_Y|LAYOUT_FILL_X|FRAME_SUNKEN, :padding => 0)
+        tab_frame = FXVerticalFrame.new(@treeTabbook, :opts => LAYOUT_FIX_WIDTH | LAYOUT_FILL_Y | FRAME_RAISED, :width => 100)
+        frame = FXVerticalFrame.new(tab_frame, :opts => LAYOUT_FILL_Y | LAYOUT_FILL_X | FRAME_SUNKEN, :padding => 0)
         @sites_tree = Watobo::Gui::SitesTree.new(frame, self, nil)
 
-        @treeTabbook.connect(SEL_COMMAND) { |sender, sel, item|
+        ftab = FXTabItem.new(@treeTabbook, "Logs", nil)
+        ftab.setFont(FXFont.new(getApp(), "helvetica", 12, FONTWEIGHT_BOLD, FONTENCODING_DEFAULT))
+        tab_frame = FXVerticalFrame.new(@treeTabbook, :opts => LAYOUT_FIX_WIDTH | LAYOUT_FILL_Y | FRAME_RAISED, :width => 100)
+        @log_viewer_frame = LogViewerFrame.new(tab_frame, :opts => LAYOUT_FILL_Y | LAYOUT_FILL_X | FRAME_SUNKEN, :padding => 0)
+
+        @treeTabbook.connect(SEL_COMMAND) {|sender, sel, item|
           case item
             when 0
               #  @chatTable.apply_filter @conversation_table_ctrl.filter_settings
@@ -1380,19 +1415,24 @@ module Watobo #:nodoc: all
         subscribeFindingsTree()
         subscribeSitesTree()
 
+        @log_viewer_frame.subscribe(:show_chats) do |chats|
+          @chatTable.showConversation(chats)
+          @conversation_table_ctrl.update_text
+        end
+
         # S W I T C H E R
-        @switcher = FXSwitcher.new(splitter, LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
+        @switcher = FXSwitcher.new(splitter, LAYOUT_FILL_X | LAYOUT_FILL_Y, :padding => 0)
 
         # R E Q U E S T I N F O
-        requestInfo = FXVerticalFrame.new(@switcher, :opts => LAYOUT_FILL_X|LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
-        request_splitter = FXSplitter.new(requestInfo, :opts => LAYOUT_SIDE_TOP|SPLITTER_HORIZONTAL|LAYOUT_FILL_Y|LAYOUT_FILL_X|SPLITTER_TRACKING|SPLITTER_REVERSED)
+        requestInfo = FXVerticalFrame.new(@switcher, :opts => LAYOUT_FILL_X | LAYOUT_FILL_X | LAYOUT_FILL_Y, :padding => 0)
+        request_splitter = FXSplitter.new(requestInfo, :opts => LAYOUT_SIDE_TOP | SPLITTER_HORIZONTAL | LAYOUT_FILL_Y | LAYOUT_FILL_X | SPLITTER_TRACKING | SPLITTER_REVERSED)
         #request_splitter.connect(SEL_COMMAND){
         #puts "Request Splitter Resized!"
         #}
 
         # C H A T  T A B L E  C O N T R O L L E R
         # @conversation_table_ctrl = ConversationTableCtrl.new(request_splitter,  :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_SUNKEN)
-        @conversation_table_ctrl = ConversationTableCtrl2.new(request_splitter, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_SUNKEN)
+        @conversation_table_ctrl = ConversationTableCtrl2.new(request_splitter, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y | FRAME_SUNKEN)
 
         # C H A T   T A B L E
         @chatTable = ConversationTable.new(@conversation_table_ctrl)
@@ -1406,11 +1446,11 @@ module Watobo #:nodoc: all
           onTableClick(sender,sel,item)
         end
 =end
-        @chatTable.subscribe(:chat_selected) { |chat|
+        @chatTable.subscribe(:chat_selected) {|chat|
           chat_selected(chat) unless chat.nil?
         }
 
-        @chatTable.subscribe(:chat_doubleclicked) { |chat|
+        @chatTable.subscribe(:chat_doubleclicked) {|chat|
           open_manual_request_editor(chat)
         }
 
@@ -1456,7 +1496,7 @@ module Watobo #:nodoc: all
 
         }
 =end
-        @chatTable.subscribe(:edit_comment) { |chat|
+        @chatTable.subscribe(:edit_comment) {|chat|
           puts "#{self} EDIT COMMENT"
           dlg = Watobo::Gui::EditCommentDialog.new(self, chat)
           if dlg.execute != 0 then
@@ -1467,7 +1507,7 @@ module Watobo #:nodoc: all
 
         }
 
-        @chatTable.subscribe(:open_filter_dlg) { |chat|
+        @chatTable.subscribe(:open_filter_dlg) {|chat|
           puts "#{self} Open Filter Dialog"
           dlg = Watobo::Gui::ConversationFilterDialog.new(self, @conversation_table_ctrl.filter)
           if dlg.execute != 0
@@ -1494,9 +1534,15 @@ module Watobo #:nodoc: all
             #  puts "right click on row #{row} of #{@chatTable.numRows}"
             if row >= 0 and row < @chatTable.numRows then
 
-              @chatTable.selectRow(row, false)
+              @chatTable.selectRow(row, true)
+              # because currentRow != selected row we have to set it manually
+              # otherwise current_chat would use the false row item
+              @chatTable.setCurrentItem(row, 1, true)
+
               chatid = @chatTable.getRowText(row).to_i
-              chat = Watobo::Chats.get_by_id(chatid)
+
+              #chat = Watobo::Chats.get_by_id(chatid)
+              chat = sender.current_chat
 
               showChat(chat)
 
@@ -1504,24 +1550,28 @@ module Watobo #:nodoc: all
 
                 # SEND TO SUBMENU
                 submenu = FXMenuPane.new(self) do |sendto_menu|
+                  target = FXMenuCommand.new(sendto_menu, "Invader")
+                  target.connect(SEL_COMMAND) {
+                    open_plugin_invader(chat)
+                  }
 
-                  target = FXMenuCommand.new(sendto_menu, "Fuzzer...")
+                  target = FXMenuCommand.new(sendto_menu, "Fuzzer")
                   target.connect(SEL_COMMAND) {
                     openFuzzer(chat)
                   }
-                  target = FXMenuCommand.new(sendto_menu, "Manual Request...")
+                  target = FXMenuCommand.new(sendto_menu, "Manual Request")
                   target.connect(SEL_COMMAND) {
                     open_manual_request_editor(chat)
                   }
-                  target = FXMenuCommand.new(sendto_menu, "SQLmap...")
+                  target = FXMenuCommand.new(sendto_menu, "SQLmap")
                   target.connect(SEL_COMMAND) {
                     open_plugin_sqlmap(chat)
                   }
-                  target = FXMenuCommand.new(sendto_menu, "Crawler...")
+                  target = FXMenuCommand.new(sendto_menu, "Crawler")
                   target.connect(SEL_COMMAND) {
                     open_plugin_crawler(chat)
                   }
-                  target = FXMenuCommand.new(sendto_menu, "JWT...")
+                  target = FXMenuCommand.new(sendto_menu, "JWT")
                   target.connect(SEL_COMMAND) {
                     open_plugin_jwt(chat)
                   }
@@ -1531,7 +1581,7 @@ module Watobo #:nodoc: all
 
                 # EXCLUDE SUBMENU
                 exclude_submenu = FXMenuPane.new(self) do |sub|
-                  chat = Watobo::Chats.get_by_id(chatid)
+                 # chat = Watobo::Chats.get_by_id(chatid)
 
                   target = FXMenuCheck.new(sub, "Chat (#{chatid})")
 
@@ -1555,7 +1605,7 @@ module Watobo #:nodoc: all
 
                 # COPY SUBMENU
                 copy_submenu = FXMenuPane.new(self) do |sub|
-                  chat = Watobo::Chats.get_by_id(chatid)
+                  #chat = Watobo::Chats.get_by_id(chatid)
                   url = chat.request.url.to_s
                   #  puts url
                   url_string = "URL: #{url.slice(0, 35)}"
@@ -1572,7 +1622,8 @@ module Watobo #:nodoc: all
                   }
                   target = FXMenuCommand.new(sub, "Site: #{chat.request.site}")
                   target.connect(SEL_COMMAND) {
-                    site = Watobo::Chats.get_by_id(chatid).request.site
+                    #site = Watobo::Chats.get_by_id(chatid).request.site
+                    site = chat.request.site
 
                     types = [FXWindow.stringType]
                     if acquireClipboard(types)
@@ -1613,6 +1664,25 @@ module Watobo #:nodoc: all
                 #  info = FXMenuCommand.new(menu_pane, "Details..." )
                 #info.connect(SEL_COMMAND) { display_info_for(item) }
 
+                # COPY SUBMENU
+                copy_submenu = FXMenuPane.new(self) do |sub|
+                 target = FXMenuCommand.new(sub, "cURL")
+                  target.connect(SEL_COMMAND) {
+                    #request = Watobo::Chats.get_by_id(chatid).request
+                    request = chat.request
+                    curl = Watobo::Utils::Curl.create_request(request)
+
+                    types = [FXWindow.stringType]
+                    if acquireClipboard(types)
+                      @clipboard_text = curl
+                    end
+                  }
+
+                end
+                FXMenuCascade.new(menu_pane, "Code", nil, copy_submenu)
+
+
+
                 menu_pane.create
                 menu_pane.popup(nil, event.root_x, event.root_y)
                 app.runModalWhileShown(menu_pane)
@@ -1628,7 +1698,7 @@ module Watobo #:nodoc: all
         #===================================================================
         # CHAT VIEWER
         #===================================================================
-        chat_outer_frame = FXVerticalFrame.new(request_splitter, :opts => LAYOUT_FILL_Y|LAYOUT_FILL_X|FRAME_SUNKEN|LAYOUT_MIN_WIDTH, :padding => 0, :width => 400)
+        chat_outer_frame = FXVerticalFrame.new(request_splitter, :opts => LAYOUT_FILL_Y | LAYOUT_FILL_X | FRAME_SUNKEN | LAYOUT_MIN_WIDTH, :padding => 0, :width => 400)
         chat_frame = chat_outer_frame
         #          chat_frame = FXVerticalFrame.new(chat_outer_frame, :opts => LAYOUT_FILL_X|FRAME_SUNKEN, :padding => 0)
         #view_menu = FXVerticalFrame.new(chat_frame, :opts => LAYOUT_FILL_X, :padding => 0)
@@ -1640,19 +1710,19 @@ module Watobo #:nodoc: all
         @quickViewTitle.setFont(FXFont.new(getApp(), "helvetica", 12, FONTWEIGHT_BOLD, FONTSLANT_ITALIC, FONTENCODING_DEFAULT))
         @quickViewSubTitle = FXLabel.new(chat_frame, "")
 
-        frame = FXHorizontalFrame.new(chat_frame, :opts => LAYOUT_CENTER_X|LAYOUT_FILL_X|PACK_UNIFORM_WIDTH, :padding => 0)
-        @mre_button = FXButton.new(frame, "Manual Request", ICON_MANUAL_REQUEST_SMALL, nil, 0, :opts => BUTTON_NORMAL|LAYOUT_RIGHT|LAYOUT_FILL_X)
+        frame = FXHorizontalFrame.new(chat_frame, :opts => LAYOUT_CENTER_X | LAYOUT_FILL_X | PACK_UNIFORM_WIDTH, :padding => 0)
+        @mre_button = FXButton.new(frame, "Manual Request", ICON_MANUAL_REQUEST_SMALL, nil, 0, :opts => BUTTON_NORMAL | LAYOUT_RIGHT | LAYOUT_FILL_X)
         @mre_button.connect(SEL_COMMAND) {
           open_manual_request_editor(@lastViewed) if @lastViewed
         }
         @mre_button.enabled = false
 
-        @fuzz_button = FXButton.new(frame, "Fuzzer", ICON_FUZZER_SMALL, nil, 0, :opts => BUTTON_NORMAL|LAYOUT_RIGHT|LAYOUT_FILL_X)
+        @fuzz_button = FXButton.new(frame, "Fuzzer", ICON_FUZZER_SMALL, nil, 0, :opts => BUTTON_NORMAL | LAYOUT_RIGHT | LAYOUT_FILL_X)
         @fuzz_button.connect(SEL_COMMAND) {
           openFuzzer(@lastViewed) if @lastViewed
         }
         @fuzz_button.enabled = false
-        @bv_button = FXButton.new(frame, "Browser-View", ICON_BROWSER_SMALL, nil, 0, :opts => BUTTON_NORMAL|LAYOUT_RIGHT|LAYOUT_FILL_X)
+        @bv_button = FXButton.new(frame, "Browser-View", ICON_BROWSER_SMALL, nil, 0, :opts => BUTTON_NORMAL | LAYOUT_RIGHT | LAYOUT_FILL_X)
         @bv_button.connect(SEL_COMMAND) {
           begin
             if @lastViewed and @browserView then
@@ -1667,13 +1737,13 @@ module Watobo #:nodoc: all
 
         #  FXHorizontalSeparator.new(chat_frame, :opts => SEPARATOR_GROOVE|LAYOUT_FILL_X)
         #  FXLabel.new(view_menu, "Source:")
-        @chat_frame_splitter = FXSplitter.new(chat_outer_frame, :opts => LAYOUT_SIDE_TOP|SPLITTER_VERTICAL|LAYOUT_FILL_Y|LAYOUT_FILL_X|SPLITTER_TRACKING)
-        chat_frame = FXVerticalFrame.new(@chat_frame_splitter, :opts => LAYOUT_FILL_X|FRAME_SUNKEN|LAYOUT_MIN_WIDTH|LAYOUT_MIN_HEIGHT, :padding => 0, :width => 400, :height => 400)
+        @chat_frame_splitter = FXSplitter.new(chat_outer_frame, :opts => LAYOUT_SIDE_TOP | SPLITTER_VERTICAL | LAYOUT_FILL_Y | LAYOUT_FILL_X | SPLITTER_TRACKING)
+        chat_frame = FXVerticalFrame.new(@chat_frame_splitter, :opts => LAYOUT_FILL_X | FRAME_SUNKEN | LAYOUT_MIN_WIDTH | LAYOUT_MIN_HEIGHT, :padding => 0, :width => 400, :height => 400)
         #chat_frame = FXVerticalFrame.new(chat_frame_splitter, :opts => LAYOUT_FILL_X|FRAME_SUNKEN|LAYOUT_MIN_WIDTH, :padding => 0, :width=>400)
         title_frame = FXHorizontalFrame.new(chat_frame, :opts => LAYOUT_FILL_X)
         FXLabel.new(title_frame, "Request").setFont(FXFont.new(getApp(), "helvetica", 9, FONTWEIGHT_BOLD, FONTENCODING_DEFAULT))
 
-        @request_viewer = Watobo::Gui::RequestViewer.new(chat_frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
+        @request_viewer = Watobo::Gui::RequestViewer.new(chat_frame, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y, :padding => 0)
         #  @request_viewer = Watobo::Gui::ChatViewer.new(chat_frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
         # @request_viewer.highlight_style = 1
 
@@ -1687,17 +1757,17 @@ module Watobo #:nodoc: all
         }
 
         # FXHorizontalSeparator.new(chat_frame, :opts => SEPARATOR_GROOVE|LAYOUT_FILL_X)
-        chat_frame = FXVerticalFrame.new(@chat_frame_splitter, :opts => LAYOUT_FILL_X|FRAME_SUNKEN|LAYOUT_MIN_WIDTH, :padding => 0, :width => 400)
+        chat_frame = FXVerticalFrame.new(@chat_frame_splitter, :opts => LAYOUT_FILL_X | FRAME_SUNKEN | LAYOUT_MIN_WIDTH, :padding => 0, :width => 400)
         title_frame = FXHorizontalFrame.new(chat_frame, :opts => LAYOUT_FILL_X)
         FXLabel.new(title_frame, "Response").setFont(FXFont.new(getApp(), "helvetica", 9, FONTWEIGHT_BOLD, FONTENCODING_DEFAULT))
 
-        @save_response_btn = FXButton.new(title_frame, "Save", nil, nil, 0, FRAME_RAISED|FRAME_THICK|LAYOUT_RIGHT)
-        @save_response_btn.connect(SEL_COMMAND) { save_response }
+        @save_response_btn = FXButton.new(title_frame, "Save", nil, nil, 0, FRAME_RAISED | FRAME_THICK | LAYOUT_RIGHT)
+        @save_response_btn.connect(SEL_COMMAND) {save_response}
         #fxViewButton = FXButton.new(title_frame, "View", nil, nil, 0, FRAME_RAISED|FRAME_THICK|LAYOUT_RIGHT)
         #fxViewButton.connect(SEL_COMMAND, method(:onViewResponse))
 
         # @response_viewer = Watobo::Gui::ChatViewer.new(chat_frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
-        @response_viewer = Watobo::Gui::ResponseViewer.new(chat_frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
+        @response_viewer = Watobo::Gui::ResponseViewer.new(chat_frame, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y, :padding => 0)
         # @response_viewer.highlight_style = 2
 
         #===================================================================
@@ -1707,14 +1777,14 @@ module Watobo #:nodoc: all
         #FXLabel.new(logFrame, "Eventlist:", :opts => LAYOUT_FILL_X)
 
         # @log_viewer = Watobo::Gui::LogViewer.new(logFrame, :opts => FRAME_SUNKEN|FRAME_THICK|LAYOUT_FILL_X|LAYOUT_FILL_Y|LAYOUT_FILL_X|LAYOUT_FILL_Y)
-        @log_viewer = Watobo::Gui::LogFileViewer.new(@switcher, :opts => FRAME_SUNKEN|FRAME_THICK|LAYOUT_FILL_X|LAYOUT_FILL_Y|LAYOUT_FILL_X|LAYOUT_FILL_Y)
+        @log_viewer = Watobo::Gui::LogFileViewer.new(@switcher, :opts => FRAME_SUNKEN | FRAME_THICK | LAYOUT_FILL_X | LAYOUT_FILL_Y | LAYOUT_FILL_X | LAYOUT_FILL_Y)
 
         # DASHBOARD#
         @dashboard = Dashboard.new(@switcher)
 
         # FINDING INFORMATION
-        frame = FXVerticalFrame.new(@switcher, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_GROOVE)
-        @finding_info = FindingInfo.new(frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
+        frame = FXVerticalFrame.new(@switcher, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y | FRAME_GROOVE)
+        @finding_info = FindingInfo.new(frame, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y)
 
         # PLUGIN-BOARD
         @pluginboard = PluginBoard.new(@switcher)
@@ -1788,23 +1858,23 @@ module Watobo #:nodoc: all
       end
 
       def subscribeProject()
-        Watobo::Chats.subscribe(:new) { |c|
+        Watobo::Chats.subscribe(:new) {|c|
           # Thread.new { addChat(c)}
           # puts "Got New Chat (#{c.id})"
           #@chat_lock.synchronize do
           #  @chat_queue << c
           #end
 
-            Watobo.save_thread do
-              addChat(c)
-            end
+          Watobo.save_thread do
+            addChat(c)
+          end
 
         }
 
-        Watobo::Findings.subscribe(:new) { |f|
+        Watobo::Findings.subscribe(:new) {|f|
           Watobo.save_thread do
-              addFinding(f)
-            end
+            addFinding(f)
+          end
 
         }
 
@@ -1812,33 +1882,34 @@ module Watobo #:nodoc: all
       end
 
       def subscribeSitesTree()
-        @sites_tree.subscribe(:add_site_to_scope) { |site|
+        @sites_tree.subscribe(:add_site_to_scope) {|site|
           Watobo::Scope.add(site)
           Watobo::Gui.save_settings()
         }
 
-        @sites_tree.subscribe(:show_conversation) { |chat_list|
+        @sites_tree.subscribe(:show_conversation) {|chat_list|
           showConversation()
           @chatTable.showConversation(chat_list, :ignore_filter)
-          @conversation_table_ctrl.text = "Selected Chats (#{chat_list.length}/#{Watobo::Chats.length})"
+          # @conversation_table_ctrl.text = "Selected Chats (#{chat_list.length}/#{Watobo::Chats.length})"
+          @conversation_table_ctrl.update_text
         }
 
-        @sites_tree.subscribe(:show_chat) { |chat|
+        @sites_tree.subscribe(:show_chat) {|chat|
           showChat(chat)
         }
 
-        @sites_tree.subscribe(:vuln_click) { |v|
+        @sites_tree.subscribe(:vuln_click) {|v|
           showVulnerability(v)
         }
       end
 
       def subscribeFindingsTree()
-        @findings_tree.subscribe(:add_site_to_scope) { |site|
+        @findings_tree.subscribe(:add_site_to_scope) {|site|
           Watobo::Scope.add(site)
           Watobo::Gui.save_settings()
         }
 
-        @findings_tree.subscribe(:delete_domain_filter) { |df|
+        @findings_tree.subscribe(:delete_domain_filter) {|df|
           @project.settings[:domain_filters].delete(df)
           #  puts "Delete Domain-Filter #{df}"
           updateTreeLists()
@@ -1849,19 +1920,19 @@ module Watobo #:nodoc: all
           updateTreeLists()
         }
 
-        @findings_tree.subscribe(:vuln_click) { |v| showVulnerability(v) }
+        @findings_tree.subscribe(:vuln_click) {|v| showVulnerability(v)}
 
-        @findings_tree.subscribe(:finding_click) { |v| showFindingDetails(v) }
+        @findings_tree.subscribe(:finding_click) {|v| showFindingDetails(v)}
 
-        @findings_tree.subscribe(:show_finding_details) { |v| showFindingDetails(v) }
+        @findings_tree.subscribe(:show_finding_details) {|v| showFindingDetails(v)}
 
-        @findings_tree.subscribe(:open_manual_request) { |v| open_manual_request_editor(v) }
+        @findings_tree.subscribe(:open_manual_request) {|v| open_manual_request_editor(v)}
 
-        @findings_tree.subscribe(:purge_findings) { |f| purge_findings(f) }
+        @findings_tree.subscribe(:purge_findings) {|f| purge_findings(f)}
 
-        @findings_tree.subscribe(:set_false_positive) { |f| set_false_positive(f) }
+        @findings_tree.subscribe(:set_false_positive) {|f| set_false_positive(f)}
 
-        @findings_tree.subscribe(:unset_false_positive) { |f| unset_false_positive(f) }
+        @findings_tree.subscribe(:unset_false_positive) {|f| unset_false_positive(f)}
 
       end
 
@@ -1877,7 +1948,7 @@ module Watobo #:nodoc: all
         end
       end
 
-      def loadProjectSettings_UNUSED(filename=nil)
+      def loadProjectSettings_UNUSED(filename = nil)
         settings = nil
         if filename then
           begin
@@ -1893,7 +1964,7 @@ module Watobo #:nodoc: all
         return settings
       end
 
-      def loadSessionSettings_UNUSED(filename=nil)
+      def loadSessionSettings_UNUSED(filename = nil)
         settings = {}
         return settings if filename.nil?
         if File.exist?(filename) then
@@ -1930,7 +2001,7 @@ module Watobo #:nodoc: all
       # end
 
       def onClear(sender, sel, item)
-        @table_filter.value =""
+        @table_filter.value = ""
         @tableFilterFX.handle(self, FXSEL(SEL_UPDATE, 0), nil)
       end
 
@@ -1940,12 +2011,9 @@ module Watobo #:nodoc: all
           # purge viewers
           @request_viewer.setText('')
           @response_viewer.setText('')
-          row = item.row
 
-          chatid = @chatTable.getRowText(row).to_i
-          @chatTable.selectRow(row, false)
-          # @logText.appendText("selected ID: (#{chatid})\n")
-          chat = Watobo::Chats.get_by_id chatid
+          chat = sender.current_chat
+
           showChat(chat) unless chat.nil?
 
         rescue => bang

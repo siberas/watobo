@@ -413,14 +413,16 @@ module Watobo#:nodoc: all
       #setDefaults()
 
       # reset counters
-      Watobo::Chat.new([],[]).resetCounters
-      Watobo::Finding.new([],[]).resetCounters
+      Watobo::Chat.resetCounters
+      Watobo::Finding.resetCounters
 
       # UPDATE SETTINGS
       @settings.update(project_settings)
 
       @scan_settings = Watobo::Conf::Scanner.dump
       @forward_proxy_settings = Watobo::Conf::ForwardingProxy.dump
+
+      Watobo::ClientCertStore.load
 
      # raise ArgumentError, "No SessionStore Defined" unless @settings.has_key? :session_store
 

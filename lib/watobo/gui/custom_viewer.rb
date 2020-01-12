@@ -4,6 +4,7 @@ module Watobo#:nodoc: all
     
     class ViewerHandlerCtrl < FXHorizontalFrame
       attr :handler
+      @@handler_path = nil
       
       def has_handler?
         !@handler.nil?
@@ -32,11 +33,11 @@ module Watobo#:nodoc: all
       
       
       def add_handler        
-         handler_filename = FXFileDialog.getOpenFilename(self, "Select handler file", @handler_path, "*.rb\n*")
+         handler_filename = FXFileDialog.getOpenFilename(self, "Select handler file", @@handler_path, "*.rb\n*")
           if handler_filename != "" then
             if File.exist?(handler_filename) then
               @handler_file = handler_filename
-              @handler_path = File.dirname(handler_filename) + "/"
+              @@handler_path = File.dirname(handler_filename) + "/"
               load_handler(handler_filename)
             end
           end
@@ -155,7 +156,7 @@ module Watobo#:nodoc: all
         
         @handler = nil
         @handler_file = nil
-        @handler_path = nil
+        @@handler_path = nil
         
         @handler_ctrl = ViewerHandlerCtrl.new(self)
 

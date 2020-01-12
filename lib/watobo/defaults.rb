@@ -8,7 +8,10 @@ module Watobo#:nodoc: all
       #cc = dummy.strip.gsub(/[^[a-zA-Z\-_]]/,"").gsub( "-" , "_").split("_").map{ |s| s.downcase.capitalize }.join
       cc = Watobo::Utils.camelcase dummy
       begin
+        puts cf
         settings = YAML.load_file(cf)
+        settings = {} if !settings
+
         Watobo::Conf.add(cc,  settings )
       rescue => bang
         puts "[#{self}] Could not load config #{cf}"

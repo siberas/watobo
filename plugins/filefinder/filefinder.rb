@@ -86,10 +86,10 @@ module Watobo #:nodoc: all
                   # puts ">> #{new_uri}"
                   test.replaceFileExt(new_uri)
                    puts test.url
-                  status, test_request, test_response = fileExists?(test, @prefs)
+                  fexist, test_request, test_response = fileExists?(test, @prefs)
 
 
-                  if status == true
+                  if fexist == true
 
                     puts "FileFinder >> #{test.url}"
 
@@ -191,6 +191,7 @@ module Watobo #:nodoc: all
           @sites_combo.appendItem("no site selected", nil)
           Watobo::Chats.sites(:in_scope => Watobo::Scope.exist?).each do |site|
             #puts "Site: #{site}"
+            next if site.nil?
             @sites_combo.appendItem(site.slice(0..35), site)
           end
           @sites_combo.setCurrentItem(0) if @sites_combo.numItems > 0
@@ -237,6 +238,8 @@ module Watobo #:nodoc: all
               end
             end
 
+            @db_list.uniq!
+
             if config.has_key? :name
               @db_list.each do |db|
                 @db_name = db if config[:name] == db
@@ -250,6 +253,8 @@ module Watobo #:nodoc: all
           Dir.glob("#{db_path}/*").each do |db|
             @db_list << db
           end
+
+          @db_list.uniq!
 
           begin
             hs_green = FXHiliteStyle.new

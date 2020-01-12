@@ -375,7 +375,7 @@ end
 
         session = nil
 
-        session = ( session_id.is_a? Fixnum ) ? session_id : session_id.object_id
+        session = ( session_id.is_a? Integer ) ? session_id : session_id.object_id
         session = Digest::MD5.hexdigest(Time.now.to_f.to_s) if session_id.nil?
 
         unless @@settings.has_key? session

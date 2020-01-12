@@ -3,7 +3,7 @@ module Watobo#:nodoc: all::Plugin
   module Plugin
     class JWT < Watobo::PluginBase
       plugin_name "JWT Analyzer"
-      description "Run specific tests on a list of targets. Good for bughunting."
+      description "JWT Creator/Parser/Analyzer/Verifier"
       load_libs
       load_gui :main
         #, :targets, :result_tree

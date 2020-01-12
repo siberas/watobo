@@ -1,13 +1,23 @@
 #!/usr/bin/ruby
 #Encoding: UTF-8
 require 'rubygems'
-begin
-  require 'bundler/setup'
-rescue LoadError
-  puts "You will need bundler to run watobo!"
-  puts "please run\n gem install bundler\n bundle install\n"
-  exit
+
+$SAFE = 0
+
+# TODO: use a different environment variable to disable bundler on load
+# usefull if you want to use your own gems for private plugins
+#
+unless ENV['DEV_ENV']
+  begin
+    require 'bundler/setup'
+  rescue LoadError
+    puts "You will need bundler to run watobo!"
+    puts "please run\n gem install bundler\n bundle install\n"
+    exit
+  end
 end
+
+
 require 'yaml'
 require 'json'
 require 'thread'
@@ -32,6 +42,26 @@ require 'mechanize'
 require 'jwt'
 require 'ostruct'
 
+print '+ looking for DEV_ENV environment variable ...'
+if ENV['DEV_ENV']
+  print "[OK]\n"
+  puts '+ loading devgems ...'
+  begin
+    require 'devenv'
+    devgems =  File.join( File.expand_path(ENV['HOME']), '.watobo', 'devgems.rb')
+    puts "+ loading devgem file #{devgems}"
+    #load devgems
+    require_relative devgems
+  rescue LoadError => bang
+    puts '* something went wrong while initialising the development environment.'
+    puts bang
+    puts bang.backtrace
+  end
+else
+  print "[N/A]\n"
+end
+
+
 require 'watobo/constants'
 require 'watobo/utils'
 require 'watobo/mixins'
@@ -47,16 +77,16 @@ require 'watobo/interceptor'
 require 'watobo/sockets'
 
 # WORKAROUND FOR LINUX :(
-dont_know_why_REQUIRE_hangs = Mechanize.new
+#dont_know_why_REQUIRE_hangs = Mechanize.new
 
 # @private 
-module Watobo#:nodoc: all #:nodoc: all
+module Watobo #:nodoc: all #:nodoc: all
 
-  VERSION = "1.1.0"
+  VERSION = "1.1.0pre"
 
   def self.base_directory
     @base_directory ||= ""
-    @base_directory = File.expand_path(File.join(File.dirname(__FILE__),".."))
+    @base_directory = File.expand_path(File.join(File.dirname(__FILE__), ".."))
   end
 
   def self.plugin_path
@@ -68,7 +98,7 @@ module Watobo#:nodoc: all #:nodoc: all
     @active_module_path = ""
     @active_path = File.join(base_directory, "modules", "active")
   end
-  
+
   def self.passive_module_path
     @passive_module_path = ""
     @passive_path = File.join(base_directory, "modules", "passive")
@@ -77,8 +107,8 @@ module Watobo#:nodoc: all #:nodoc: all
   def self.version
     Watobo::VERSION
   end
-  
-  
+
+
 end
 
 Watobo.init_framework

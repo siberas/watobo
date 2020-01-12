@@ -1,19 +1,20 @@
 # @private
 module Watobo #:nodoc: all
-  def self.create_request(url, prefs={})
-    unless url =~ /^https?:\/\//
-      u = "http://#{url}"
-    else
-      u = url
-    end
+  def self.create_request(url, prefs = {})
+    raise "obsolete, use Watobo::Request.new(url) instead"
+    # unless url =~ /^https?:\/\//
+    #   u = "http://#{url}"
+    # else
+    #   u = url
+    # end
 
-    uri = URI.parse u
-    r = "GET #{uri.to_s} HTTP/1.1\n"
-    r << "Host: #{uri.host}\n"
-    r << "User-Agent: WATOBO\n"
-    r << "Accept: */*\n"
-    r.extend Watobo::Mixins::RequestParser
-    r.to_request
+    # uri = URI.parse u
+    # r = "GET #{uri.to_s} HTTP/1.1\n"
+    # r << "Host: #{uri.host}\n"
+    # r << "User-Agent: WATOBO\n"
+    # r << "Accept: */*\n"
+    # r.extend Watobo::Mixins::RequestParser
+    # r.to_request
   end
 
   class Request < Array
@@ -24,7 +25,7 @@ module Watobo #:nodoc: all
     # attr :cookies
 
     include Watobo::HTTP::Cookies::Mixin
-    include Watobo::HTTP::Xml::Mixin
+    #include Watobo::HTTP::Xml::Mixin
 
     def self.create request
       request.extend Watobo::Mixin::Parser::Url
@@ -41,6 +42,8 @@ module Watobo #:nodoc: all
     def uniq_hash()
       begin
         settings = Watobo::Conf::Scanner.to_h
+
+        return nil if site.nil?
         hashbase = site + method + path
 
         get_parm_names.sort.each do |p|
@@ -62,19 +65,34 @@ module Watobo #:nodoc: all
       end
     end
 
-    def parameters(*locations, &block)
-      param_locations = [:url, :data, :wwwform, :xml, :cookies, :json]
+    def clear_parameters(*locations)
+      plocs = @valid_param_locations
       unless locations.empty?
-        param_locations.select! { |loc| locations.include? loc }
+        plocs = @valid_param_locations.select {|loc| locations.include? loc}
+      end
+
+      @url.clear if !@url.nil? and plocs.include?(:url)
+      cookies.clear if !@cookies.nil? and plocs.include?(:cookies)
+      @data.clear if !@data.nil? and plocs.include?(:wwwform)
+      @json.clear if !@json.nil? and plocs.include?(:json)
+
+    end
+
+    def parameters(*locations, &block)
+      plocs = @valid_param_locations
+      unless locations.empty?
+        plocs = @valid_param_locations.select {|loc| locations.include? loc}
       end
 
       parms = []
-      parms.concat @url.parameters if param_locations.include?(:url)
-      parms.concat cookies.parameters if param_locations.include?(:cookies)
-      parms.concat @data.parameters if !@data.nil? and self.is_wwwform? and (param_locations.include?(:data) or param_locations.include?(:wwwform))
-      parms.concat @json.parameters if !@json.nil? and self.is_json? and (param_locations.include?(:data) or param_locations.include?(:json))
+      parms.concat @headers.parameters if plocs.include?(:headers)
+      parms.concat @url.parameters if plocs.include?(:url)
+      parms.concat cookies.parameters if plocs.include?(:cookies)
 
-      parms.concat xml.parameters if self.is_xml? and param_locations.include?(:xml)
+      parms.concat @data.parameters if !@data.nil? && plocs.include?(:wwwform)
+      parms.concat @json.parameters if !@json.nil? && plocs.include?(:json)
+
+      parms.concat @xml.parameters if !@xml.nil? && plocs.include?(:xml)
       if block_given?
         parms.each do |p|
           yield p
@@ -84,19 +102,22 @@ module Watobo #:nodoc: all
     end
 
     def set(parm)
+      return false unless parm.respond_to?(:location)
       case parm.location
-        when :data
-          #
-          # replace_post_parm(parm.name, parm.value)
-          @data.set parm
-        when :url
-          @url.set parm
-        when :xml
-          xml.set parm
-        when :cookie
-          cookies.set parm
-        when :json
-          @json.set parm
+      when :data
+        #
+        # replace_post_parm(parm.name, parm.value)
+        @data.set parm unless @data.nil?
+      when :url
+        @url.set parm unless @url.nil?
+      when :xml
+        @xml.set parm unless @xml.nil?
+      when :cookie
+        cookies.set parm
+      when :json
+        @json.set parm unless @json.nil?
+      when :header
+        @headers.set parm unless @headers.nil?
       end
       true
     end
@@ -110,9 +131,11 @@ module Watobo #:nodoc: all
     end
 
     def initialize(r)
-     # super
+      # super
 
-      @data = @url = @json = nil
+      @valid_param_locations = [:url, :data, :wwwform, :xml, :cookies, :json, :headers, :body]
+      # Base Object behaves like an empty parameter set
+      @data = @json = @url = @json = @xml = nil #Watobo::HTTPData::Base.new
       if r.respond_to? :push
         #puts "Create REQUEST from ARRAY"
         self.concat r
@@ -143,16 +166,19 @@ module Watobo #:nodoc: all
       end
 
       case self.content_type
-        when /www-form/i
-          @data = Watobo::HTTPData::WWW_Form.new(self)
-        when /application\/json/i
-          @json = Watobo::HTTPData::JSONData.new(self)
-        else
-          #puts "UNKONWN CONTENT-TYPE"
-          @data = Watobo::HTTPData::WWW_Form.new(self)
+      when /www-form/i
+        @data = Watobo::HTTPData::WWW_Form.new(self)
+      when /application\/json/i
+        @json = Watobo::HTTPData::Json.new(self)
+      when /\/xml/i
+        @xml = Watobo::HTTPData::Xml.new(self)
+      else
+        #puts "UNKONWN CONTENT-TYPE"
+        @data = Watobo::HTTPData::WWW_Form.new(self)
       end
 
       @cookies = Watobo::HTTP::Cookies.new(self)
+      @headers = Watobo::HTTP::Headers.new(self)
     end
   end
 end

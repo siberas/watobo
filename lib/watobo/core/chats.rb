@@ -28,13 +28,9 @@ module Watobo #:nodoc: all
       @event_dispatcher_listeners = Hash.new
     end
 
-    def self.load
-
-    end
-
 
     # find_by_url
-    def self.find_by_url(site, pattern, opts={}, &block)
+    def self.find_by_url(site, pattern, opts = {}, &block)
       o = {
           :method => nil,
           :max_count => 0,
@@ -67,7 +63,7 @@ module Watobo #:nodoc: all
 
     # select chats by request options
 
-    def self.select(site, opts={}, &block)
+    def self.select(site, opts = {}, &block)
       o = {
           :dir => "",
           #:file => nil,
@@ -103,7 +99,7 @@ module Watobo #:nodoc: all
 
     end
 
-    def self.sites(prefs={}, &block)
+    def self.sites(prefs = {}, &block)
       list = Hash.new
 
       cprefs = {:in_scope => false,
@@ -114,6 +110,14 @@ module Watobo #:nodoc: all
       Watobo::Chats.each do |chat|
         next if list.has_key?(chat.request.site)
         site = chat.request.site
+
+        if site.nil? and $VERBOSE
+          puts "! No Site in request:"
+          puts " - ChatID: #{chat.id}"
+          puts " - Chat-Request:"
+          puts chat.request
+        end
+        next if site.nil?
         next if cprefs[:in_scope] == true and not Watobo::Scope.match_site?(site)
         next if cprefs[:ssl] and not chat.use_ssl?
 
@@ -124,7 +128,7 @@ module Watobo #:nodoc: all
       return list.keys
     end
 
-    def self.dirs(site, list_opts={}, &block)
+    def self.dirs(site, list_opts = {}, &block)
       opts = {:base_dir => "",
               :include_subdirs => true
       }
@@ -154,6 +158,28 @@ module Watobo #:nodoc: all
       @chats_lock.synchronize do
         @chats.each do |c|
           if c.id.to_s == chatid.to_s then
+            return c
+          end
+        end
+      end
+      return nil
+    end
+
+    def self.get_by_response(response)
+      @chats_lock.synchronize do
+        @chats.each do |c|
+          if c.response.object_id == response.object_id
+            return c
+          end
+        end
+      end
+      return nil
+    end
+
+    def self.get_by_request(request)
+      @chats_lock.synchronize do
+        @chats.each do |c|
+          if c.request.object_id == request.object_id
             return c
           end
         end
@@ -191,6 +217,8 @@ module Watobo #:nodoc: all
         next if scan_prefs[:excluded_chats].include?(chat.id)
         uch = chat.request.uniq_hash
 
+        next if uch.nil?
+
         next if unique_list.has_key?(uch) and scan_prefs[:smart_scan] == true
         unique_list[uch] = nil
         if Watobo::Scope.match_chat? chat
@@ -218,7 +246,7 @@ module Watobo #:nodoc: all
       filtered_chats
     end
 
-    def self.add(chat, prefs={})
+    def self.add(chat, prefs = {})
       @chats_lock.synchronize do
         begin
           if chat.request.host then
@@ -251,13 +279,8 @@ module Watobo #:nodoc: all
       end
     end
 
-    private
-
     def self.match?(chat, filter)
       begin
-
-        filtered = false
-        # return false if filter[:ok_only] == true and chat.response.responseCode !~ /200/
 
         if filter[:unique]
           uniq_hash = chat.request.uniq_hash
@@ -287,8 +310,6 @@ module Watobo #:nodoc: all
           return false if match == false
         end
 
-        #puts "extensions"
-        # puts "* passed hide tested"
         if filter[:hidden_extensions] == true
           return false if filter[:hidden_extension_patterns].include?(chat.request.doctype)
         end
@@ -298,35 +319,34 @@ module Watobo #:nodoc: all
             return false unless filter[:show_extension_patterns].include?(chat.request.doctype)
           end
         end
-        #return true if filter[:text].empty?
-        # puts "url pattern"
-        if filter[:url_pattern]
-          unless filter[:url_pattern].empty?
-            filtered = true
-            return true if chat.request.first =~ /#{filter[:url_pattern]}/i
-            #return false
-          end
+
+        negate = filter.has_key?(:negate_pattern_search) ? filter[:negate_pattern_search] : false
+
+        if filter[:url_pattern] && !filter[:url_pattern].empty?
+          match = chat.request.first =~ /#{filter[:url_pattern]}/i
+          return true if (match && !negate) || (!match && negate)
+          return false
         end
 
-        if filter[:request_pattern]
-          unless filter[:request_pattern].empty?
-            filtered = true
-            return true if chat.request.join =~ /#{filter[:request_pattern]}/i
-            #return false
-          end
-        end
-        # puts filter.to_yaml
-        # puts chat.response.responseCode
-        if filter[:response_pattern]
-          unless filter[:response_pattern].empty?
-            filtered = true
-            #return false if filter[:text_only] == true and chat.response.content_type !~ /(text|javascript|xml|json)/
-            return true if chat.response.join.unpack("C*").pack("C*") =~ /#{filter[:response_pattern]}/i
-            #return false
-          end
+        if filter[:request_pattern] && !filter[:request_pattern].empty?
+          match = chat.request.join =~ /#{filter[:request_pattern]}/i
+          return true if (match && !negate) || (!match && negate)
+          return false
         end
 
-        return !filtered
+        if filter[:response_pattern] && !filter[:response_pattern].empty?
+          match = chat.response.join.unpack("C*").pack("C*") =~ /#{filter[:response_pattern]}/i
+          return true if (match && !negate) || (!match && negate)
+          return false
+        end
+
+        if filter[:comment_pattern] && !filter[:comment_pattern].empty?
+          match = chat.comment =~ /#{filter[:comment_pattern]}/i
+          return true if (match && !negate) || (!match && negate)
+          return false
+        end
+
+        return true
 
       rescue => bang
         puts bang

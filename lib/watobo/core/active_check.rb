@@ -62,8 +62,8 @@ module Watobo #:nodoc: all
         new_details[:tstamp] = now
 
         id_string = ''
-        id_string << request.site
-        id_string << request.path
+        id_string << request.site.to_s
+        id_string << request.path.to_s
         id_string << new_details[:test_item] if new_details[:test_item]
         id_string << new_details[:class] if new_details[:class]
         id_string << new_details[:title] if new_details[:title]
@@ -207,27 +207,6 @@ module Watobo #:nodoc: all
       end
     end
 
-    def cancel_UNUSED()
-      @@status = :stopped
-      @inner_pool.each do |thr|
-        begin
-          if thr.alive?
-            puts "Stopping #{thr}" if $DEBUG
-
-            Thread.kill(thr) #.kill if not thr.kill?
-
-          end
-          @inner_pool.delete(thr)
-        rescue => bang
-          puts "could not kill thread #{thr}"
-          puts bang
-          puts bang.backtrace if $DEBUG
-        end
-      end
-      @inner_pool_cv.signal
-
-    end
-
     def stop()
       # TODO: real stop/pause function
       cancel()
@@ -239,14 +218,14 @@ module Watobo #:nodoc: all
         #puts t_response.status
         status = t_response.status
         return false, t_request, t_response if status.empty?
-        return true, t_request, t_response if status =~ /^403/
+        #return true, t_request, t_response if status =~ /^403/
         return false, t_request, t_response if status =~ /^40\d/
         if status =~ /^50\d/
           # puts "* ignore server errors #{Watobo::Conf::Scanner.ignore_server_errors.class}"
           return false, t_request, t_response if Watobo::Conf::Scanner.ignore_server_errors
         end
 
-        #puts @settings[:custom_error_patterns] 
+        #puts @settings[:custom_error_patterns]
 
         if @settings.has_key? :custom_error_patterns
           @settings[:custom_error_patterns].each do |pat|
@@ -262,6 +241,8 @@ module Watobo #:nodoc: all
 
         return true, t_request, t_response
       rescue => bang
+        puts bang
+        puts bang.backtrace if $DEBUG
       end
       return false, nil, nil
     end
@@ -270,53 +251,6 @@ module Watobo #:nodoc: all
       puts "[#{self}] #{msg}"
     end
 
-    # +++ run_checks  +++
-    # + function: wrapper function for doRequest(r). Needed for additional checks like smartchecks.
-    #
-    # :run_passive_checks false,
-    # :do_login
-
-    def run_checks_UNUSED(chat, opts={})
-      begin
-        # reset() # reset variables first
-        @@status = :running
-        check_opts = {:run_passive_checks => false}
-        check_opts.update opts
-        @settings.update opts
-
-        updateSessionSettings(opts)
-        #  puts @session.to_yaml
-
-        @@proxy = opts[:proxy] if opts[:proxy]
-        #   @@max_checks = opts[:max_parallel_checks] if opts.has_key? :max_parallel_checks
-        @@max_checks = Watobo::Conf::Scanner.max_parallel_checks
-
-        do_test(chat) { |request, response|
-          begin
-
-            if request and response then
-              if check_opts[:run_passive_checks] then
-
-                nc = Watobo::Chat.new(request, response, :id => 0)
-                #   @project.runPassiveModules(nc)
-
-              end
-
-            end
-          rescue => bang
-            puts bang
-            puts bang.backtrace if $DEBUG
-          end
-
-        }
-
-      rescue => bang
-        puts bang
-        puts bang.backtrace if $DEBUG
-
-      end
-
-    end
 
     def check_name
       info = self.class.instance_variable_get("@info")

@@ -33,8 +33,12 @@ module Watobo#:nodoc: all
           dummy.push exp.data
         end
         settings[:custom_error_patterns] = dummy
-        
-      puts settings.to_json
+
+        settings[:dns_sensor] = @dns_dt.value.strip
+
+        puts 'Scanner Settings:'
+        puts settings.to_json
+        puts '---'
         return settings
       end
       
@@ -44,6 +48,8 @@ module Watobo#:nodoc: all
           list_box.setItemData(list_item, item)
           list_box.sortItems()        
         end
+
+        showListBox(list_box) if $DEBUG
       end
       
       def selectScanlogDirectory(sender, sel, item)
@@ -58,8 +64,17 @@ module Watobo#:nodoc: all
       
       def removePattern(list_box)
         index = list_box.currentItem
+        puts "Remove Item #{index}: #{list_box.getItem(index).data}" if $DEBUG
         if  index >= 0
           list_box.removeItem(index)
+        end
+        showListBox(list_box) if $DEBUG
+      end
+
+      def showListBox(list_box)
+
+        list_box.each do |item|
+          puts item.data
         end
       end
       
@@ -87,14 +102,39 @@ module Watobo#:nodoc: all
         frame = FXHorizontalFrame.new(gbframe, :opts => LAYOUT_FILL_X, :padding => 0)
         @enable_smart_scan = FXCheckButton.new(frame, "Enable Smart Scan ", nil, 0, JUSTIFY_LEFT|JUSTIFY_TOP|ICON_BEFORE_TEXT)
         @enable_smart_scan.checkState = @settings[:smart_scan]
-        
-        #@edit_uniq_parms_btn = FXButton.new(frame, "Non-Unique Parms", :opts => LAYOUT_RIGHT|FRAME_RAISED)
-        
-        fxtext = FXText.new(gbframe, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|TEXT_WORDWRAP)
+        fxtext = FXText.new(frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|TEXT_WORDWRAP)
         fxtext.backColor = fxtext.parent.backColor
         fxtext.disable
         text = "If Smart Scan is enabled the scanner will reduce the number of checks."
         fxtext.setText(text)
+
+
+        gbox = FXGroupBox.new(scroll_area, "DNS Sensor", LAYOUT_SIDE_LEFT|FRAME_GROOVE|LAYOUT_FILL_X, 0, 0, 0, 80)
+        gbframe = FXVerticalFrame.new(gbox, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
+        frame = FXHorizontalFrame.new(gbframe, :opts => LAYOUT_FILL_X, :padding => 0)
+        fxtext = FXText.new(frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|TEXT_WORDWRAP)
+        fxtext.backColor = fxtext.parent.backColor
+        fxtext.disable
+        text = "IP address or hostname of DNS sensor. The sensor is used to recognize DNS request originated from the target system, which might be forced by some checks."
+        fxtext.setText(text)
+        input_frame = FXHorizontalFrame.new(gbframe, :opts => LAYOUT_FILL_X)
+        @dns_dt = FXDataTarget.new('')
+        @dns_dt.value = ( @settings.has_key?(:dns_sensor) ? @settings[:dns_sensor] : 'localhost' )
+        @dns_field = FXTextField.new(input_frame, 20, :target => @dns_dt, :selector => FXDataTarget::ID_VALUE, :opts => TEXTFIELD_NORMAL|LAYOUT_SIDE_LEFT|LAYOUT_FILL_X)
+        @reset_dns_btn = FXButton.new(input_frame, "Reset" , :opts => BUTTON_NORMAL|LAYOUT_RIGHT)
+
+        @reset_dns_btn.connect(SEL_COMMAND){ |sender, sel, item|
+          @dns_dt.value = 'localhost'
+          @dns_field.handle(self, FXSEL(SEL_UPDATE, 0), nil)
+        }
+
+
+       #@edit_uniq_parms_btn = FXButton.new(frame, "Non-Unique Parms", :opts => LAYOUT_RIGHT|FRAME_RAISED)
+        
+        fxtext = FXText.new(gbframe, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|TEXT_WORDWRAP)
+        fxtext.backColor = fxtext.parent.backColor
+        fxtext.disable
+
         
         gbox = FXGroupBox.new(scroll_area, "Response Codes", LAYOUT_SIDE_LEFT|FRAME_GROOVE|LAYOUT_FILL_X, 0, 0, 0, 50)
         gbframe = FXVerticalFrame.new(gbox, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
@@ -312,7 +352,9 @@ module Watobo#:nodoc: all
         new_settings = Watobo::Conf::Scanner.to_h
         new_settings.update @scannerSettingsFrame.getSettings()
         Watobo::Conf::Scanner.set new_settings
-        
+
+        Watobo::Gui.save_scanner_settings
+
         getApp().stopModal(self, 1)
         self.hide()
         return 1

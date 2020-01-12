@@ -110,18 +110,19 @@ module Watobo#:nodoc: all
         end
         
         types = [ FXWindow.stringType ]
-        if acquireClipboard(types)
-          @clipboard_text = entries.join("\n")
-        end        
+        #if acquireClipboard(types)
+        #  @clipboard_text = entries.join("\n")
+        #end
       end
 
       def parseRequest
         return '' if @request.nil?
         request = @request.copy
+        request.clear_parameters
         
         self.numRows.times do |i|
-          name = CGI.escape(self.getItemText(i, 1))
-          location = self.getItemText(i, 0)
+          #name = CGI.escape(self.getItemText(i, 1))
+          #location = self.getItemText(i, 0)
           parm = self.getItemData(i, 0)
           parm.value = self.getItemText(i, 2).unpack("C*").pack("C*").strip 
           request.set parm
@@ -143,6 +144,7 @@ module Watobo#:nodoc: all
         # addParmList("REQ", ["URL=#{request.url}"])
 
         @request.parameters.each do |parm|
+          next unless parm.is_value?
           add_parm parm
         end
 
@@ -167,10 +169,10 @@ module Watobo#:nodoc: all
         addKeyHandler(self)
         
         @clipboard_text = ""
-        self.connect(SEL_CLIPBOARD_REQUEST) do
+        #self.connect(SEL_CLIPBOARD_REQUEST) do
         # setDNDData(FROM_CLIPBOARD, FXWindow.stringType, Fox.fxencodeStringData(@clipboard_text))
-          setDNDData(FROM_CLIPBOARD, FXWindow.stringType, @clipboard_text + "\x00" )
-        end
+        #  setDNDData(FROM_CLIPBOARD, FXWindow.stringType, @clipboard_text + "\x00" )
+        #end
 
         self.connect(SEL_DOUBLECLICKED) do |sender, sel, data|
           row = sender.getCurrentRow
@@ -274,13 +276,14 @@ module Watobo#:nodoc: all
       private
       
       def add_parm(parm)
+        puts "+ add param [#{parm.location}, #{parm.name}, #{parm.value}]"
         lastRowIndex = self.getNumRows
           self.appendRows(1)
           self.setItemText(lastRowIndex, 0, parm.location.to_s)
           self.setItemData(lastRowIndex, 0, parm)
           n = parm.name.nil? ? "" : CGI.unescape(parm.name)
           self.setItemText(lastRowIndex, 1, n) 
-          self.setItemText(lastRowIndex, 2, parm.value)
+          self.setItemText(lastRowIndex, 2, parm.value.to_s)
          
           3.times do |i|
             self.getItem(lastRowIndex, i).justify = FXTableItem::LEFT
@@ -306,7 +309,8 @@ module Watobo#:nodoc: all
       def onTableClick(sender, sel, item)
         begin
           row = item.row
-          self.selectRow(row, false)
+         # self.selectRow(row, false)
+          setCurrentItem(row, 2)
           self.startInput(row,2)
         rescue => bang
           puts bang

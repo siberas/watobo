@@ -6,7 +6,7 @@ module Watobo#:nodoc: all
       result = nil
       t = Thread.new(exp) { |e|
         e.untaint
-        $SAFE = 1
+        $SAFE = 0
      #   $SAFE = 3 # no longer supported since ruby 2.3
      #   $SAFE = 4 # no longer supported since ruby 2.1.x
         begin
