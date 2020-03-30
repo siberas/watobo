@@ -238,29 +238,43 @@ module Watobo#:nodoc: all
 
     class SessionIdSettings < FXHorizontalFrame
       include Watobo::Gui::Utils
-      class SidPreview < FXText
+
+      class SidPreview_UNUSED < FXText
         def highlight(pattern)
-          self.setText(self.to_s)
+          # text_encoded = self.to_s.force_encoding('iso-8859-1').encode('utf-8', :invalid=>:replace)
+          text_encoded = self.to_s.force_encoding('ASCII-8BIT').scrub
+          text_encoded = self.to_s.encode('UTF-8', :invalid=>:replace, :replace => '')
+          self.setText(text_encoded)
+          text_encoded = self.to_s
           begin
             #  puts pattern
-            if self.to_s =~ /#{pattern}/ then
+            #  if self.to_s =~ /#{pattern}/ then
+            if text_encoded =~ /#{pattern}/ then
+              # binding.pry
+              match = $&
               if $1 and $2 then
-                #   puts "MATCH (#{$1}/#{$2})"
+                puts "MATCH: #{match}"
+                puts "#1: #{$1}"
+                puts "#2: #{$2}"
+                puts
                 string1 = $1
                 string2 = $2
                 index1 = nil
-                index1 = self.to_s.index(string1)
+                #index1 = self.to_s.index(string1)
+                index1 = text_encoded.index(match)
                 if index1 then
                   self.changeStyle(index1,string1.length,1)
+                  puts text_encoded[index1..index1+20]
                 end
-                index2 = nil
-                index2 = self.to_s.index(string2)
+
+                index2 = text_encoded.index(string2, index1)
 
                 if index2 then
                   self.changeStyle(index2,string2.length,1)
+                  puts text_encoded[index2..index2+20]
                 end
 
-                self.makePositionVisible(index1)
+                self.makePositionVisible(index2)
 
               else
                 #     string1 = pattern

@@ -34,6 +34,7 @@ module Watobo#:nodoc: all
     AC_GROUP_FILE_INCLUSION = "File Inclusion"
     AC_GROUP_SSTI = "SSTI"
     AC_GROUP_CMD = "CMD Injection"
+    AC_GROUP_AXIS = 'Apache AXIS'
     
     AC_GROUP_DOMINO = "Lotus Domino"
     AC_GROUP_SAP = "SAP"
@@ -42,6 +43,7 @@ module Watobo#:nodoc: all
     AC_GROUP_JBOSS = "JBoss AS"
     AC_GROUP_FLASH = "Flash"
     AC_GROUP_APACHE = "Apache"
+    AC_GROUP_APACHE_SOLR = "Apache SOLR"
     
     ICON_PATH = "icons"
     

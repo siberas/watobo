@@ -1156,7 +1156,11 @@ module Watobo #:nodoc: all
         #app.disableThreads
         @app = app
 
-        self.icon = ICON_WATOBO
+        #self.icon = ICON_WATOBO
+
+        setIcon(ICON_WATOBO)
+        setMiniIcon(ICON_WATOBO)
+        
         self.show(PLACEMENT_MAXIMIZED)
 
         self.extend Watobo::Settings

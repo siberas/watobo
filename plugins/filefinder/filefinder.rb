@@ -50,7 +50,7 @@ module Watobo #:nodoc: all
 
         def generateChecks(chat)
           begin
-            puts "* generating checks for #{@db_file} ..."
+            # puts "* generating checks for #{@db_file} ..."
             
             return false if @db_file.nil?
             return false if @db_file.empty?
@@ -85,13 +85,13 @@ module Watobo #:nodoc: all
                   new_uri << "/" if @append_slash == true
                   # puts ">> #{new_uri}"
                   test.replaceFileExt(new_uri)
-                   puts test.url
+                  #  puts test.url
                   fexist, test_request, test_response = fileExists?(test, @prefs)
 
 
                   if fexist == true
 
-                    puts "FileFinder >> #{test.url}"
+                    #       puts "FileFinder >> #{test.url}"
 
                     addFinding(test_request, test_response,
                                :test_item => new_uri,

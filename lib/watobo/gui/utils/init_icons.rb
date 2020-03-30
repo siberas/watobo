@@ -8,7 +8,10 @@ module Watobo#:nodoc: all
       ICON_CB_CHECKED = Watobo::Gui.load_gui_icon("cb_checked.ico")
       ICON_CB_CHECKED_ORANGE = Watobo::Gui.load_gui_icon("cb_checked_orange.ico")
 
-      ICON_WATOBO = Watobo::Gui.load_gui_icon("watobo.ico")
+      #ICON_WATOBO = Watobo::Gui.load_gui_icon("watobo.ico")
+      ICON_WATOBO = Watobo::Gui.load_gui_icon("watobo-128x128.png")
+
+      ICON_POSTMAN = Watobo::Gui.load_gui_icon("icon.png")
 
       ICON_FUZZ_TAG = Watobo::Gui.load_gui_icon("tag_blue_32x32.ico")
       ICON_FUZZ_FILTER = Watobo::Gui.load_gui_icon("filter.ico")
