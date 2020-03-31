@@ -98,6 +98,9 @@ module Watobo
 
         @textbox.textStyle |= TEXT_WORDWRAP
 
+        @textbox.connect(SEL_REPLACED, method(:onTextChanged))
+        @textbox.connect(SEL_DELETED, method(:onTextChanged))
+
         @textbox.connect(SEL_RIGHTBUTTONRELEASE) do |sender, sel, event|
 
           unless event.moved?
@@ -331,6 +334,15 @@ module Watobo
           puts bang.backtrace if $DEBUG
         end
         text.join
+      end
+
+      def onTextChanged(sender, sel, changed)
+        begin
+          notify(:text_changed)
+        rescue => bang
+          puts "!!!ERROR: onTextChanged"
+          puts bang
+        end
       end
 
       def log(text, e=nil)

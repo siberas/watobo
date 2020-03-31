@@ -46,14 +46,15 @@ module Watobo #:nodoc: all
             end
 
             @elements_frame = ElementsFrame.new(self)
+            @elements_frame.subscribe(:element_selected){|element|
+              notify(:element_selected, element)
+            }
+            @elements_frame.subscribe(:send_element){ |element|
+                notify(:send_element, element)
+              }
           end
 
-          def update(sequence)
-            puts "+ loading sequence #{sequence.name}"
-            sequence.each do |seq|
 
-            end
-          end
         end
       end
     end

@@ -19,45 +19,40 @@ module Watobo #:nodoc: all
 
         end
 
-       # def onBtnQuickScan(sender, sel, item)
-        def run
-
-        end
-
 
         def initialize()
 
           super()
 
-          @settings = Watobo::Plugin::Sequencer::Settings
+          @config = Watobo::Plugin::Sequencer::Settings
 
           @results = []
 
-          @settings.export_path ||= Watobo.workspace_path
-
-          @agent = Watobo::Plugin::Sequencer::Agent.new
+          @config.last_path ||= Watobo.workspace_path
 
           @sequence_name_dt = FXDataTarget.new('')
 
           @sequence = nil
 
+          @sender = Watobo::Plugin::Sequencer::Sender.new
+
           begin
 
 
-            main_frame = FXVerticalFrame.new(self, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
+            main_frame = FXVerticalFrame.new(self, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y)
 
             top_frame = FXHorizontalFrame.new(main_frame, :opts => LAYOUT_FILL_X)
 
 
             @sequence_name_txt = FXTextField.new(top_frame, 25,
-                                               :target => @sequence_name_dt, :selector => FXDataTarget::ID_VALUE,
-                                               :opts => TEXTFIELD_NORMAL|LAYOUT_SIDE_RIGHT)
+                                                 :target => @sequence_name_dt, :selector => FXDataTarget::ID_VALUE,
+                                                 :opts => TEXTFIELD_NORMAL | LAYOUT_SIDE_RIGHT)
 
             @create_btn = FXButton.new(top_frame, "create")
             @create_btn.disable
             @create_btn.connect(SEL_COMMAND) do
               puts "+ creating new sequence: #{@sequence_name_dt.value}"
-              @sequence = Watobo::Sequence.new({ name: @sequence_name_dt.value.to_s })
+              @sequence = Watobo::Sequence.new({name: @sequence_name_dt.value.to_s})
             end
 
             @sequence_name_dt.connect(SEL_CHANGED) do
@@ -68,9 +63,23 @@ module Watobo #:nodoc: all
             end
 
             @load_btn = FXButton.new(top_frame, "load")
-            @load_btn.connect(SEL_COMMAND) {  }
+            @load_btn.connect(SEL_COMMAND) { load_sequence }
 
-            splitter = FXSplitter.new(main_frame, LAYOUT_FILL_X|SPLITTER_HORIZONTAL|LAYOUT_FILL_Y|SPLITTER_TRACKING)
+            @save_btn = FXButton.new(top_frame, "save", :opts => BUTTON_NORMAL)
+            @save_btn.connect(SEL_COMMAND) { save_sequence }
+
+            @log = FXCheckButton.new(top_frame, "log", nil, 0, JUSTIFY_LEFT | JUSTIFY_TOP | ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
+            @log.checkState = true
+            @sender.logging = true
+            @log.connect(SEL_COMMAND) do
+              @sender.logging = @log.checked? ? true : false
+            end
+
+            @run_btn = FXButton.new(top_frame, "run", :opts => BUTTON_NORMAL | LAYOUT_RIGHT)
+            @run_btn.connect(SEL_COMMAND) { run_sequence }
+
+
+            splitter = FXSplitter.new(main_frame, LAYOUT_FILL_X | SPLITTER_HORIZONTAL | LAYOUT_FILL_Y | SPLITTER_TRACKING)
 
 
             @list_frame = ListFrame.new(splitter, :opts => LAYOUT_FILL_X)
@@ -82,11 +91,23 @@ module Watobo #:nodoc: all
               else
                 puts "!no sequence available!"
               end
-
             end
 
-            @save_btn = FXButton.new(@list_frame, "export", :opts => BUTTON_NORMAL|LAYOUT_RIGHT)
-            @save_btn.connect(SEL_COMMAND) { save_results }
+            @list_frame.subscribe(:send_element) do |element|
+              @sender.do_request(element)
+            end
+
+            @list_frame.subscribe(:element_selected) { |element|
+              @details_frame.element = element
+            }
+
+            @details_frame = DetailsFrame.new(splitter, LAYOUT_FILL_X | LAYOUT_FILL_Y | FRAME_RAISED)
+            @details_frame.subscribe(:element_change) do
+              @save_btn.textColor = 'red'
+              @save_btn.enable
+            end
+
+
           rescue => bang
             puts bang
             puts bang.backtrace
@@ -97,36 +118,59 @@ module Watobo #:nodoc: all
 
         private
 
-        def create_chats
-          chats = []
-          @targets_frame.targets.each do |t|
-            trequest = Watobo::Request.new(t)
-            chats << @agent.do_request(trequest) if Watobo::HTTPSocket.siteAlive?(trequest)
-          end
-          chats
+        def save_sequence
+          return false if @sequence.nil?
 
+          filename = @sequence.file
+          filename = FXFileDialog.getSaveFilename(self, "Select Sequence File", @config.last_path) if filename.nil?
+          unless filename.empty?
+            @config.last_path = File.dirname(filename)
+            @config.save
+
+            puts "+ saving sequence #{@sequence.name} to #{filename}" if $VERBOSE
+            Thread.new(filename) { |fn|
+              #    File.open(fn,"wb"){|fh| fh.print JSON.pretty_generate(@results) }
+              File.open(fn, 'wb') { |f|
+                f.print Marshal::dump(@sequence.to_h)
+              }
+            }
+          end
         end
+
+        def load_sequence
+          filename = FXFileDialog.getOpenFilename(self, "Select Sequence File", @config.last_path)
+          if filename != "" then
+            @sequence = Watobo::Sequence.create filename
+            @sequence_name_dt.value = @sequence.name
+            @list_frame.update_elements @sequence
+          end
+        end
+
+        def run_sequence
+          @sender.run_sequence(@sequence)
+        end
+
 
         def add_update_timer(ms)
           @timer = FXApp.instance.addTimeout(500, :repeat => true) {
             unless @scanner.nil?
 
 
-                if @pbar.total > 0
-                  @pbar.progress = @scanner.sum_progress
-                end
+              if @pbar.total > 0
+                @pbar.progress = @scanner.sum_progress
+              end
 
-                if @scanner.finished?
-                  @scanner = nil
-                 # logger("Scan Finished!")
-                  @pbar.progress = 0
-                  @pbar.total = 0
-                  @pbar.barColor = 'grey' #FXRGB(255,0,0)
-                  FXApp.instance.removeTimeout(@timer)
+              if @scanner.finished?
+                @scanner = nil
+                # logger("Scan Finished!")
+                @pbar.progress = 0
+                @pbar.total = 0
+                @pbar.barColor = 'grey' #FXRGB(255,0,0)
+                FXApp.instance.removeTimeout(@timer)
 
-                  @result_frame.update
+                @result_frame.update
 
-                end
+              end
             end
           }
         end
