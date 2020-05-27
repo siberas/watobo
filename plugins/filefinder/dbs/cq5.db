@@ -4,13 +4,19 @@ system/admin    						# [CQSE; servlet engine]
 system/sling/cqform/defaultlogin.html
 crx/de/index.jsp 						# [CRX Web Console] 
 crx/ 									# [CRX Web Console]
+system/sling/loginstatus.json
+/system/bgservlets/test.json
+/bin/querybuilder.json
+querybuilder.json
+querybuilder.feed.servlet
+bin/querybuilder.feed.servlet
 
 etc/packages.html
 content/geometrixx
 libs/cq/core/content/login.html
 libs/cq/core/content/welcome.html
 libs/granite/ui/content/dumplibs.html
-
+appsconfig.tidy.infinity.json/a.html
 
 # jackrabbits
 populate.jsp

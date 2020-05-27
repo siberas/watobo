@@ -282,6 +282,8 @@ module Watobo #:nodoc: all
             #   end
             # end
 
+          notify(:text_changed)
+
         rescue => bang
           puts "!!!ERROR: onTextChanged"
           puts bang

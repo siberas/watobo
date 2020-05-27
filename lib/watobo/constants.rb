@@ -13,6 +13,7 @@ module Watobo#:nodoc: all
     CHAT_SOURCE_FUZZER = 0x04
     CHAT_SOURCE_MANUAL_SCAN = 0x05
     CHAT_SOURCE_AUTO_SCAN = 0x06
+    CHAT_SOURCE_SEQUENCER = 0x07
     
     FINDING_TYPE_UNDEFINED = 0x00
     FINDING_TYPE_INFO = 0x03
@@ -34,6 +35,7 @@ module Watobo#:nodoc: all
     AC_GROUP_FILE_INCLUSION = "File Inclusion"
     AC_GROUP_SSTI = "SSTI"
     AC_GROUP_CMD = "CMD Injection"
+    AC_GROUP_AXIS = 'Apache AXIS'
     
     AC_GROUP_DOMINO = "Lotus Domino"
     AC_GROUP_SAP = "SAP"
@@ -42,6 +44,7 @@ module Watobo#:nodoc: all
     AC_GROUP_JBOSS = "JBoss AS"
     AC_GROUP_FLASH = "Flash"
     AC_GROUP_APACHE = "Apache"
+    AC_GROUP_APACHE_SOLR = "Apache SOLR"
     
     ICON_PATH = "icons"
     

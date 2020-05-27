@@ -43,7 +43,7 @@ module Watobo #:nodoc: all
 
           def generateChecks(chat)
             begin
-               if (chat.request.content_type =~ /xml/) and chat.request.has_body?
+               if chat.request.has_body? && chat.request.body.to_s =~ /^<\?xml/
                # first we do a request with an
                 base = chat.copyRequest
                 base_request, base_response = doRequest(base)

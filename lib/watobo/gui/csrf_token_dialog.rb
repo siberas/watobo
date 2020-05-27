@@ -4,7 +4,7 @@ module Watobo#:nodoc: all
     class TokenSettings < FXHorizontalFrame
       include Watobo::Gui::Utils
       
-      class SidPreview < FXText
+      class SidPreview_UNUSED < FXText
         def highlight(pattern)
           self.setText(self.to_s)
           begin
