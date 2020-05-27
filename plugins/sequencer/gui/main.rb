@@ -7,7 +7,7 @@ module Watobo #:nodoc: all
       class Gui < Watobo::PluginGui
 
         window_title "Sequencer"
-        icon_file "sniper.ico"
+        icon_file "sequence32x32.png"
 
 
         def start
@@ -75,7 +75,7 @@ module Watobo #:nodoc: all
               @sender.logging = @log.checked? ? true : false
             end
 
-            @run_btn = FXButton.new(top_frame, "run", :opts => BUTTON_NORMAL | LAYOUT_RIGHT)
+            @run_btn = FXButton.new(top_frame, "Run Sequence", :opts => BUTTON_NORMAL | LAYOUT_RIGHT)
             @run_btn.connect(SEL_COMMAND) { run_sequence }
 
 

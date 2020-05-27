@@ -21,7 +21,7 @@ module Watobo #:nodoc: all
           end
 
           def initialize(owner, opts)
-            super(owner, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y | FRAME_RAISED)
+            super(owner, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y | FRAME_RAISED | LAYOUT_MIN_WIDTH, :width => 300 )
             @entry_frames = []
 
             top_frame = FXHorizontalFrame.new(self, :opts => LAYOUT_FILL_X)
