@@ -111,6 +111,7 @@ module Watobo #:nodoc: all
         # Engress Handler
         unless current_prefs[:egress_handler].nil?
           unless current_prefs[:egress_handler].empty?
+            puts "+ create EgressHandler #{current_prefs[:egress_handler]}" if $DEBUG
             h = Watobo::EgressHandlers.create current_prefs[:egress_handler]
             unless h.nil?
               h.execute request

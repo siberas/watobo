@@ -16,15 +16,19 @@ module Watobo#:nodoc: all
     MODE_REGULAR = 0x01
     MODE_TRANSPARENT = 0x02
 
+
     @proxy_mode ||= MODE_REGULAR
     @intercept_mode ||= INTERCEPT_NONE
     @rewrite_mode ||= REWRITE_NONE
+    @egress_enabled ||= false
 
     @proxy = nil
     #@proxy_mode = Watobo::Conf::Interceptor.proxy_mode if Watobo::Conf::Interceptor.respond_to? :proxy_mode
     def self.proxy_mode
       @proxy_mode
     end
+
+
 
     def self.proxy_mode=(mode)
       @proxy_mode = mode

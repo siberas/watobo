@@ -86,7 +86,7 @@ module Watobo #:nodoc: all
               break if body.length == clen
             end
 
-            #puts "* CLEN = #{clen} - read body (#{body.length})"
+            puts "* CLEN = #{clen} - read body (#{body.length})"
             request << body
           end
         rescue => bang

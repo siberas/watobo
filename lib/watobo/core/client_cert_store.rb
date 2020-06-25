@@ -23,7 +23,7 @@ module Watobo#:nodoc: all
       }
       begin
         cinfo[:ssl_client_cert] = OpenSSL::X509::Certificate.new(File.read(cert_file))
-        cinfo[:ssl_client_key] = OpenSSL::PKey::RSA.new(File.read(key_file))
+        cinfo[:ssl_client_key] = OpenSSL::PKey::RSA.new(File.read(key_file), cinfo[:password])
         @client_certs[site] = cinfo
         return false
       rescue => bang

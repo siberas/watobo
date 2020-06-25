@@ -414,7 +414,7 @@ module Watobo #:nodoc: all
 
           eframe = FXHorizontalFrame.new(opt, :opts => FRAME_NONE|LAYOUT_FILL_X, :padding => 0)
           @egress = FXCheckButton.new(eframe, "Egress", nil, 0, JUSTIFY_LEFT|JUSTIFY_CENTER_Y|ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
-          @egress.checkState = false
+
 
 
           @egress_handlers = FXComboBox.new(eframe, 5, nil, 0, COMBOBOX_STATIC|FRAME_SUNKEN|FRAME_THICK|LAYOUT_SIDE_TOP)
