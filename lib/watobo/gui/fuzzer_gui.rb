@@ -279,7 +279,8 @@ module Watobo #:nodoc: all
             end
           end
 
-          return Watobo::Utils.text2request(new_request)
+          #return Watobo::Utils.text2request(new_request)
+          return Watobo::Request.new(new_request)
         rescue => bang
           puts bang
           puts bang.backtrace if $DEBUG

@@ -19,9 +19,6 @@ module Watobo #:nodoc: all
 
           @chat = chat
 
-          load_icon
-
-
           begin
 
 

@@ -23,27 +23,28 @@ module Watobo #:nodoc: all
         body = nil
       end
 
-      header.each do |h|
-        result.push "#{h.strip}\r\n"
-      end
+      result.concat header
 
       result = Watobo::Request.new result
 
       ct = result.content_type
+      puts result.content_type
+      puts result.content_type_ex
       # last line is without "\r\n" if text has a body
-      if ct =~ /multipart\/form/ and body then
+      if ct =~ /multipart/ and body then
         #Content-Type: multipart/form-data; boundary=---------------------------3035221901842
         if ct =~ /boundary=([\-\w]+)/
           boundary = $1.strip
-          chunks = body.split(boundary)
-          e = chunks.pop # remove "--"
+          # chunks = body.split(boundary)
+          chunks = body.split(/--#{boundary}[\-]{0,2}[\r\n]{0,2}/)
+          #e = chunks.pop # remove "--"
           new_body = []
           chunks.each do |c|
             new_chunk = ''
-            c.gsub!(/[\-]+$/, '')
+            #c.gsub!(/[\-]+$/, '')
             next if c.nil?
             next if c.strip.empty?
-            c.strip!
+            #c.strip!
             if c =~ /\n\n/
               ctmp = c.split(/\n\n/)
               cheader = ctmp.shift.split(/\n/)

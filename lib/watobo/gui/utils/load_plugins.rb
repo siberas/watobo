@@ -24,12 +24,12 @@ module Watobo#:nodoc: all
         plugin_dirs.each do |pdir|
 
         Dir["#{pdir}/*"].each do |sub|
-          puts "FILTER #{sub} / #{filter}"
+          # puts "FILTER #{sub} / #{filter}"
           next unless sub =~ /#{filter}/i
           if File.ftype(sub) == "directory"
             pgf = File.join(sub, "gui.rb")
             if File.exist? pgf
-              puts "Loading Plugin GUI #{pgf} ..."
+              puts "Loading Plugin GUI #{pgf} ..." if $VERBOSE
 
               group = File.basename(sub)
               plugin = File.basename(pgf).sub(/\.rb/,'')
@@ -38,9 +38,9 @@ module Watobo#:nodoc: all
               #
               plugin_class = plugin.slice(0..0).upcase + plugin.slice(1..-1).downcase
               class_name = "Watobo::Plugin::#{group_class}::#{plugin_class}"
-              puts
-              puts ">> ClassName: #{class_name}"
-              puts
+              #   puts
+              #puts ">> ClassName: #{class_name}"
+              #puts
               load pgf
               class_constant = Watobo.class_eval(class_name)
 

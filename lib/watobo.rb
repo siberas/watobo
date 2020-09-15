@@ -76,6 +76,8 @@ require 'watobo/parser'
 require 'watobo/interceptor'
 require 'watobo/sockets'
 
+require 'watobo/transformers/multipart'
+
 # WORKAROUND FOR LINUX :(
 #dont_know_why_REQUIRE_hangs = Mechanize.new
 

@@ -387,6 +387,7 @@ module Watobo #:nodoc: all
           menu = FXMenuPane.new(self)
           FXMenuCommand.new(menu, "-> GET").connect(SEL_COMMAND, method(:trans2Get))
           FXMenuCommand.new(menu, "-> POST").connect(SEL_COMMAND, method(:trans2Post))
+          FXMenuCommand.new(menu, "-> Multi").connect(SEL_COMMAND, method(:trans2Multi))
           #  FXMenuCommand.new(menu, "POST <=> GET").connect(SEL_COMMAND, method(:switchMethod))
 
           req_reset_button = FXButton.new(req_edit_header, "Reset", nil, nil, 0, FRAME_RAISED|FRAME_THICK|LAYOUT_RIGHT|LAYOUT_FILL_Y)
@@ -690,6 +691,13 @@ module Watobo #:nodoc: all
 
         end
         @req_builder.setRequest(request)
+      end
+
+      def trans2Multi(sender,sel, item)
+        request = @req_builder.parseRequest
+        return nil if request.nil?
+        mp = Watobo::Transformers.to_multipart(request)
+        @req_builder.setRequest(mp)
       end
 
       def simulatePressSendBtn()

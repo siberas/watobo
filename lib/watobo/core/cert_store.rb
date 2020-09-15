@@ -42,9 +42,9 @@ module Watobo#:nodoc: all
 
       ctx.verify_mode = OpenSSL::SSL::VERIFY_NONE
       ctx.timeout = 10
-      ctx.ciphers.each do |c|
-        puts c[0] + ' : ' + c[1] + ' : ' +c[2].to_s
-      end
+      #ctx.ciphers.each do |c|
+      #  puts c[0] + ' : ' + c[1] + ' : ' +c[2].to_s
+      #end
       return ctx
     end
   end

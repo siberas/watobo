@@ -48,6 +48,7 @@ module Watobo #:nodoc: all
 
       def start_update_timer
         FXApp.instance.addTimeout(500, :repeat => true) {
+
           @update_lock.synchronize do
             @title_lbl.text = @title
             @task_lbl.text = @task

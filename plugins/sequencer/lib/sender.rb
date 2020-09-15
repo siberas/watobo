@@ -36,8 +36,21 @@ module Watobo #:nodoc: all
         def do_request(element, prefs = {})
           begin
             request = element.to_request
+            test_req = nil
+
+            unless element.pre_script.nil? or element.pre_script.empty?
+              f = eval(element.pre_script)
+              f.call(request)
+            end
+
+            if element.egress_handler.respond_to? :length
+              unless element.egress_handler.empty?
+                prefs[:egress_handler] = element.egress_handler
+              end
+            end
 
             test_req, test_resp = self.doRequest(request, prefs)
+
             unless element.post_script.nil? or element.post_script.empty?
               f = eval(element.post_script)
               f.call(test_resp)
@@ -49,6 +62,7 @@ module Watobo #:nodoc: all
           rescue => bang
             puts bang
             puts bang.backtrace if $DEBUG
+            binding.pry if $DEBUG
           end
           return nil
         end

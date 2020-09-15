@@ -46,7 +46,7 @@ module Watobo #:nodoc: all
               @response_viewer.setText(chat.response)
             end
 
-            btn.connect(SEL_COMMAND) {@table.refresh}
+            btn.connect(SEL_COMMAND) {@table.refreshTable}
 
             vframe = FXVerticalFrame.new(splitter, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y)
 

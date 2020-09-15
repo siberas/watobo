@@ -14,6 +14,7 @@ module Watobo #:nodoc: all
 
             @request_frame.request = @element.request
             @post_script_frame.script = @element.post_script
+            @pre_script_frame.script = @element.pre_script
             @apply_btn.enable
           end
 
@@ -46,7 +47,7 @@ module Watobo #:nodoc: all
 
 
             @prescript_tab = FXTabItem.new(@tabbook, "Pre-Script", nil)
-            frame = FXVerticalFrame.new(@tabbook, :opts => FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_FILL_Y)
+            @pre_script_frame = PreScriptFrame.new(@tabbook, FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_FILL_Y)
 
             @postscript_tab = FXTabItem.new(@tabbook, "Post-Script", nil)
             @post_script_frame = PostScriptFrame.new(@tabbook, FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_FILL_Y)
@@ -60,9 +61,13 @@ module Watobo #:nodoc: all
           private
 
           def apply_changes
+            return if @element.nil? # this should not happen!
             @apply_btn.textColor = 'black'
             @element.request = @request_frame.request
             @element.post_script = @post_script_frame.script
+
+            @element.pre_script = @pre_script_frame.script
+            @element.egress_handler = @pre_script_frame.egress_handler
             notify(:element_changed)
 
           end

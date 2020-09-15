@@ -54,12 +54,12 @@ module Watobo#:nodoc: all
     end
 
     def self.set( site, cert )
-      puts "Set client cert for site #{site}"
-      puts cert.class
-      puts cert
+      # puts "Set client cert for site #{site}"
+      #puts cert.class
+      #puts cert
       return false if cert.nil?
       if cert[:certificate_file].nil? or cert[:certificate_file].strip.empty?
-        puts "Removing client certificate for site #{site}"
+        # puts "Removing client certificate for site #{site}"
         @client_certs.delete(site.to_sym)
         save
         return true

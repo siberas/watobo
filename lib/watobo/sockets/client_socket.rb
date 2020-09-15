@@ -162,11 +162,12 @@ module Watobo #:nodoc: all
             rescue OpenSSL::SSL::SSLError => e
               puts ">> SSLError"
               puts e
+              puts e.backtrace if $DEBUG
               #puts session.methods.sort
               return nil, session
             rescue => bang
               puts bang
-              puts bang.backtrace
+              puts bang.backtrace if $DEBUG
               return nil, session
             end
           end

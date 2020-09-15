@@ -63,9 +63,6 @@ module Watobo#:nodoc: all
       def to_s
         s = @current.parseRequest
         puts "* [requestBox] .to_s"
-      #  puts s
-      # puts s.class
-      #  puts s.empty?
         s
       end
 

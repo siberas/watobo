@@ -45,6 +45,7 @@ GEM
     unf_ext (0.0.7.7)
     webrobots (0.1.2)
     websocket (1.2.8)
+    xmlrpc (0.3.0)
 
 PLATFORMS
   ruby
@@ -56,6 +57,7 @@ DEPENDENCIES
   net-http-pipeline (= 1.0.1)
   nfqueue (= 1.0.4)
   selenium-webdriver (= 3.0.1)
+  xmlrpc
 
 BUNDLED WITH
    2.1.4
