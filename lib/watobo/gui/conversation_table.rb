@@ -198,6 +198,10 @@ module Watobo #:nodoc: all
         self.setItemText(row, col, comment.gsub(/[^[:print:]]/, ' '))
       end
 
+      def setChatList(chats)
+        @current_chat_list = chats
+      end
+
       def addChat(chat, *prefs)
         return false if chat.nil?
         if self.getNumRows <= 0 then

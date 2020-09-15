@@ -1,8 +1,9 @@
 # @private 
 module Watobo #:nodoc: all
   module Gui
-    class ProgressWindow < FXTopWindow
-      def increment(x)
+    #class ProgressWindow < FXTopWindow
+    class ProgressWindow < FXProgressDialog
+      def increment_UNUSED(x)
         @update_lock.synchronize do
           @increment += x
         end
@@ -57,6 +58,8 @@ module Watobo #:nodoc: all
             @pbar.increment(@increment)
             @increment = 0
             @pbar.total = @total
+            #self.handle(self, FXSEL(SEL_UPDATE, 0), nil)
+            self.forceRefresh
           end
         }
       end
