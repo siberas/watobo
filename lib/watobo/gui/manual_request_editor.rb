@@ -276,6 +276,8 @@ module Watobo #:nodoc: all
       end
 
       def update_egress
+        #binding.pry
+        last_item = @egress_handlers.currentItem
         @egress_handlers.clearItems
         @egress.disable
         @egress_handlers.disable
@@ -287,6 +289,7 @@ module Watobo #:nodoc: all
             @egress_handlers.appendItem(h.to_s, nil)
           }
         end
+        @egress_handlers.currentItem = last_item if last_item >= 0
       end
 
       def initialize(owner, project, chat)
