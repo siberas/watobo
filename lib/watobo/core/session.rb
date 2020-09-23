@@ -97,14 +97,18 @@ module Watobo #:nodoc: all
         #  puts line.unpack("H*")
         #end
         #puts
-        if current_prefs[:update_contentlength] == true and request.has_body? then
-          #puts request.body.unpack("H*")[0]
-          #puts (request.body.unpack("H*")[0].length / 2).to_s
+        if current_prefs[:update_contentlength] == true
+          if request.has_body? then
+            #puts request.body.unpack("H*")[0]
+            #puts (request.body.unpack("H*")[0].length / 2).to_s
 
-          request.fix_content_length()
-          #puts "New: #{request.content_length}"
-          #puts request.body.encoding
-          #puts "--"
+            request.fix_content_length()
+            #puts "New: #{request.content_length}"
+            #puts request.body.encoding
+            #puts "--"
+          else
+            request.set_header('Content-Length', 0)
+          end
         end
 
         #
@@ -521,12 +525,12 @@ module Watobo #:nodoc: all
 
       begin
         if response.is_chunked?
-          Watobo::HTTPSocket.readChunkedBody(socket) {|c|
+          Watobo::HTTPSocket.readChunkedBody(socket) { |c|
             data += c
           }
         elsif clen > 0
           #  puts "* read #{clen} bytes for body"
-          Watobo::HTTPSocket.read_body(socket, :max_bytes => clen) {|c|
+          Watobo::HTTPSocket.read_body(socket, :max_bytes => clen) { |c|
 
             data += c
             break if data.length == clen
@@ -831,7 +835,7 @@ module Watobo #:nodoc: all
 
 
             if cl > 0
-              Watobo::HTTPSocket.read_body(tcp_socket) {|d|
+              Watobo::HTTPSocket.read_body(tcp_socket) { |d|
                 # puts d
               }
             end
@@ -971,7 +975,7 @@ module Watobo #:nodoc: all
         return response_header
       end
 
-      Watobo::HTTPSocket.read_body(tcp_socket, :max_bytes => clen) {|d|
+      Watobo::HTTPSocket.read_body(tcp_socket, :max_bytes => clen) { |d|
         #puts d
       }
 
@@ -1214,7 +1218,7 @@ module Watobo #:nodoc: all
     # patterns - pattern expressions, similar to session-id-patterns, e.g.  /name="(sessid)" value="([0-9a-zA-Z!-]*)"/
     def updateRequestPattern(request, cache, patterns)
 
-      request.map! {|line|
+      request.map! { |line|
         res = line
         patterns.each do |pat|
           begin
