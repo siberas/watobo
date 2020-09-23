@@ -75,8 +75,8 @@ module Watobo#:nodoc: all
     
     def self.reload
       @history.each do |file|
-       # puts "load egress file #{file}"
-        load file
+        puts "load egress file #{file}" if $VERBOSE
+        Kernel.load file
       end
     end
 
