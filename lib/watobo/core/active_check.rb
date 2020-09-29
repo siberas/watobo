@@ -183,6 +183,17 @@ module Watobo #:nodoc: all
       end
     end
 
+    def checkid
+      cn = self.class.to_s.downcase
+      cn.gsub!(/.*::/,'')
+
+      t_hex = Time.now.to_i.to_s(16)
+
+      cid = "#{cn}#{t_hex}"
+      puts cid
+      cid
+    end
+
     def disable
       @enable = false
     end

@@ -60,7 +60,8 @@ module Watobo #:nodoc: all
           @settings = YAML.load(YAML.dump(settings))
         end
 
-        def self.save_session(*filter, &b)
+        def self.save_session(filter=nil, &b)
+
           #raise ArgumentError, "Need a valid Watobo::DataStore" unless data_store.respond_to? :save_project_settings
           s = filter_settings filter
           s = yield s if block_given?
@@ -68,7 +69,7 @@ module Watobo #:nodoc: all
           Watobo::DataStore.save_session_settings(group_name, s)
         end
 
-        def self.save_project(*filter, &b)
+        def self.save_project(filter=nil, &b)
           # raise ArgumentError, "Need a valid Watobo::DataStore" unless data_store.respond_to? :save_project_settings
           s = filter_settings filter
           s = yield s if block_given?
@@ -109,6 +110,7 @@ module Watobo #:nodoc: all
         def self.filter_settings(f)
           s = YAML.load(YAML.dump(@settings))
 
+          return s if f.nil?
           return s unless f.is_a? Array
           return s if f.empty?
           #return s unless s.respond_to? :each_key

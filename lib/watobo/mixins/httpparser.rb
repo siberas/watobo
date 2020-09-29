@@ -603,7 +603,7 @@ module Watobo #:nodoc: all
         def body
           begin
             return nil if self.nil? or self.length < 3
-            return "#{self.last}" if self[-2].strip.empty?
+            return "#{self.last.force_encoding('BINARY')}" if self[-2].strip.empty?
           rescue
             return nil
           end

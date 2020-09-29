@@ -59,6 +59,10 @@ module Watobo #:nodoc: all
               content = [@db_file]
             else
               content = File.readlines(@db_file)
+              # skip comment lines
+              content = content.select{|e| !(e.strip =~ /^#/) }
+              # remove inline comments
+              content = content.map{|e| e.gsub(/#.*/,'')}
             end
 
             content.each do |uri|
@@ -641,17 +645,16 @@ module Watobo #:nodoc: all
           @check.resetCounters()
 
 
-          @progress_window = Watobo::Gui::ProgressWindow.new(self)
+          # @progress_window = Watobo::Gui::ProgressWindow.new(self)
+          #@progress_window.show(PLACEMENT_SCREEN)
 
-
-          @progress_window.show(PLACEMENT_SCREEN)
           t = Thread.new {
             begin
               c=1
               if @test_all_dirs.checked? then
                 c = 0
                 Watobo::Chats.dirs(@site, :base_dir => @dir, :include_subdirs => @test_all_dirs.checked?) { c += 1 }
-                @progress_window.update_progress(:title => "File Finder Plugin", :total => c, :job => @dir)
+#                @progress_window.update_progress(:title => "File Finder Plugin", :total => c, :job => @dir)
                 Watobo::Chats.dirs(@site, :base_dir => @dir, :include_subdirs => @test_all_dirs.checked?) do |dir|
                   m = "running checks on #{dir}"
                   @log_viewer.log(LOG_INFO, m)
@@ -664,7 +667,7 @@ module Watobo #:nodoc: all
                   chatlist.push chat
                   # @check.getCheckCount(chat)
                   @check.updateCounters(chat)
-                  @progress_window.update_progress(:increment => 1)
+                    #                 @progress_window.update_progress(:increment => 1)
                 end
               else
                 notify(:update_progress, :total => c, :job => @dir)
@@ -674,13 +677,13 @@ module Watobo #:nodoc: all
                 chat = createChat()
                 chatlist.push chat
                 @check.updateCounters(chat)
-                @progress_window.update_progress(:increment => 1)
+                #@progress_window.update_progress(:increment => 1)
               end
             rescue => bang
               puts bang
               puts bang.backtrace if $DEBUG
             ensure
-              @progress_window.hide
+              #@progress_window.hide
             end
           }
 

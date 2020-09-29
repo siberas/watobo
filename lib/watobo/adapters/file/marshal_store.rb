@@ -113,6 +113,7 @@ module Watobo #:nodoc: all
     # if the scan name does not exist.
     def add_scan_log(chat, scan_name = nil)
       #puts "* add_scan_log"
+
       return false unless chat.respond_to? :request
       return false unless chat.respond_to? :response
       begin
@@ -251,7 +252,7 @@ module Watobo #:nodoc: all
       file << ".yml"
 
       session_file = File.join(@session_config_path, file)
-      # puts "Dest.File: #{session_file}"
+      puts "Dest.File: #{session_file}"
       #  puts session_settings.to_yaml
       # puts "---"
       Watobo::Utils.save_settings(session_file, session_settings)

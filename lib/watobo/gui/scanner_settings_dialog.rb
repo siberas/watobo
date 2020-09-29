@@ -289,10 +289,19 @@ module Watobo#:nodoc: all
           @cep_field.handle(self, FXSEL(SEL_UPDATE, 0), nil)
         }
         @add_cep_btn.connect(SEL_COMMAND){ |sender, sel, item|
-          
-          addItem(@cep_list, @cep_dt.value) if @cep_dt.value != ''
+          val = @cep_dt.value.strip
+          regx = val
+          unless val.empty?
+            begin
+              "somerandomvaluetocheck if regex is valid".match(/#{val}/)
+            rescue => bang
+              puts "* escape pattern #{val}" if $DEBUG
+              regx = Regexp.escape(val)
+            end
+          addItem(@cep_list, regx)
           @cep_dt.value = ''
           @cep_field.handle(self, FXSEL(SEL_UPDATE, 0), nil)
+          end
         }
         
         @cep_dt.connect(SEL_COMMAND){ |sender, sel, item|

@@ -98,7 +98,7 @@ EOD
                                 :title => "Max-Forwards - #{t_request.path}"
                     )
                   end
-                  [ test_request, test_response ]
+                  [ t_request, t_response ]
                 }
                 yield checker
 

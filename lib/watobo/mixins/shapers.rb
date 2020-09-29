@@ -185,7 +185,11 @@ module Watobo #:nodoc: all
         def rewrite_body(pattern, content)
           if self.has_body?
             #puts "rewrite_body ... #{pattern} - #{content}"
-            b = self.pop
+
+            b = self.pop.force_encoding('BINARY')
+            #puts "Body Encoding: #{b.encoding}"
+            #puts "Pattern Encoding: #{pattern.encoding}"
+
             b.gsub!(/#{pattern}/i, content)
             self << b
           end

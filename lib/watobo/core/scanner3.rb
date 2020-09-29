@@ -45,8 +45,7 @@ module Watobo #:nodoc: all
             Thread.current[:pos] = "wait for task"
             task = @tasks.deq
             begin
-              # puts "RUNNING #{task[:module]}"
-              print '*'
+              puts "RUNNING #{task[:module]}" if $DEBUG
               request, response = task[:check].call()
 
               next if response.nil?
@@ -79,6 +78,7 @@ module Watobo #:nodoc: all
               # TODO
               chat = Chat.new(request, response, :id => 0, :chat_source => prefs[:chat_source])
               notify(:new_chat, chat)
+
               unless prefs[:scanlog_name].nil? or prefs[:scanlog_name].empty?
                 Watobo::DataStore.add_scan_log(chat, prefs[:scanlog_name])
               end
