@@ -718,6 +718,18 @@ module Watobo #:nodoc: all
           return cs
         end
 
+        def header_names(filter=nil, &b)
+          hnames = []
+          headers do |h|
+            hsi = h.index(':')
+            next if hsi.nil?
+            hname = h[0..hsi-1]
+            yield hname if block_given?
+            hnames << hname
+          end
+          hnames
+        end
+
         def headers(filter=nil, &b)
           begin
             filter = '.*' if filter.nil?

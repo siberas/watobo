@@ -183,7 +183,7 @@ module Watobo #:nodoc: all
       end
     end
 
-    def checkid
+    def checkid()
       cn = self.class.to_s.downcase
       cn.gsub!(/.*::/,'')
 
