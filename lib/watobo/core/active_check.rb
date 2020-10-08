@@ -250,6 +250,11 @@ module Watobo #:nodoc: all
           end
         end
 
+        # return false if status is 200 (OK) but has no body
+        if t_response.status =~ /^200/ && !t_response.has_body?
+          return false, t_request, t_response
+        end
+
         return true, t_request, t_response
       rescue => bang
         puts bang

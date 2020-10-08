@@ -61,8 +61,24 @@ module Watobo #:nodoc: all
 
     end
 
-    # select chats by request options
+    # selects all chats containing a request param <name>
+    def self.with_param(name, *location, &block)
+      cwp = []
+      @chats.each do |c|
+        ps = c.request.parameters *location
 
+        match = ps.select { |p| p.name =~ /^#{name}$/i }
+        if match.length > 0
+
+          cwp << c
+          yield c if block_given?
+        end
+      end
+      cwp
+    end
+
+    # select chats by request options
+    #
     def self.select(site, opts = {}, &block)
       o = {
           :dir => "",
@@ -190,7 +206,7 @@ module Watobo #:nodoc: all
     def self.each(&block)
       if block_given?
         @chats_lock.synchronize do
-          @chats.map {|c| yield c}
+          @chats.map { |c| yield c }
         end
       end
     end
@@ -297,7 +313,7 @@ module Watobo #:nodoc: all
         end
 
         if filter.has_key?(:status_codes) and not filter[:status_codes].empty?
-          return false if filter[:status_codes].find_index {|i| chat.response.status =~ /#{i}/}.nil?
+          return false if filter[:status_codes].find_index { |i| chat.response.status =~ /#{i}/ }.nil?
         end
 
         if filter.has_key?(:mime_types) and not filter[:mime_types].empty?

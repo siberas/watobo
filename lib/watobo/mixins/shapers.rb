@@ -139,6 +139,8 @@ module Watobo #:nodoc: all
           self.unshift(line)
         end
 
+        alias :add_url_parm :add_get_parm
+
         def addHeader(header, value)
           self_copy = []
           self_copy.concat(self.headers)
@@ -184,15 +186,21 @@ module Watobo #:nodoc: all
 
         def rewrite_body(pattern, content)
           if self.has_body?
-            #puts "rewrite_body ... #{pattern} - #{content}"
+            puts "rewrite_body ... #{pattern} - #{content}"
 
             b = self.pop.force_encoding('BINARY')
             #puts "Body Encoding: #{b.encoding}"
             #puts "Pattern Encoding: #{pattern.encoding}"
 
+
             b.gsub!(/#{pattern}/i, content)
+
             self << b
+
+            puts self.to_s
+            return true
           end
+          false
         end
 
         def restoreURI(uri)
