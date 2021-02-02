@@ -36,9 +36,8 @@ module Watobo#:nodoc: all
               module_class.sub!(".rb","")
 
               ac = Watobo::Modules::Active.const_get(group_class).const_get(module_class)
-              print "."
-              
               @checks << ac
+              
             rescue => bang
               puts bang
             end

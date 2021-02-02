@@ -29,6 +29,7 @@ require 'watobo/gui/templates/plugin2'
 require 'watobo/gui/templates/plugin_base'
 require 'watobo/gui/plugin_board'
 require 'watobo/gui/utils/load_plugins'
+require 'watobo/gui/subframes/egress_handler_selection'
 
 
 require File.join(File.dirname(__FILE__), 'plugin_loader', 'gui','main')

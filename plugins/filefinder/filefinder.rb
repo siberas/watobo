@@ -744,7 +744,3 @@ module Watobo #:nodoc: all
 end
 
 
-if __FILE__ == $0
-  puts "Running #{__FILE__}"
-  catalog = Watobo::Plugin::Catalog.new(project)
-end

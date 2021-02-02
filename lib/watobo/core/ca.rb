@@ -25,6 +25,10 @@ module Watobo #:nodoc: all
       OpenSSL::PKey::DH.new(File.read(dh_filename))
     end
 
+    def self.cert_file
+      @ca_config[:cert_file]
+    end
+
     def self.ca_ready?
       return false unless File.exist? @ca_config[:CA_dir]
       return false unless File.exist? @ca_config[:private_dir]
@@ -178,10 +182,8 @@ module Watobo #:nodoc: all
       #return keypair_file if File.exist? keypair_file
 
       #puts "create_key: #{keypair_file}"
-      begin
+      unless File.exist? dest
         Dir.mkdir dest #, 0700
-      rescue Errno::EEXIST
-        # puts "directory exists"
       end
 
       # if not File.exist?(keypair_file) then

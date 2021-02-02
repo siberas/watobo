@@ -74,7 +74,9 @@ module Watobo#:nodoc: all
         @connections = Hash.new
         @cert_list = Hash.new
         @netqueue_lock = Mutex.new
-        @dh_key = OpenSSL::PKey::DH.new(512)
+        puts "Generating DH Key ..."
+        @dh_key = OpenSSL::PKey::DH.new(2048)
+        print "OK\n"
         @nfqueue = start
         @cfg = nil
         @client_certs={}
@@ -100,6 +102,7 @@ module Watobo#:nodoc: all
       def acquire_cert(host, port)
 
         begin
+          puts "[AcquireCert] #{host}:#{port} ..."
           tcp_socket = TCPSocket.new( host, port )
           tcp_socket.setsockopt( Socket::SOL_SOCKET, Socket::SO_KEEPALIVE, 1)
           tcp_socket.sync = true

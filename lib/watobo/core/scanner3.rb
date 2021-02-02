@@ -219,6 +219,125 @@ module Watobo #:nodoc: all
       @login_count = 0
       @max_login_count = 20
 
+
+
+      @prefs.update check_prefs
+      msg = "\n[Scanner] Starting Scan ..."
+      # puts @prefs.to_yaml
+      notify(:logger, LOG_INFO, msg)
+      puts msg
+
+      # starting workers before check generation
+      start_workers(@prefs)
+      @max_tasks = 1000
+
+      # start check generation in seperate thread
+      # TIMING of request is controlled here via limitation of the generation thread
+      #
+      Thread.new {
+        begin
+          set_status GENERATION_STARTED
+          @chat_list.uniq.each do |chat|
+            # puts chat.request.url.to_s
+            @active_checks.uniq.each do |ac|
+              ac.reset()
+              if site_alive?(chat) then
+                ac.generateChecks(chat) {|check|
+                  while @tasks.size > @max_tasks
+                    sleep 1
+                  end
+                  # TODO: make sleep configurable via "scanner settings"
+                  #sleep 0.3
+                  task = {:module => ac,
+                          :check => check
+                  }
+                  @tasks.push task
+                }
+              end
+            end
+          end
+        rescue => bang
+          puts bang
+          puts bang.backtrace if $DEBUG
+        ensure
+          set_status GENERATION_FINISHED
+        end
+      }
+
+      ctrl_thread
+
+    end
+
+    def initialize(chat_list = [], active_checks = [], passive_checks = [], prefs = {})
+      @chat_list = chat_list
+      @active_checks = []
+      @passive_checks = passive_checks.nil? ? [] : passive_checks
+
+      @tasks = Queue.new
+      @logged_out = Queue.new
+
+      @workers = []
+
+      @status_lock = Mutex.new
+
+      @task_count_lock = Mutex.new
+      @new_chat_notify = Mutex.new
+      @task_counter = {}
+
+      @ctrl_thread = nil
+
+      # @onlineCheck = OnlineCheck.new(@project)
+      msg = "Initializing Scanner ..."
+      notify(:logger, LOG_INFO, msg)
+      puts msg
+
+      @prefs = Watobo::Conf::Scanner.to_h
+
+      @prefs.update prefs
+
+      #puts @prefs.to_yaml
+
+      unique_checks = {}
+      active_checks.each do |x|
+        if x.respond_to? :new
+          ac = x.new(self.object_id, @prefs)
+        else
+          ac = x
+        end
+        unique_checks[ac.class.to_s] = ac unless unique_checks.has_key?(ac.class.to_s)
+      end
+      unique_checks.each_value do |check|
+        @active_checks << check
+      end
+
+      puts "# Num Active Modules: #{@active_checks.length}"
+
+      @active_checks.uniq.each do |check|
+
+        check.resetCounters()
+        @chat_list.each_with_index do |chat, index|
+          #print "."
+          check.updateCounters(chat, @prefs)
+          puts "* [#{index + 1}] CheckCounter for Chat-ID #{chat.id}: #{check.check_name} - #{check.numChecks}"
+        end
+
+        # @numTotalChecks += check.numChecks
+        # cn = check.info[:check_name]
+        # puts "+ add check: #{cn}"
+        # notify(:logger, LOG_INFO, "add check #{cn}")
+        @task_counter[check.check_name] = {:total => check.numChecks,
+                                           :progress => 0
+        }
+      end
+      @status = SCANNER_READY
+      msg = "Scanner Ready!"
+      notify(:logger, LOG_INFO, msg)
+      puts msg
+    end
+
+    private
+
+    def ctrl_thread
       @ctrl_thread = Thread.new {
         size = -1
         loop do
@@ -264,120 +383,7 @@ module Watobo #:nodoc: all
           sleep 1
         end
       }
-
-      @prefs.update check_prefs
-      msg = "\n[Scanner] Starting Scan ..."
-      # puts @prefs.to_yaml
-      notify(:logger, LOG_INFO, msg)
-      puts msg
-
-      # starting workers before check generation
-      start_workers(@prefs)
-      @max_tasks = 1000
-
-      # start check generation in seperate thread
-      # TIMING of request is controlled here via limitation of the generation thread
-      #
-      Thread.new {
-        begin
-          set_status GENERATION_STARTED
-          @chat_list.uniq.each do |chat|
-            # puts chat.request.url.to_s
-            @active_checks.uniq.each do |ac|
-              ac.reset()
-              if site_alive?(chat) then
-                ac.generateChecks(chat) {|check|
-                  while @tasks.size > @max_tasks
-                    sleep 1
-                  end
-                  # TODO: make sleep configurable via "scanner settings"
-                  #sleep 0.3
-                  task = {:module => ac,
-                          :check => check
-                  }
-                  @tasks.push task
-                }
-              end
-            end
-          end
-        rescue => bang
-          puts bang
-          puts bang.backtrace if $DEBUG
-        ensure
-          set_status GENERATION_FINISHED
-        end
-      }
-
     end
-
-    def initialize(chat_list = [], active_checks = [], passive_checks = [], prefs = {})
-      @chat_list = chat_list
-      @active_checks = []
-      @passive_checks = passive_checks
-
-      @tasks = Queue.new
-      @logged_out = Queue.new
-
-      @workers = []
-
-      @status_lock = Mutex.new
-
-      @task_count_lock = Mutex.new
-      @new_chat_notify = Mutex.new
-      @task_counter = {}
-
-      @ctrl_thread = nil
-
-      # @onlineCheck = OnlineCheck.new(@project)
-      msg = "Initializing Scanner ..."
-      notify(:logger, LOG_INFO, msg)
-      puts msg
-
-      @prefs = Watobo::Conf::Scanner.to_h
-
-      @prefs.update prefs
-
-      #puts @prefs.to_yaml
-
-      unique_checks = {}
-      active_checks.each do |x|
-        if x.respond_to? :new
-          ac = x.new(self.object_id, @prefs)
-        else
-          ac = x
-        end
-        unique_checks[ac.class.to_s] = ac unless unique_checks.has_key?(ac.class.to_s)
-      end
-      unique_checks.each_value do |check|
-        @active_checks << check
-      end
-
-      puts "#ActiveModules: #{@active_checks.length}"
-
-      @active_checks.uniq.each do |check|
-
-        check.resetCounters()
-        @chat_list.each_with_index do |chat, index|
-          #print "."
-          check.updateCounters(chat, @prefs)
-          puts "* [#{index + 1}] CheckCounter for Chat-ID #{chat.id}: #{check.check_name} - #{check.numChecks}"
-        end
-
-        # @numTotalChecks += check.numChecks
-        # cn = check.info[:check_name]
-        # puts "+ add check: #{cn}"
-        # notify(:logger, LOG_INFO, "add check #{cn}")
-        @task_counter[check.check_name] = {:total => check.numChecks,
-                                           :progress => 0
-        }
-      end
-      @status = SCANNER_READY
-      msg = "Scanner Ready!"
-      notify(:logger, LOG_INFO, msg)
-      puts msg
-    end
-
-    private
 
     def set_status_running
       s = (status | SCANNER_RUNNING)

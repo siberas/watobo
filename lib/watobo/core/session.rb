@@ -107,7 +107,8 @@ module Watobo #:nodoc: all
             #puts request.body.encoding
             #puts "--"
           else
-            request.set_header('Content-Length', 0)
+            #request.set_header('Content-Length', 0)
+            request.removeHeader('Content-Length')
           end
         end
 
@@ -502,7 +503,8 @@ module Watobo #:nodoc: all
         }
       end
       @session = @@settings[session] # shortcut to settings
-      @session.update prefs
+
+      @session.update prefs.to_h
 
       #  @valid_csrf_tokens = Hash.new
 

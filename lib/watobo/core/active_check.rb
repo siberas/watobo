@@ -109,6 +109,7 @@ module Watobo #:nodoc: all
       @numChecks += @counters[chat.id]
 
       puts "#{chat.id} : #{c}"
+      @numChecks
     end
 
     def urlParmNames(chat)

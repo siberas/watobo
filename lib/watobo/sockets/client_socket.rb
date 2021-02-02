@@ -121,6 +121,8 @@ module Watobo #:nodoc: all
 
       end
 
+
+
       def self.connect(socket)
         request = []
         @fake_certs ||= {}
@@ -145,6 +147,7 @@ module Watobo #:nodoc: all
 
         if Watobo::Interceptor::Proxy.transparent?
 
+          puts "* running transparent ..."
 
           ci = Watobo::Interceptor::Transparent.info({'host' => caddr, 'port' => cport})
           unless ci.nil? or ci['target'].empty? or ci['cn'].empty?
@@ -186,7 +189,7 @@ module Watobo #:nodoc: all
         return nil if request.empty?
 
         if Watobo::Interceptor::Proxy.transparent?
-          #puts "> get hostname ..."
+
           thn = nil
           request.each do |l|
             if l =~ /^Host: (.*)/
@@ -203,12 +206,13 @@ module Watobo #:nodoc: all
           else
             request.first.gsub!(/(^[^[:space:]]{1,}) (.*) (HTTP.*)/i, "\\1 http://#{thn}\\2 \\3") unless request.first =~ /^[^[:space:]]{1,} http/
           end
-          #puts request.first
+
         end
 
         if request.first =~ /^CONNECT (.*):(\d{1,5}) HTTP\/1\./ then
           target = $1
           tport = $2
+
           # puts request.first
           # print "\n* CONNECT: #{target} on port #{tport}\n"
           site = "#{target}:#{tport}"
@@ -235,8 +239,13 @@ module Watobo #:nodoc: all
               }
 
               cert_file, key_file = Watobo::CA.create_cert cert
+
+              full_chain = File.read Watobo::CA.cert_file
+              server_cert = File.read(cert_file)
               @fake_certs[site] = {
-                  :cert => OpenSSL::X509::Certificate.new(File.read(cert_file)),
+                  #:cert => OpenSSL::X509::Certificate.new(File.read(cert_file)),
+                  :cert => OpenSSL::X509::Certificate.new(server_cert),
+                  :extra_chain_cert => [OpenSSL::X509::Certificate.new(full_chain)],
                   :key => OpenSSL::PKey::RSA.new(File.read(key_file))
               }
             end
@@ -247,10 +256,12 @@ module Watobo #:nodoc: all
             #  @ctx.key = OpenSSL::PKey::DSA.new(File.read(key_file))
             #ctx.key = @key
             ctx.key = @fake_certs[site][:key]
+            ctx.extra_chain_cert =  @fake_certs[site][:extra_chain_cert]
+
             ctx.tmp_dh_callback = proc {|*args|
               @dh_key
             }
-
+            
             # if ctx.respond_to? :tmp_ecdh_callback
             #   ctx.tmp_ecdh_callback = ->(*args) {
             #     called = true
@@ -455,6 +466,14 @@ module Watobo #:nodoc: all
 
       end
 
+      def self.create_ctx(cn)
+
+      end
+
+      # creates the ssl socket object
+      # @@param [TCPSocket] of client connection. typically initiated by the Browser
+      # @return [ClientSocket]
+      #
       def self.connect(socket)
         request = []
         @fake_certs ||= {}
@@ -498,8 +517,10 @@ module Watobo #:nodoc: all
               return nil, session
             end
           else
+            puts 'No connection info for session:'
             puts ci['host']
             puts ci['cn']
+            return nil, session
           end
         end
 

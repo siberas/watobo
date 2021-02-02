@@ -23,7 +23,7 @@ module Watobo #:nodoc: all
 
       def egress_handler?
         if @target.respond_to? :egress_handler?
-            return @target.egress_handler?
+          return @target.egress_handler?
         end
         false
       end
@@ -296,10 +296,11 @@ module Watobo #:nodoc: all
                   Thread.exit
                 end
 
+
                 # check if response should be passed through
                 #Thread.current.exit if isPassThrough?(req, resp, s_sock, c_sock)
                 if isPassThrough?(req, resp, s_sock, c_sock)
-                  #puts "[Interceptor] PassThrough >> #{req.url}"
+                  puts "[Interceptor] PassThrough >> #{req.url}"
                   Watobo::HTTPSocket.close s_sock
                   c_sock.close
                   Thread.exit
@@ -727,6 +728,20 @@ module Watobo #:nodoc: all
           # return false if true
           reason = nil
           clen = response.content_length
+
+          # TODO: replace with modular pass-through rules
+          if request.has_body?
+            # puts "PassThrough Check #{request.url}"
+            if request.url.to_s =~ /https:..fi.*ebp.*test.*/
+              b = request.body.to_s
+              # puts b
+              if b =~ /cmd_0=dummy/
+                c_sock.write response.join
+                pass_through(s_sock, c_sock, clen)
+                return true
+              end
+            end
+          end
 
 
           # no pass-through necessary if request method is HEAD

@@ -53,6 +53,7 @@ module Watobo #:nodoc: all
             @create_btn.connect(SEL_COMMAND) do
               puts "+ creating new sequence: #{@sequence_name_dt.value}"
               @sequence = Watobo::Sequence.new({name: @sequence_name_dt.value.to_s})
+              @list_frame.update_elements @sequence
             end
 
             @sequence_name_dt.connect(SEL_CHANGED) do
