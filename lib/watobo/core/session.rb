@@ -176,8 +176,10 @@ module Watobo #:nodoc: all
           # direct connection to host
           tcp_socket = nil
           #  timeout(6) do
-          #puts "* no proxy - direct connection"
+          # puts "* no proxy - direct connection"
           tcp_socket = TCPSocket.new(host, port)
+          #puts "Host: #{host}"
+          #puts "Port: #{port}"
           #optval = [1, 5000].pack("I_2")
           #tcp_socket.setsockopt Socket::SOL_SOCKET, Socket::SO_RCVTIMEO, optval
           #tcp_socket.setsockopt Socket::SOL_SOCKET, Socket::SO_SNDTIMEO, optval    
@@ -1112,8 +1114,7 @@ module Watobo #:nodoc: all
     def error_response(msg, comment = nil)
       er = []
       er << "HTTP/1.1 555 Watobo Error\r\n"
-      #er << "WATOBO: #{msg.gsub(/\r?\n/," ").strip}\r\n"
-      er << "WATOBO: Error\r\n"
+      er << "WATOBO-MSG: #{Base64.strict_encode64(msg)}"
       er << "Date: #{Time.now.to_s}\r\n"
       er << "Content-Length: 0\r\n"
       er << "Content-Type: text/html\r\n"

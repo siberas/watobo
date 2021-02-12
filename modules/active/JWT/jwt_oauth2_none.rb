@@ -94,7 +94,7 @@ EOD
                   if response.body.to_s.strip == body_orig.strip
 
                     addFinding(request, response,
-                               :check_pattern => token,
+                               :check_pattern => new_auth_header,
                                :proof_pattern => body_orig.strip,
                                #:test_item => '',
                                :chat => chat,

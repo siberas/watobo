@@ -23,7 +23,7 @@ EOD
           )
 
           @finding.update(
-              :threat => 'Makes enumeration of backup or renamed files easier. see also http://www.wisec.it/sectou.php?id=4698ebdc59d15', # thread of vulnerability, e.g. loss of information
+              :threat => 'Packet routing might be manipulated, which could lead to url filter evaseion.', # thread of vulnerability, e.g. loss of information
               :class => "X-HTTP-Header", # vulnerability class, e.g. Stored XSS, SQL-Injection, ...
               :rating => VULN_RATING_INFO,
               :measure => "Filter injected headers.",
@@ -37,7 +37,7 @@ EOD
             super(session_name, prefs)
             @@response_hashes = []
             @@tested_paths = []
-            @inj_headers = %w( X-Forwarded-For X-Host X-Forwarded-Server X-Forwarded-Scheme X-Original-URL X-Rewrite-URL )
+            @inj_headers = %w( X-Forwarded-For X-Host X-Forwarded-Server X-Forwarded-Host X-Forwarded-Scheme X-Original-URL X-Rewrite-URL )
 
           end
 

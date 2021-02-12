@@ -54,7 +54,7 @@ EOD
           )
 
           @finding.update(
-              :threat => 'Makes enumeration of backup or renamed files easier. see also http://www.wisec.it/sectou.php?id=4698ebdc59d15',        # thread of vulnerability, e.g. loss of information
+              :threat => 'The use of the max-forwards header might reveal sensitive information of the infrastructure.',        # thread of vulnerability, e.g. loss of information
               :class => "Max-Forwards Header",    # vulnerability class, e.g. Stored XSS, SQL-Injection, ...
               :rating => VULN_RATING_INFO,
               :measure => "Filter Max-Forwards HTTP header or supress responses with sensitive information.",

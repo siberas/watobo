@@ -1,7 +1,7 @@
 # @private
 module Watobo #:nodoc: all
   module Utils
-    # returns false if response are different
+    # returns true if responses are equal
     def self.compare_responses(one, two)
       # compare return code
       #puts "[status] #{one.status} - #{two.status}"

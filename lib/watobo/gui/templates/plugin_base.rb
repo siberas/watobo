@@ -77,7 +77,7 @@ module Watobo #:nodoc: all
         rescue => bang
           puts bang
           puts bang.backtrace
-          binding.pry
+            #binding.pry
         end
       else
         puts "WATOBO NOT IN GUI MODE!"

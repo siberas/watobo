@@ -23,7 +23,7 @@ EOD
           )
 
           @finding.update(
-              :threat => 'Makes enumeration of backup or renamed files easier. see also http://www.wisec.it/sectou.php?id=4698ebdc59d15', # thread of vulnerability, e.g. loss of information
+              :threat => 'Might identify misbehavior of the infrastructure', # thread of vulnerability, e.g. loss of information
               :class => "Header Echo", # vulnerability class, e.g. Stored XSS, SQL-Injection, ...
               :rating => VULN_RATING_INFO,
               :measure => "Filter injected headers.",

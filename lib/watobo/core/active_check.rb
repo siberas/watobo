@@ -191,7 +191,7 @@ module Watobo #:nodoc: all
       t_hex = Time.now.to_i.to_s(16)
 
       cid = "#{cn}#{t_hex}"
-      puts cid
+
       cid
     end
 
@@ -230,8 +230,11 @@ module Watobo #:nodoc: all
         #puts t_response.status
         status = t_response.status
         return false, t_request, t_response if status.empty?
-        #return true, t_request, t_response if status =~ /^403/
-        return false, t_request, t_response if status =~ /^40\d/
+        return false, t_request, t_response if status =~ /^404/ # Not Found
+
+        return true, t_request, t_response if status =~ /^405/ # Method Not Allowed
+
+
         if status =~ /^50\d/
           # puts "* ignore server errors #{Watobo::Conf::Scanner.ignore_server_errors.class}"
           return false, t_request, t_response if Watobo::Conf::Scanner.ignore_server_errors
@@ -247,6 +250,8 @@ module Watobo #:nodoc: all
 
             unless t_response.body.nil?
               return false, t_request, t_response if t_response.body.to_s =~ /#{pat}/
+              # also check if pattern exists in plain text representation of body
+              return false, t_request, t_response if Nokogiri::HTML(t_response.body.to_s).text =~ /#{pat}/
             end
           end
         end

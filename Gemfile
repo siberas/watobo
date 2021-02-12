@@ -7,3 +7,4 @@ gem 'nfqueue', '1.0.4' if RUBY_PLATFORM =~ /linux/
 gem 'net-http-pipeline', '1.0.1' if RUBY_PLATFORM =~ /linux/
 gem 'selenium-webdriver', '3.0.1'
 gem 'xmlrpc'
+gem 'pry'

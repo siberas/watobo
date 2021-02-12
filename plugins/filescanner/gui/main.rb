@@ -7,6 +7,9 @@ module Watobo #:nodoc: all
       include Watobo::Config
       #include Watobo::Plugin
 
+      # TODO: Add Evasion Menu for custom handlers
+      # TODO: Add additional Evasions-Techniques, X-Forward-... Headers
+      #
       class Gui < Watobo::PluginGui
         window_title "File Scanner"
         icon_file "filescanner.ico"
@@ -17,7 +20,8 @@ module Watobo #:nodoc: all
 
         def initialize(chat = nil)
           #super(owner, "File Finder", project, :opts => DECOR_ALL, :width => 800, :height => 600)
-          super(:opts => DECOR_ALL, :width => 1000, :height => 600, :padding => 0)
+          super(:opts => DECOR_ALL, :width => 1000, :height => 650, :padding => 0)
+          #super(:opts => DECOR_ALL, :padding => 0)
 
           @scanner = nil
           #self.extend Watobo::Subscriber
@@ -36,13 +40,13 @@ module Watobo #:nodoc: all
         end
 
         def start_scan
-          puts @settings_frame.settings
+          #  puts @settings_frame.settings
           @scanner = Watobo::Plugin::Filescanner.new( @request_frame.request, @settings_frame.settings )
-          puts @scanner.status
+          #puts @scanner.status
 
-          @scanner.run()
+          @scanner.run(@settings_frame.settings)
           start_update_timer
-          puts @scanner.status
+            #puts @scanner.status
         end
 
         private

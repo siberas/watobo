@@ -1,6 +1,6 @@
 require 'devenv'
 require 'pry'
-require 'bbhunter'
+require 'watobo'
 
 puts Watobo::Conf::General.workspace_path
 
@@ -19,29 +19,22 @@ project_name = OPTS[:project]
 session_name = OPTS[:session]
 
 unless project_name
+  puts "Need Project Name!"
   Watobo::DataStore.projects do |p|
     puts p
   end
+  exit
 end
 
 
 unless session_name
+  puts 'Need Session Name!'
   Watobo::DataStore.sessions(project_name) do |s|
     puts s
   end
+  exit
 end
 
-#ds = Watobo::DataStore.connect(project_name, session_name)
-#puts ds.num_findings
-#puts "* searching for parameters in #{ds.num_chats} chats ..."
-#pnames = []
-#ds.each_chat do |c|
-#  next unless c.request.site =~ /rtc/
-#  c.request.parameters(:url, :data, :wwwform).each do |p|
-#pnames << "#{p.name} - #{p.location} - #{c.request.path}"
-#    pnames << "#{p.name} - #{p.location}"
-#  end
-#end
 
 project = Watobo.create_project project_name: project_name, session_name: session_name
 project.setupProject
@@ -49,28 +42,6 @@ project.setupProject
 puts "= Active Checks ="
 puts Watobo.active_checks
 
-if nil
-# Watobo Scanner Settings
-  scan_prefs = Watobo::Conf::Scanner.to_h
-  puts "==="
-  puts "Scanner Configuration:"
-  puts scan_prefs
-  scan_prefs[:scanlog_name] = 'manual_scan'
-#scan_prefs.update quick_scan_options
-
-  scan_chats = []
-  @chat = Watobo::Chats.to_a.select { |c| c.request.site =~ /e\-schenke/ }.first
-  scan_chats.push Watobo::Chat.new(Watobo::Request.new(@chat.request), Watobo::Response.new(@chat.response), :id => @chat.id, :run_passive_checks => false)
-
-  ac_selection = [Watobo.active_checks[5].new(project)]
-  @scanner = Watobo::Scanner3.new(scan_chats, ac_selection, [], scan_prefs)
-
-  @scanner.run
-
-  while @scanner.status_running?
-    sleep 3
-  end
-end
 binding.pry
 
 #

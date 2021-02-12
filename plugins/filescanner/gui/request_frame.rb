@@ -32,6 +32,9 @@ module Watobo #:nodoc: all
 
             @request_tab = FXTabBook.new(self, nil, 0, :opts => LAYOUT_FILL_X, padding: 0)
 
+            #
+            # SITE / PATH TAB
+            #
             FXTabItem.new(@request_tab, "Site/Path", nil)
             frame = FXVerticalFrame.new(@request_tab, :opts => LAYOUT_FILL_X | FRAME_RAISED)
             @sites_combo = FXComboBox.new(frame, 5, nil, 0,
@@ -53,6 +56,9 @@ module Watobo #:nodoc: all
             @dir_combo.connect(SEL_COMMAND, method(:onDirSelect))
 
 
+            #
+            # CHAT-ID TAB
+            #p
             @chat_id_dt = FXDataTarget.new('')
             FXTabItem.new(@request_tab, "Chat-ID", nil)
 
@@ -69,6 +75,9 @@ module Watobo #:nodoc: all
             @select_button.connect(SEL_COMMAND) { select_chat }
 
 
+            #
+            # URL TAB
+            #
             FXTabItem.new(@request_tab, "URL", nil)
             frame = FXVerticalFrame.new(@request_tab, :opts => LAYOUT_FILL_X | FRAME_RAISED)
             FXLabel.new(frame, "Enter URL:")
@@ -170,6 +179,7 @@ module Watobo #:nodoc: all
 
                 chats = Watobo::Chats.select(@site, :method => "GET")
                 updateRequestEditor(chats.first.request)
+
                 if @project then
                   Watobo::Chats.dirs(@site) do |dir|
                     text = "/" + dir.slice(0..35)

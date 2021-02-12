@@ -129,6 +129,7 @@ module Watobo #:nodoc: all
       end
 
       def initialize(task_queue, logged_out_queue, prefs)
+
         @engine = nil
         @tasks = task_queue
         @logged_out_queue = logged_out_queue
@@ -223,9 +224,10 @@ module Watobo #:nodoc: all
 
       @prefs.update check_prefs
       msg = "\n[Scanner] Starting Scan ..."
-      # puts @prefs.to_yaml
+
       notify(:logger, LOG_INFO, msg)
       puts msg
+      puts @prefs.to_yaml if $VERBOSE
 
       # starting workers before check generation
       start_workers(@prefs)
@@ -405,10 +407,10 @@ module Watobo #:nodoc: all
     def start_workers(check_prefs)
       num_workers = @prefs.has_key?(:max_parallel_checks) ? @prefs[:max_parallel_checks] : Watobo::Conf::Scanner.max_parallel_checks
 
-      puts "Starting #{num_workers} Workers ..."
+      puts "Starting #{num_workers} Workers ..." if $VERBOSE
 
       num_workers.times do |i|
-        print "... #{i + 1}"
+        puts "... #{i + 1}" if $VERBOSE
         w = Scanner3::Worker.new(@tasks, @logged_out, check_prefs)
 
         w.subscribe(:task_finished) {|m|
@@ -431,7 +433,6 @@ module Watobo #:nodoc: all
         w.start
         @workers << w
       end
-      print "\n"
 
     end
 

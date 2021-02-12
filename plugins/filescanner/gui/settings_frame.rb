@@ -9,7 +9,6 @@ module Watobo #:nodoc: all
           include Subscriber
 
           def settings
-            puts @finder_tab.current
             db_file = case @finder_tab.current
                       when 1
                         @db_select_frame.get_db_name
@@ -18,13 +17,17 @@ module Watobo #:nodoc: all
                       end
 
 
-            {
+            s = {
                 db_file: db_file,
                 test_all_dirs: @test_all_dirs.checked?,
                 egress_handler: @egress_handler_frame.egress_handler,
                 scanlog_name: @scanlog_name_dt.value,
-                run_passive_checks: false
+                run_passive_checks: false,
+                evasion_level: @el_dt.value,
+                file_extensions: (@append_extensions_cb.checked? ? @extensions_text.text.split(';') : []),
+                evasion_extensions: ( @el_dt.value > 0 ? @l1_txt.text.split : [] )
             }
+            s
           end
 
           def initialize(ctrl, owner, opts)
@@ -55,8 +58,8 @@ module Watobo #:nodoc: all
               @finder_tab.current = 1
             end
 
-            group_box = FXGroupBox.new(self, "Depth", LAYOUT_SIDE_TOP | FRAME_GROOVE | LAYOUT_FILL_X, 0, 0, 0, 0)
-            @test_all_dirs = FXCheckButton.new(group_box, "enable scan of all sub-directories", nil, 0, ICON_BEFORE_TEXT | LAYOUT_SIDE_LEFT)
+            group_box = FXGroupBox.new(self, "Recursive", LAYOUT_SIDE_TOP | FRAME_GROOVE | LAYOUT_FILL_X, 0, 0, 0, 0)
+            @test_all_dirs = FXCheckButton.new(group_box, "enable recursive scan of all directories", nil, 0, ICON_BEFORE_TEXT | LAYOUT_SIDE_LEFT)
             @test_all_dirs.setCheck(false)
 
             group_box = FXGroupBox.new(self, "Egress Handler", LAYOUT_SIDE_TOP | FRAME_GROOVE | LAYOUT_FILL_X, 0, 0, 0, 0)
@@ -68,19 +71,55 @@ module Watobo #:nodoc: all
             mode_frame = FXVerticalFrame.new(group_box, :opts => LAYOUT_FILL_X)
             @append_slash_cb = FXCheckButton.new(mode_frame, "append /", nil, 0, ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP | LAYOUT_FILL_Y)
 
-            @append_extensions_cb = FXCheckButton.new(mode_frame, "append extensions", nil, 0, ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP | LAYOUT_FILL_Y)
+            @append_extensions_cb = FXCheckButton.new(mode_frame, "append file extensions", nil, 0, ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP | LAYOUT_FILL_Y)
             frame = FXVerticalFrame.new(mode_frame, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y | FRAME_SUNKEN | FRAME_THICK, :padding => 0)
             @extensions_text = FXText.new(frame, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y | TEXT_WORDWRAP)
             ext = "bak;php;asp;aspx;tgz;tar.gz;gz;tmp;temp;old;_"
 
             @extensions_text.setText(ext)
 
-            group_box = FXGroupBox.new(self, "Evasions", LAYOUT_SIDE_TOP | FRAME_GROOVE | LAYOUT_FILL_X, 0, 0, 0, 0)
-            mode_frame = FXVerticalFrame.new(group_box, :opts => LAYOUT_FILL_X)
-            frame = FXVerticalFrame.new(mode_frame, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y | FRAME_SUNKEN | FRAME_THICK, :padding => 0)
-            @evasions_text = FXText.new(frame, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y | TEXT_WORDWRAP)
 
+            #------------------------------------------------------------------------------------------------------------------------------
+            #  F i l t e r   E v a s i o n s
+            #
+            @el_dt = FXDataTarget.new(0)
+            @el_dt.connect(SEL_COMMAND) do
+              @rb_el0.handle(self, FXSEL(SEL_UPDATE, 0), nil)
+              @rb_el1.handle(self, FXSEL(SEL_UPDATE, 0), nil)
+              @rb_el2.handle(self, FXSEL(SEL_UPDATE, 0), nil)
+              @switcher.current = @el_dt.value
+            end
+            group_box = FXGroupBox.new(self, "Evasion Level", LAYOUT_SIDE_TOP | FRAME_GROOVE | LAYOUT_FILL_X, 0, 0, 0, 0)
+            hframe = FXHorizontalFrame.new(group_box, :opts => LAYOUT_FILL_X | LAYOUT_SIDE_TOP, :padding => 0)
+            vframe = FXVerticalFrame.new(hframe, :opts => LAYOUT_FILL_X)
+            @switcher = FXSwitcher.new(hframe, LAYOUT_FILL_X | LAYOUT_FILL_Y)
 
+            #frame = FXHorizontalFrame.new(vframe, :opts => LAYOUT_FILL_X | LAYOUT_SIDE_TOP, :padding => 0)
+            @rb_el0 = FXRadioButton.new(vframe, "None", @el_dt, FXDataTarget::ID_OPTION)
+            #frame = FXHorizontalFrame.new(vframe, :opts => LAYOUT_FILL_X | LAYOUT_SIDE_TOP, :padding => 0)
+            @rb_el1 = FXRadioButton.new(vframe, "Level 1", @el_dt, FXDataTarget::ID_OPTION + 1)
+            #@l1_btn = FXButton.new(frame, "Settings", nil, nil, 0, FRAME_RAISED|FRAME_THICK)
+            #frame = FXHorizontalFrame.new(vframe, :opts => LAYOUT_FILL_X | LAYOUT_SIDE_TOP, :padding => 0)
+            # TODO: create level 2
+            @rb_el2 = FXRadioButton.new(vframe, "Level 2", @el_dt, FXDataTarget::ID_OPTION + 2)
+            @rb_el2.disable
+            #@l2_btn = FXButton.new(frame, "Settings", nil, nil, 0, FRAME_RAISED|FRAME_THICK)
+
+            frame = FXVerticalFrame.new(@switcher, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y, :padding => 0)
+            FXLabel.new(frame, "No evasion techniques will be applied")
+
+            frame = FXVerticalFrame.new(@switcher, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y, :padding => 0)
+            FXLabel.new(frame, "Enter space separated chars/strings to append")
+            frame = FXVerticalFrame.new(frame, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y | FRAME_SUNKEN | FRAME_THICK, :padding => 0)
+            @l1_txt = FXText.new(frame, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y | TEXT_WORDWRAP)
+            @l1_txt.setText("; ?y=x.png ?debug=true")
+
+            frame = FXVerticalFrame.new(@switcher, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y, :padding => 0)
+            FXLabel.new(frame, "Not yet available")
+
+            #------------------------------------------------------------------------------------------------------------------------------
+            #  S C A N   L O G   S E T T I N G S
+            #
             group_box = FXGroupBox.new(self, "Logging", LAYOUT_SIDE_TOP | FRAME_GROOVE | LAYOUT_FILL_X, 0, 0, 0, 0)
             frame = FXVerticalFrame.new(group_box, :opts => LAYOUT_FILL_X)
             #frame = FXHorizontalFrame.new(group_box, :opts => LAYOUT_FILL_X|LAYOUT_SIDE_TOP)
