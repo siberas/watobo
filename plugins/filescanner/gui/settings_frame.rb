@@ -8,6 +8,10 @@ module Watobo #:nodoc: all
 
           include Subscriber
 
+          def settings=(s)
+
+          end
+
           def settings
             db_file = case @finder_tab.current
                       when 1

@@ -122,7 +122,6 @@ module Watobo #:nodoc: all
 
 
                 if fexist == true
-
                   addFinding(test_request, test_response,
                              :test_item => uri,
                              # :proof_pattern => "#{Regexp.quote(uri)}",

@@ -40,7 +40,9 @@ module Watobo #:nodoc: all
         end
 
         def start_scan
+          update_and_save_config
           #  puts @settings_frame.settings
+          binding.pry
           @scanner = Watobo::Plugin::Filescanner.new( @request_frame.request, @settings_frame.settings )
           #puts @scanner.status
 
@@ -50,6 +52,11 @@ module Watobo #:nodoc: all
         end
 
         private
+
+        def update_and_save_config
+
+          # TODO: update and save current settings
+        end
 
         def start_update_timer
           interval = 2000

@@ -127,7 +127,6 @@ module Watobo #:nodoc: all
         begin
           puts "[#{self.class}] stop"
           if @t_server.respond_to? :status
-            puts @t_server.status
             Thread.kill @t_server
             @intercept_srv.close
           end

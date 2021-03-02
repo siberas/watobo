@@ -30,6 +30,10 @@ module Watobo #:nodoc: all
             l
           end
 
+          def db_list=(dbl)
+
+          end
+
           def initialize(parent, db_list, opts)
             super(parent, opts)
             @db_list = []

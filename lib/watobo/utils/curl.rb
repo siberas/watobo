@@ -3,7 +3,7 @@ module Watobo
     module Curl
       REMOVE_HEADERS = %w( Content-Length Connection ).map {|h| h.downcase}
 
-      def self.create_request(request)
+      def self.create(request)
         cURL = ['curl -X ' + request.method.upcase]
         cURL << request.url_string
         request.headers[1..-1].each do |h|

@@ -96,14 +96,16 @@ traces.each do |t|
   uri = t['request']['uri']
   #if t['request']['']
   if $VERBOSE
-    puts '---'
+
     puts t['timestamp']
   end
   if uri =~ /#{OPTS[:pattern]}/
+    puts '--- TRACE ---'
     if OPTS[:infos]
       OPTS[:infos].each do |i|
         begin
-          puts eval("#{t}#{i}")
+          d = eval("#{t}#{i}")
+          puts "#{i}: #{d}"
         rescue => bang
           puts bang
           puts bang.backtrace if $DEBUG

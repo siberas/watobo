@@ -1684,7 +1684,7 @@ module Watobo #:nodoc: all
                   target.connect(SEL_COMMAND) {
                     #request = Watobo::Chats.get_by_id(chatid).request
                     request = chat.request
-                    curl = Watobo::Utils::Curl.create_request(request)
+                    curl = Watobo::Utils::Curl.create(request)
 
                     types = [FXWindow.stringType]
                     if acquireClipboard(types)

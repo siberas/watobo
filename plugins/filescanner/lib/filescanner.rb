@@ -120,6 +120,7 @@ module Watobo #:nodoc: all
 
       # @param request [Object] Watobo::Request or string
       # @param prefs [Hash]
+      #   db_file: [String] url-path to check or filename of db (list of url-paths line-separated)
       #   egress_handler: [ClassName] of handler
       #   scanlog_name: <scan_name>
       #   run_passive_checks: TrueFalse
