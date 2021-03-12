@@ -24,7 +24,6 @@ module Watobo #:nodoc: all
       end
 
       def to_a
-        binding.pry
         @headers.values
       end
 

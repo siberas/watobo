@@ -42,8 +42,8 @@ module Watobo#:nodoc: all
       def replace_text(text_box, string)
         pos = text_box.selStartPos
         len = text_box.selEndPos - pos
-        text_box.removeText(pos,len)
-        text_box.insertText(pos, string)
+        text_box.removeText(pos,len, true)
+        text_box.insertText(pos, string, true)
         text_box.setSelection(pos, string.length, true)
       end
 

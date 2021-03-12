@@ -14,7 +14,10 @@ module Watobo #:nodoc: all
 
 
         class ListFrame < FXVerticalFrame
+
           include Watobo::Subscriber
+
+
 
           def update_elements(sequence)
             @elements_frame.update_elements(sequence)
@@ -47,6 +50,7 @@ module Watobo #:nodoc: all
 
             @elements_frame = ElementsFrame.new(self)
             @elements_frame.subscribe(:element_selected){|element|
+              @elements_frame.highlight element
               notify(:element_selected, element)
             }
             @elements_frame.subscribe(:send_element){ |element|

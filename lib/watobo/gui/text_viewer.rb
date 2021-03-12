@@ -234,7 +234,6 @@ module Watobo#:nodoc: all
       end
 
       def normalizeText(text)
-        puts text
         return "" if text.nil?
         
         ntext = "#{text}"

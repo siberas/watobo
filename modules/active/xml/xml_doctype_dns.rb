@@ -4,9 +4,9 @@ module Watobo #:nodoc: all
     module Active
       module Xml
         class Xml_doctype_dns < Watobo::ActiveCheck
-  # XML Attacks
-  # https://www.vsecurity.com/download/papers/XMLDTDEntityAttacks.pdf
-  #
+          # XML Attacks
+          # https://www.vsecurity.com/download/papers/XMLDTDEntityAttacks.pdf
+          #
 
           @info.update(
               :check_name => 'XML-Doctype-DNS', # name of check which briefly describes functionality, will be used for tree and progress views
@@ -59,30 +59,29 @@ module Watobo #:nodoc: all
 
                     test_request, test_response = doRequest(test)
 
-=begin
-                  #puts test_response.status
+                    #puts test_response.status
 
-                  if test_response.has_body? and base_response.has_body?
+                    if test_response.has_body? and base_response.has_body?
 
-                    if test_response.body == base_response.body
-                      addFinding(test_request, test_response,
-                                 :test_item => "ENTITY",
-                                 :check_pattern => "ENTITY",
-                                 :chat => chat,
-                                 :title => "[#{chat.request.path}] - ENTITY",
-                                 :debug => true
-                      )
-                    elsif test_response.status_code =~ /2\d\d/
-                      addFinding(test_request, test_response,
-                                 :test_item => "ENTITY",
-                                 :check_pattern => "ENTITY",
-                                 :chat => chat,
-                                 :title => "[#{chat.request.path}] - ENTITY",
-                                 :debug => true,
-                                 :rating => VULN_RATING_MEDIUM
-                      )
+                      if test_response.body == base_response.body
+                        addFinding(test_request, test_response,
+                                   :test_item => "ENTITY",
+                                   :check_pattern => "ENTITY",
+                                   :chat => chat,
+                                   :title => "[#{chat.request.path}] - ENTITY",
+                                   :debug => true
+                        )
+                      elsif test_response.status_code =~ /2\d\d/
+                        addFinding(test_request, test_response,
+                                   :test_item => "ENTITY",
+                                   :check_pattern => "ENTITY",
+                                   :chat => chat,
+                                   :title => "[#{chat.request.path}] - ENTITY",
+                                   :debug => true,
+                                   :rating => VULN_RATING_MEDIUM
+                        )
+                      end
                     end
-=end
                   rescue => bang
                     puts bang
                     puts bang.backtrace if $DEBUG
@@ -91,12 +90,13 @@ module Watobo #:nodoc: all
                 }
                 yield checker
 
-
-              rescue => bang
-                puts bang
-                puts bang.backtrace if $DEBUG
               end
+
+            rescue => bang
+              puts bang
+              puts bang.backtrace if $DEBUG
             end
+
           end
 
           private
@@ -109,9 +109,9 @@ module Watobo #:nodoc: all
             xmlbase.document.internal_subset.remove unless xmlbase.document.internal_subset.nil?
 
             # create pattern for collab server
-            pattern = schema + '_' + Time.now.to_f.to_s.gsub(/.*\./,'')
+            pattern = schema + '_' + Time.now.to_f.to_s.gsub(/.*\./, '')
 
-            xmlbase.document.create_internal_subset('Document', 'watobo', "#{schema}://#{pattern}.collab.qimera.eu")
+            xmlbase.document.create_internal_subset('Document', 'watobo', "#{schema}://#{pattern}.#{Watobo::Conf::Scanner.dns_sensor}")
 
 
             [xmlbase, pattern]

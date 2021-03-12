@@ -5,6 +5,10 @@ module Watobo #:nodoc: all
       module Web10
         include Watobo::Constants
 
+        URL_SPLIT = '(^[^ ]*) ([^:]*):\/\/([^\/:]*)(:\d*)?([^\?]*)(.*) (HTTP.*)'
+
+        m, method, scheme, site, port, path, query = 'GET http://www.sib-er2_as.de/path/to/file?query=x HTTP/1.1'.match(/(^[^ ]*) ([^:]*):\/\/([^\/]*)(:\d*)?([^\?]*)(.*) (HTTP.*)/i).to_a
+
         def replace_post_parm(parm, value)
           parm_quoted = Regexp.quote(parm)
           self.last.gsub!(/([?&]{1}|^)#{parm_quoted}=([^&]*)(&{0,1})/i, "\\1#{parm}=#{value}\\3")
@@ -23,11 +27,21 @@ module Watobo #:nodoc: all
           begin
             file = new_file.strip
             file.gsub!(/^\//, "")
-            self.first.gsub!(/([^\?]*\/)(.*) (HTTP.*)/i, "\\1#{file} \\3")
+            m, method, scheme, site, port, path, query, version = self.first.match(/#{URL_SPLIT}/i).to_a
+            unless m.nil?
+              i = path.rindex('/')
+              new_path = i.nil? ? '/' : path[0..i]
+              new_path << new_file
+              new_site = site + (port.nil? ? '' : port)
+              self.first.gsub!(/#{Regexp.quote(new_site)}(.*)/, "#{new_site}#{new_path} #{version}")
+              return true
+            end
           rescue => bang
             puts bang
           end
+          return false
         end
+
 
         def replaceElement(new_element)
           new_element.gsub!(/^\//, "")
@@ -55,10 +69,21 @@ module Watobo #:nodoc: all
           self.first.gsub!(/(^[^[:space:]]{1,} https?:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}\/)(.*)( HTTP\/.*)/, "\\1#{dir}\\3")
         end
 
-        def set_path(path)
-          path.strip!
-          path.gsub!(/^\/+/, "")
-          self.first.gsub!(/(^[^[:space:]]{1,} https?:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}\/)(.*)( HTTP\/.*)/, "\\1#{path}\\3")
+
+        def set_path(path_name)
+          begin
+            new_path = path_name.strip
+            new_path.gsub!(/^\//, "")
+            m, method, scheme, site, port, path, query, version = self.first.match(/#{URL_SPLIT}/i).to_a
+            unless m.nil?
+              new_site = site + (port.nil? ? '' : port)
+              self.first.gsub!(/#{Regexp.quote(new_site)}(.*)/, "#{new_site}/#{new_path} #{version}")
+              return true
+            end
+          rescue => bang
+            puts bang
+          end
+          return false
         end
 
         #
@@ -84,7 +109,7 @@ module Watobo #:nodoc: all
           return self.first if fend.nil?
 
           fstart = s.rindex('/', fend)
-          unless s[fstart-1] == '/'
+          unless s[fstart - 1] == '/'
             fstart += 1 unless fstart.nil?
           else
             fstart = fend
@@ -94,7 +119,7 @@ module Watobo #:nodoc: all
           fname.gsub!(/\..*/, '')
           fname << ".#{nxt}"
 
-          ns = s[0..fstart-1]
+          ns = s[0..fstart - 1]
           ns << fname
 
           if prefs.include? :keep_query
@@ -138,6 +163,8 @@ module Watobo #:nodoc: all
           line.gsub!(/( HTTP\/.*)/, "#{new_p}=#{value}\\1")
           self.unshift(line)
         end
+
+        alias :add_url_parm :add_get_parm
 
         def addHeader(header, value)
           self_copy = []
@@ -184,11 +211,21 @@ module Watobo #:nodoc: all
 
         def rewrite_body(pattern, content)
           if self.has_body?
-            #puts "rewrite_body ... #{pattern} - #{content}"
-            b = self.pop
+            puts "rewrite_body ... #{pattern} - #{content}"
+
+            b = self.pop.force_encoding('BINARY')
+            #puts "Body Encoding: #{b.encoding}"
+            #puts "Pattern Encoding: #{pattern.encoding}"
+
+
             b.gsub!(/#{pattern}/i, content)
+
             self << b
+
+            puts self.to_s
+            return true
           end
+          false
         end
 
         def restoreURI(uri)
@@ -213,7 +250,7 @@ module Watobo #:nodoc: all
         def removeHeader(header)
           begin
 
-            while i = headers.index {|h| h =~ /#{header}/i}
+            while i = headers.index { |h| h =~ /#{header}/i }
               self.delete_at i
             end
 
@@ -242,7 +279,7 @@ module Watobo #:nodoc: all
           eou_index = line.index(/ HTTP/)
 
           unless sop_index.nil? or eou_index.nil?
-            new_line = line[0..sop_index-1]
+            new_line = line[0..sop_index - 1]
             new_line += line[eou_index..-1]
           end
 
@@ -252,7 +289,7 @@ module Watobo #:nodoc: all
         def removeCookies
           begin
             pattern = '^Cookie'
-            while i = headers.index {|h| h =~ /#{pattern}/i}
+            while i = headers.index { |h| h =~ /#{pattern}/i }
               #puts "* remove #{self[i]}"
               self.delete_at i
             end
@@ -404,7 +441,7 @@ module Watobo #:nodoc: all
                 return true
               end
 
-              if h.strip.empty? or i == self.length-1
+              if h.strip.empty? or i == self.length - 1
                 self.insert(i, new_header)
                 return true
               end

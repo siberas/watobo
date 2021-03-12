@@ -15,7 +15,7 @@ module Watobo #:nodoc: all
             begin
 
               initTable
-              puts "[#{self.class.to_s}].refresh - no samples available" if @samples.empty?
+              #   puts "[#{self.class.to_s}].refresh - no samples available" if @samples.empty?
 
               if @samples.empty?
                 appendRows(1)
@@ -49,7 +49,7 @@ module Watobo #:nodoc: all
 
           end
 
-          alias :refresh :updateTable
+          alias :refreshTable :updateTable
 
           def initialize(owner, prefs)
             super(owner, prefs)

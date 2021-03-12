@@ -34,24 +34,30 @@ module Watobo#:nodoc: all
             measure = "Update to newest AXIS version."
 
             @checked_paths = Hash.new
+
             @traversals = [
-                '../conf/axis2.xml',
-                '../../../../../../../etc/passwd'
-                        ]
+                ["../../../../../../../etc/passwd",'root:[^:]+:\w+:\w+' ],
+                ["../../../../../../../etc/passwd%00",'root:[^:]+:\w+:\w+' ],
+                ["../../../../../../../boot.ini", Regexp.quote('[boot loader]')],
+                ["../../../../../../../boot.ini%00", Regexp.quote('[boot loader]')],
+                ['../conf/axis2.xml','org.apache.axis2']
+            ]
+
+
           end
 
           def generateChecks(chat)
             wp = chat.request.path
             unless @checked_paths.has_key?(wp)
                 @checked_paths[wp] = :checked
-                @traversals.each do |tf|
+                @traversals.each do |tf, pattern|
                     checker = proc {
 
                       test = chat.copyRequest
                       param = UrlParameter.new(name: 'xsd', value: tf)
                       test.set param
                       status, test_request, test_response = fileExists?(test, :default => true)
-                      if status == true
+                      if test_response.body.to_s =~ /#{pattern}/i
                         #test_chat = Chat.new(test, test_response,chat.id)
                         # resource = "/" + test_request.resource
                         addFinding( test_request, test_response,

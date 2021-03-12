@@ -97,20 +97,30 @@ module Watobo #:nodoc: all
         #  puts line.unpack("H*")
         #end
         #puts
-        if current_prefs[:update_contentlength] == true and request.has_body? then
-          #puts request.body.unpack("H*")[0]
-          #puts (request.body.unpack("H*")[0].length / 2).to_s
+        if current_prefs[:update_contentlength] == true
+          if request.has_body? then
+            #puts request.body.unpack("H*")[0]
+            #puts (request.body.unpack("H*")[0].length / 2).to_s
 
-          request.fix_content_length()
-          #puts "New: #{request.content_length}"
-          #puts request.body.encoding
-          #puts "--"
+            request.fix_content_length
+            #puts "New: #{request.content_length}"
+            #puts request.body.encoding
+            #puts "--"
+          else
+            #request.set_header('Content-Length', 0)
+            if request.method =~ /(post|put)/i
+              request.fix_content_length
+            else
+              request.removeHeader('Content-Length')
+            end
+          end
         end
 
         #
         # Engress Handler
         unless current_prefs[:egress_handler].nil?
           unless current_prefs[:egress_handler].empty?
+            puts "+ create EgressHandler #{current_prefs[:egress_handler]}" if $DEBUG
             h = Watobo::EgressHandlers.create current_prefs[:egress_handler]
             unless h.nil?
               h.execute request
@@ -170,8 +180,10 @@ module Watobo #:nodoc: all
           # direct connection to host
           tcp_socket = nil
           #  timeout(6) do
-          #puts "* no proxy - direct connection"
+          # puts "* no proxy - direct connection"
           tcp_socket = TCPSocket.new(host, port)
+          #puts "Host: #{host}"
+          #puts "Port: #{port}"
           #optval = [1, 5000].pack("I_2")
           #tcp_socket.setsockopt Socket::SOL_SOCKET, Socket::SO_RCVTIMEO, optval
           #tcp_socket.setsockopt Socket::SOL_SOCKET, Socket::SO_SNDTIMEO, optval    
@@ -497,7 +509,8 @@ module Watobo #:nodoc: all
         }
       end
       @session = @@settings[session] # shortcut to settings
-      @session.update prefs
+
+      @session.update prefs.to_h
 
       #  @valid_csrf_tokens = Hash.new
 
@@ -520,12 +533,12 @@ module Watobo #:nodoc: all
 
       begin
         if response.is_chunked?
-          Watobo::HTTPSocket.readChunkedBody(socket) {|c|
+          Watobo::HTTPSocket.readChunkedBody(socket) { |c|
             data += c
           }
         elsif clen > 0
           #  puts "* read #{clen} bytes for body"
-          Watobo::HTTPSocket.read_body(socket, :max_bytes => clen) {|c|
+          Watobo::HTTPSocket.read_body(socket, :max_bytes => clen) { |c|
 
             data += c
             break if data.length == clen
@@ -830,7 +843,7 @@ module Watobo #:nodoc: all
 
 
             if cl > 0
-              Watobo::HTTPSocket.read_body(tcp_socket) {|d|
+              Watobo::HTTPSocket.read_body(tcp_socket) { |d|
                 # puts d
               }
             end
@@ -970,7 +983,7 @@ module Watobo #:nodoc: all
         return response_header
       end
 
-      Watobo::HTTPSocket.read_body(tcp_socket, :max_bytes => clen) {|d|
+      Watobo::HTTPSocket.read_body(tcp_socket, :max_bytes => clen) { |d|
         #puts d
       }
 
@@ -1105,8 +1118,7 @@ module Watobo #:nodoc: all
     def error_response(msg, comment = nil)
       er = []
       er << "HTTP/1.1 555 Watobo Error\r\n"
-      #er << "WATOBO: #{msg.gsub(/\r?\n/," ").strip}\r\n"
-      er << "WATOBO: Error\r\n"
+      er << "WATOBO-MSG: #{Base64.strict_encode64(msg)}"
       er << "Date: #{Time.now.to_s}\r\n"
       er << "Content-Length: 0\r\n"
       er << "Content-Type: text/html\r\n"
@@ -1213,7 +1225,7 @@ module Watobo #:nodoc: all
     # patterns - pattern expressions, similar to session-id-patterns, e.g.  /name="(sessid)" value="([0-9a-zA-Z!-]*)"/
     def updateRequestPattern(request, cache, patterns)
 
-      request.map! {|line|
+      request.map! { |line|
         res = line
         patterns.each do |pat|
           begin

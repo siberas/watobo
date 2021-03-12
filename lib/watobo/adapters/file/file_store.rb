@@ -1,6 +1,6 @@
 # @private 
 module Watobo#:nodoc: all
-  class FileSessionStore < SessionStore
+  class FileSessionStore_UNUSED < SessionStore
     def num_chats
       get_file_list(@conversation_path, "*-chat*").length
     end

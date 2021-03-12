@@ -21,17 +21,32 @@ module Watobo #:nodoc: all
         return false
       end
 
+      def egress_handler?
+        if @target.respond_to? :egress_handler?
+          return @target.egress_handler?
+        end
+        false
+      end
+
+      def egress_handler
+        if @target.respond_to? :egress_handler
+          handler = @target.egress_handler
+          return handler
+        end
+        nil
+      end
+
 
       def watobo_srv_get(file)
         srv_file = file.empty? ? File.join(@srv_path, 'index.html') : File.join(@srv_path, file)
         if File.exist? srv_file
           ct = case srv_file
-                 when /\.ico/
-                   "image/vnd.microsoft.icon"
-                 when /\.htm/
-                   'text/html; charset=iso-8859-1'
-                 else
-                   'text/plain'
+               when /\.ico/
+                 "image/vnd.microsoft.icon"
+               when /\.htm/
+                 'text/html; charset=iso-8859-1'
+               else
+                 'text/plain'
                end
           headers = ["HTTP/1.0 200 OK", "Server: Watobo-Interceptor", "Connection: close", "Content-Type: #{ct}"]
           content = File.open(srv_file, "rb").read
@@ -112,7 +127,6 @@ module Watobo #:nodoc: all
         begin
           puts "[#{self.class}] stop"
           if @t_server.respond_to? :status
-            puts @t_server.status
             Thread.kill @t_server
             @intercept_srv.close
           end
@@ -181,7 +195,7 @@ module Watobo #:nodoc: all
                     Thread.exit
                   end
 
-                  url = (request.url.to_s.length > 65) ? request.url.to_s.slice(0, 65) + "..." : request.url.to_s
+                  url = (request.url.to_s.length > 71) ? request.url.to_s.slice(0, 71) + " ..." : request.url.to_s
                   puts "\n[I] #{url}"
 
                 rescue => bang
@@ -198,7 +212,7 @@ module Watobo #:nodoc: all
                 #end
 
                 # check if preview is requested
-                if request.host =='watobo.localhost' or request.first =~ /WATOBOPreview/ then
+                if request.host == 'watobo.localhost' or request.first =~ /WATOBOPreview/ then
                   if request.first =~ /WATOBOPreview=([0-9a-zA-Z]*)/ then
                     hashid = $1
                     response = @preview[hashid]
@@ -249,14 +263,23 @@ module Watobo #:nodoc: all
                   end
                 end
 
+                prefs = {
+                    :update_sids => true,
+                    :update_session => false,
+                    :update_contentlength => true,
+                    :www_auth => @www_auth
+                }
+
+
+                if egress_handler?
+                  prefs[:egress_handler] = egress_handler
+                end
+
                 begin
-                  s_sock, req, resp = sender.sendHTTPRequest(request,
-                                                             :update_sids => true,
-                                                             :update_session => false,
-                                                             :update_contentlength => true,
-                                                             :www_auth => @www_auth
+                  puts "+ [PROXY] sending request: \n#{request}\n\n#{prefs.to_json}" if $DEBUG
+                  s_sock, req, resp = sender.sendHTTPRequest(request, prefs)
                   # :client_certificates => @client_certificates
-                  )
+                  #)
                   if s_sock.nil? then
                     puts "s_sock is nil! bye, bye, ..."
                     puts request if $DEBUG
@@ -272,10 +295,11 @@ module Watobo #:nodoc: all
                   Thread.exit
                 end
 
+
                 # check if response should be passed through
                 #Thread.current.exit if isPassThrough?(req, resp, s_sock, c_sock)
                 if isPassThrough?(req, resp, s_sock, c_sock)
-                  #puts "[Interceptor] PassThrough >> #{req.url}"
+                  puts "[Interceptor] PassThrough >> #{req.url}"
                   Watobo::HTTPSocket.close s_sock
                   c_sock.close
                   Thread.exit
@@ -414,9 +438,15 @@ module Watobo #:nodoc: all
         @www_auth = Watobo::Conf::Scanner.www_auth
       end
 
-      def initialize(settings=nil)
+      def initialize(settings = nil)
         @event_dispatcher_listeners = Hash.new
-        @pass_through_hosts = ['safebrowsing.*google\.com', 'download.cdn.mozilla.net', 'shavar.services.mozilla.com']
+        @pass_through_hosts = ['safebrowsing.*google(api)?.com$',
+                               'download.cdn.mozilla.net',
+                               'services.mozilla.com$',
+                               'tracking-protection.cdn.mozilla.net$',
+                               'classify-client.services.*mozilla.com$'
+        ]
+
         begin
 
           puts
@@ -697,6 +727,20 @@ module Watobo #:nodoc: all
           # return false if true
           reason = nil
           clen = response.content_length
+
+          # TODO: replace with modular pass-through rules
+          if request.has_body?
+            # puts "PassThrough Check #{request.url}"
+            if request.url.to_s =~ /https:..fi.*ebp.*test.*/
+              b = request.body.to_s
+              # puts b
+              if b =~ /cmd_0=dummy/
+                c_sock.write response.join
+                pass_through(s_sock, c_sock, clen)
+                return true
+              end
+            end
+          end
 
 
           # no pass-through necessary if request method is HEAD

@@ -9,7 +9,7 @@ module Watobo #:nodoc: all
 
     @icon_file = nil
 
-    def self.get_icon
+    def self.get_icon_file
       @icon_file
     end
 
@@ -21,13 +21,18 @@ module Watobo #:nodoc: all
       dummy.pop
       file = dummy.join(":")
 
-      @icon_file = File.join(File.dirname(file), "..", "icons", icon_file)
+      @icon_file = File.expand_path(File.join(File.dirname(file), "..", "icons", icon_file))
     end
 
     def load_icon
-      icon = self.class.get_icon
-      # puts "* loading icon > #{icon}"
-      self.icon = Watobo::Gui.load_icon(icon) unless icon.nil?
+      icon_file = self.class.get_icon_file
+
+      puts "[Plugin2] loading icon: #{icon_file}" if $VERBOSE
+      # icon = Watobo::Gui.load_icon(icon_file) unless icon_file.nil? didn't work???
+      picon = icon_file.nil? ? nil : Watobo::Gui.load_icon(icon_file)
+      #  puts picon.class
+      setIcon picon
+      setMiniIcon picon
     end
 
     def subscribe(event, &callback)

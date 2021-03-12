@@ -23,8 +23,8 @@ module Watobo #:nodoc: all
 
             @text = Watobo::Gui::SimpleTextView.new(self, :opts => FRAME_THICK | FRAME_SUNKEN | LAYOUT_FILL_X | LAYOUT_FILL_Y)
             @text.editable = true
-            @text.subscribe(:text_change) do
-              notify(:text_change)
+            @text.subscribe(:text_changed) do
+              notify(:text_changed)
             end
           end
         end

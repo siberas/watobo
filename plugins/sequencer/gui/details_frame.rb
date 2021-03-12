@@ -14,6 +14,7 @@ module Watobo #:nodoc: all
 
             @request_frame.request = @element.request
             @post_script_frame.script = @element.post_script
+            @pre_script_frame.script = @element.pre_script
             @apply_btn.enable
           end
 
@@ -38,19 +39,26 @@ module Watobo #:nodoc: all
             @req_opt_tab = FXTabItem.new(@tabbook, "Request", nil)
             #frame = FXVerticalFrame.new(@tabbook, :opts => FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_FILL_Y)
             @request_frame = RequestFrame.new( @tabbook, FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_FILL_Y)
+
             @request_frame.subscribe(:text_changed) do
-              puts "Text in editor changed"
+              #puts "Text in editor changed"
               element_changed
             end
             #@req_opt_tab.disable
 
 
             @prescript_tab = FXTabItem.new(@tabbook, "Pre-Script", nil)
-            frame = FXVerticalFrame.new(@tabbook, :opts => FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_FILL_Y)
+            @pre_script_frame = PreScriptFrame.new(@tabbook, FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_FILL_Y)
+            @pre_script_frame.subscribe(:text_changed) do
+              element_changed
+            end
+
 
             @postscript_tab = FXTabItem.new(@tabbook, "Post-Script", nil)
             @post_script_frame = PostScriptFrame.new(@tabbook, FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_FILL_Y)
-
+            @post_script_frame.subscribe(:text_changed) do
+              element_changed
+            end
             @vars_tab = FXTabItem.new(@tabbook, "Vars", nil)
             frame = FXVerticalFrame.new(@tabbook, :opts => FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_FILL_Y)
 
@@ -60,11 +68,15 @@ module Watobo #:nodoc: all
           private
 
           def apply_changes
+            return false if @element.nil? # this should not happen!
             @apply_btn.textColor = 'black'
             @element.request = @request_frame.request
             @element.post_script = @post_script_frame.script
-            notify(:element_changed)
 
+            @element.pre_script = @pre_script_frame.script
+            @element.egress_handler = @pre_script_frame.egress_handler
+            notify(:element_changed)
+            true
           end
 
           def element_changed

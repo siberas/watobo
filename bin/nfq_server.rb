@@ -1,6 +1,7 @@
 #!/usr/bin/ruby
 require 'drb'
 require 'yaml'
+require 'json'
 require 'openssl'
 
 begin
@@ -69,17 +70,39 @@ module Watobo#:nodoc: all
         return {}
       end
 
-      def initialize
+      def initialize(config=nil)
         @connections = Hash.new
         @cert_list = Hash.new
         @netqueue_lock = Mutex.new
-        @dh_key = OpenSSL::PKey::DH.new(512)
+        puts "Generating DH Key ..."
+        @dh_key = OpenSSL::PKey::DH.new(2048)
+        print "OK\n"
         @nfqueue = start
+        @cfg = nil
+        @client_certs={}
+        unless config.nil?
+          @cfg = JSON.parse(File.read(config))
+
+          if @cfg['cert_file'] =~/\.p12$/
+
+            file = File.join(File.dirname(config), @cfg['cert_file'])
+            puts "+ load PKCS12 certificate from file #{file}"
+            p12 = OpenSSL::PKCS12.new( File.read(file), @cfg['password'])
+            @client_certs[@cfg['ip_addr']] = {
+                cert: p12.certificate,
+                key: p12.key
+            }
+
+
+          end
+
+        end
       end
 
       def acquire_cert(host, port)
 
         begin
+          puts "[AcquireCert] #{host}:#{port} ..."
           tcp_socket = TCPSocket.new( host, port )
           tcp_socket.setsockopt( Socket::SOL_SOCKET, Socket::SO_KEEPALIVE, 1)
           tcp_socket.sync = true
@@ -88,6 +111,12 @@ module Watobo#:nodoc: all
           ctx.tmp_dh_callback = proc { |*args|
             @dh_key
           }
+
+          if !!@client_certs[host]
+            puts "+ got client cert for host #{host}"
+            ctx.cert = @client_certs[host][:cert]
+            ctx.key = @client_certs[host][:key]
+          end
 
           socket = OpenSSL::SSL::SSLSocket.new(tcp_socket, ctx)
 
@@ -165,7 +194,9 @@ module Watobo#:nodoc: all
   end
 end
 
-DRb.start_service "druby://127.0.0.1:9090", Watobo::NFQ::Connections.new
+@config = ARGV[0]
+
+DRb.start_service "druby://127.0.0.1:9090", Watobo::NFQ::Connections.new( @config)
 #puts DRb.uri
 DRb.thread.join
 

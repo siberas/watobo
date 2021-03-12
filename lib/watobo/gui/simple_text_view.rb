@@ -6,17 +6,13 @@ module Watobo
       attr_accessor :style
       attr_accessor :max_len
 
+      include Watobo::Subscriber
+
       include Watobo::Constants
       include Watobo::Gui::Utils
 
       public
-      def subscribe(event, &callback)
-        (@event_dispatcher_listeners[event] ||= []) << callback
-      end
 
-      def clearEvents(event)
-        @event_dispatcher_listener[event].clear
-      end
 
       def resetMatches()
         @pattern_matches.clear
@@ -100,6 +96,9 @@ module Watobo
 
         @textbox.connect(SEL_REPLACED, method(:onTextChanged))
         @textbox.connect(SEL_DELETED, method(:onTextChanged))
+        @textbox.connect(SEL_INSERTED, method(:onTextChanged))
+
+        #@textbox.connect(SEL_CHANGED, method(:onTextChanged))
 
         @textbox.connect(SEL_RIGHTBUTTONRELEASE) do |sender, sel, event|
 
@@ -215,12 +214,7 @@ module Watobo
       end
 
       def highlight(pattern)
-        sindex = nil
-        eindex = nil
-
-        dummy = @textbox.to_s
-        #remove previous highlighting
-        @textbox.setText(dummy)
+        @textbox.killHighlight
 
         matchPattern(pattern)
 
@@ -242,7 +236,7 @@ module Watobo
         return false if match_index > (@pattern_matches.length - 1)
         if @pattern_matches[match_index] then
           pos = @pattern_matches[match_index][0]
-          len =@pattern_matches[match_index][1]
+          #len =@pattern_matches[match_index][1]
 
           @textbox.setCenterLine(pos)
 
@@ -250,7 +244,7 @@ module Watobo
           @textbox.makePositionVisible(@textbox.lineEnd(pos))
           @textbox.makePositionVisible(pos)
 
-          @textbox.setCursorPos(pos)
+          #@textbox.setCursorPos(pos)
         end
         return true
       end
@@ -311,13 +305,6 @@ module Watobo
 
       private
 
-      def notify(event, *args)
-        if @event_dispatcher_listeners[event]
-          @event_dispatcher_listeners[event].each do |m|
-            m.call(*args) if m.respond_to? :call
-          end
-        end
-      end
 
       def normalizeText(text, replace_char='')
         begin
@@ -336,8 +323,15 @@ module Watobo
         text.join
       end
 
-      def onTextChanged(sender, sel, changed)
+      def onTextChanged(fx_text, event, fx_text_change)
         begin
+          #  o = fx_text_change
+          #puts " .del -> #{o.del}"
+          #puts " .ins -> #{o.ins}"
+          #puts " .ndel -> #{o.ndel}"
+          #puts " .nins -> #{o.nins}"
+          #puts " .pos -> #{o.pos}"
+
           notify(:text_changed)
         rescue => bang
           puts "!!!ERROR: onTextChanged"

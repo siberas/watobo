@@ -1,6 +1,6 @@
 # http://www.ietf.org/rfc/rfc2396.txt
 # http://en.wikipedia.org/wiki/URI_scheme
-
+# URI = scheme:[//authority]path[?query][#fragment]
 #
 # http://www.mysite.com:80/my/path/show.php?p=aaa&debug=true
 #
@@ -164,18 +164,11 @@ module Watobo #:nodoc: all
         end
 
         def doctype
-          /.*\/.*?\.(\w{2,4})(\?| )/.match(self.first)
-          #   puts $1
+          # /.*\/.*?\.(\w{2,4})(\?| )/.match(self.first)
+          /\.(\w{2,4})/.match(self.file)
+
           return $1 unless $1.nil?
           return ''
-          #dummy = self.first.gsub(/\?+/,"?")
-          #parts = dummy.split('?')
-          #parts[0].gsub!(/ HTTP\/(.*)/i,"")
-          #if parts[0] =~ /(.*\.)(\w{2,3})$/i then
-          #  return $2
-          #else
-          #  return ''
-          #end
         end
 
         def proto
@@ -603,7 +596,7 @@ module Watobo #:nodoc: all
         def body
           begin
             return nil if self.nil? or self.length < 3
-            return "#{self.last}" if self[-2].strip.empty?
+            return "#{self.last.force_encoding('BINARY')}" if self[-2].strip.empty?
           rescue
             return nil
           end
@@ -718,11 +711,24 @@ module Watobo #:nodoc: all
           return cs
         end
 
+        def header_names(filter=nil, &b)
+          hnames = []
+          headers do |h|
+            hsi = h.index(':')
+            next if hsi.nil?
+            hname = h[0..hsi-1]
+            yield hname if block_given?
+            hnames << hname
+          end
+          hnames
+        end
+
         def headers(filter=nil, &b)
           begin
             filter = '.*' if filter.nil?
             header_list=[]
-            self.each do |line|
+            self.each do |hl|
+              line = "#{hl}"
               cl = line.force_encoding('ASCII-8BIT')
               return header_list if cl.strip.empty?
               if cl =~ /#{filter}/

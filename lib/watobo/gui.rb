@@ -137,6 +137,7 @@ end
 require 'watobo/gui/templates/plugin'
 require 'watobo/gui/templates/plugin2'
 require 'watobo/gui/templates/plugin_base'
+require 'watobo/gui/subframes/egress_handler_selection'
 
 require 'watobo/gui/sequencer/sequencer'
 require 'watobo/gui/main_window'

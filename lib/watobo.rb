@@ -41,6 +41,7 @@ require 'stringio'
 require 'mechanize'
 require 'jwt'
 require 'ostruct'
+require 'erb'
 
 print '+ looking for DEV_ENV environment variable ...'
 if ENV['DEV_ENV']
@@ -75,6 +76,9 @@ require 'watobo/framework'
 require 'watobo/parser'
 require 'watobo/interceptor'
 require 'watobo/sockets'
+
+require 'watobo/transformers/multipart'
+
 
 # WORKAROUND FOR LINUX :(
 #dont_know_why_REQUIRE_hangs = Mechanize.new

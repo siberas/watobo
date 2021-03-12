@@ -1,8 +1,9 @@
 # @private 
 module Watobo #:nodoc: all
   module Gui
-    class ProgressWindow < FXTopWindow
-      def increment(x)
+    #class ProgressWindow < FXTopWindow
+    class ProgressWindow < FXProgressDialog
+      def increment_UNUSED(x)
         @update_lock.synchronize do
           @increment += x
         end
@@ -48,6 +49,7 @@ module Watobo #:nodoc: all
 
       def start_update_timer
         FXApp.instance.addTimeout(500, :repeat => true) {
+
           @update_lock.synchronize do
             @title_lbl.text = @title
             @task_lbl.text = @task
@@ -56,6 +58,8 @@ module Watobo #:nodoc: all
             @pbar.increment(@increment)
             @increment = 0
             @pbar.total = @total
+            #self.handle(self, FXSEL(SEL_UPDATE, 0), nil)
+            self.forceRefresh
           end
         }
       end

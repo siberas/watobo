@@ -36,6 +36,7 @@ module Watobo #:nodoc: all
 
         def initialize(owner, project=nil, chat=nil)
           super(owner, "SQLMap", project, :opts => DECOR_ALL, :width => 800, :height => 600)
+
           @plugin_name = "SQLMap"
 
           FXMAPFUNC(SEL_COMMAND, ID_ACCEPT, :onAccept)

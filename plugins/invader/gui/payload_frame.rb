@@ -69,7 +69,7 @@ module Watobo #:nodoc: all
 
           def init_payloads
             Invader::GeneratorFactory.each do |generator|
-              puts "* create FXFrame for #{generator.class.to_s}"
+              #  puts "* create FXFrame for #{generator.class.to_s}"
               # create class name for generator options frame,
               # e.g. Watobo::Plugin::Invader::Gui::<Generator>Options
               base = generator.class.to_s.gsub(/.*::/, '')

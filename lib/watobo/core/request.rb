@@ -80,6 +80,7 @@ module Watobo #:nodoc: all
 
     def parameters(*locations, &block)
       plocs = @valid_param_locations
+      locations = [] if locations.first == :all
       unless locations.empty?
         plocs = @valid_param_locations.select {|loc| locations.include? loc}
       end

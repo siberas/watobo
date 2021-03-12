@@ -77,7 +77,7 @@ module Watobo #:nodoc: all
         rescue => bang
           puts bang
           puts bang.backtrace
-          binding.pry
+            #binding.pry
         end
       else
         puts "WATOBO NOT IN GUI MODE!"
@@ -161,12 +161,12 @@ module Watobo #:nodoc: all
       return false if ipath.nil? or ifile.nil?
 
       myicon = File.join(ipath, ifile)
-      puts "* loading icon > #{myicon}"
+      puts "* loading icon > #{myicon}" if $VERBOSE
       if File.exist? myicon
         #puts "* loading icon > #{myicon}"
-        self.icon = Watobo::Gui.load_icon(myicon) unless myicon.nil?
-      else
-        self.icon = nil
+        picon = Watobo::Gui.load_icon(myicon)
+        setIcon picon if getIcon.nil?
+        setMiniIcon picon if getIcon.nil?
       end
     end
 

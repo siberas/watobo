@@ -42,17 +42,22 @@ module Watobo #:nodoc: all
 
       unless o[:reverse]
         @chats.each do |c|
-          if c.request.site == site then
-            matches.push c if c.request.url.to_s =~ /#{pattern}/
-            yield c if block_given?
+          if c.request.site =~ /#{site}/ then
+            if c.request.url.to_s =~ /#{pattern}/
+              matches.push c
+              yield c if block_given?
+            end
           end
           return matches if o[:max_count] > 0 and matches.length >= o[:max_count]
         end
       else
         @chats.reverse_each do |c|
-          if c.request.site == site then
-            matches.push c if c.request.url.to_s =~ /#{pattern}/
-            yield c if block_given?
+          if c.request.site =~ /#{site}/ then
+            if c.request.url.to_s =~ /#{pattern}/
+              matches.push c
+              yield c if block_given?
+            end
+
           end
           return matches if o[:max_count] > 0 and matches.length >= o[:max_count]
         end
@@ -61,8 +66,24 @@ module Watobo #:nodoc: all
 
     end
 
-    # select chats by request options
+    # selects all chats containing a request param <name>
+    def self.with_param(name, *location, &block)
+      cwp = []
+      @chats.each do |c|
+        ps = c.request.parameters *location
 
+        match = ps.select { |p| p.name =~ /^#{name}$/i }
+        if match.length > 0
+
+          cwp << c
+          yield c if block_given?
+        end
+      end
+      cwp
+    end
+
+    # select chats by request options
+    #
     def self.select(site, opts = {}, &block)
       o = {
           :dir => "",
@@ -128,30 +149,45 @@ module Watobo #:nodoc: all
       return list.keys
     end
 
+    # @return [Array] list of directory names
+    #
     def self.dirs(site, list_opts = {}, &block)
       opts = {:base_dir => "",
-              :include_subdirs => true
+              :include_subdirs => true,
+              :recursive => false
       }
       opts.update(list_opts) if list_opts.is_a? Hash
-      list = Hash.new
+      # remove leading slash from basedir
+      opts[:base_dir] = opts[:base_dir].gsub(/^\//, '')
+
+      dir_list = []
       @chats.each do |chat|
         next if chat.request.site != site
-        next if list.has_key?(chat.request.path)
-        next if opts[:base_dir] != "" and chat.request.path !~ /^#{Regexp.quote(opts[:base_dir])}/
+        next if dir_list.include?(chat.request.path)
+        next if !opts[:base_dir].empty? and chat.request.path !~ /^#{Regexp.quote(opts[:base_dir])}/
+
         subdirs = chat.request.subDirs
         subdirs.each do |dir|
-          next if dir.nil?
-          next if list.has_key?(dir)
-          list[dir] = :path
-          if opts[:include_subdirs] == true then
+          next if dir.nil? or dir.empty?
+          next if dir_list.include? dir
+          # we need to check dir against base_dir because subDir function returns also minor path values
+          next unless dir.match?(opts[:base_dir])
+
+          if opts[:include_subdirs] == true
             yield dir if block_given?
+            dir_list << "#{dir}"
           else
-            d = dir.gsub(/#{Regexp.quote(opts[:base_dir])}/, "")
-            yield dir unless d =~ /\// and block_given?
-            # otherwise it is a subdir of base_dir
+            d = dir.gsub(/#{Regexp.quote(opts[:base_dir])}/, '')
+            d.gsub!(/^\//, '')
+            unless d.match?(/\//)
+              dir_list << "#{dir}"
+              yield dir if block_given?
+            end
           end
         end
       end
+      dir_list.uniq!
+      dir_list.sort_by { |dir| dir.length }
     end
 
     def self.get_by_id(chatid)
@@ -190,7 +226,7 @@ module Watobo #:nodoc: all
     def self.each(&block)
       if block_given?
         @chats_lock.synchronize do
-          @chats.map {|c| yield c}
+          @chats.map { |c| yield c }
         end
       end
     end
@@ -297,7 +333,7 @@ module Watobo #:nodoc: all
         end
 
         if filter.has_key?(:status_codes) and not filter[:status_codes].empty?
-          return false if filter[:status_codes].find_index {|i| chat.response.status =~ /#{i}/}.nil?
+          return false if filter[:status_codes].find_index { |i| chat.response.status =~ /#{i}/ }.nil?
         end
 
         if filter.has_key?(:mime_types) and not filter[:mime_types].empty?

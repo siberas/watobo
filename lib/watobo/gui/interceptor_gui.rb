@@ -16,11 +16,11 @@ module Watobo #:nodoc: all
 
         @event_dispatcher_listeners = Hash.new
 
-        text_view_header = FXHorizontalFrame.new(self, :opts => LAYOUT_FILL_X|LAYOUT_SIDE_BOTTOM|LAYOUT_FIX_HEIGHT, :height => 24, :padding => 0)
+        text_view_header = FXHorizontalFrame.new(self, :opts => LAYOUT_FILL_X | LAYOUT_SIDE_BOTTOM | LAYOUT_FIX_HEIGHT, :height => 24, :padding => 0)
 
         #@auto_apply_cbtn.connect(SEL_COMMAND, method(:onInterceptChanged))
 
-        @pmatch_btn = FXButton.new(text_view_header, "<", nil, nil, 0, FRAME_RAISED|LAYOUT_FILL_Y)
+        @pmatch_btn = FXButton.new(text_view_header, "<", nil, nil, 0, FRAME_RAISED | LAYOUT_FILL_Y)
         @pmatch_btn.disable
 
         @pmatch_btn.connect(SEL_COMMAND) {
@@ -36,7 +36,7 @@ module Watobo #:nodoc: all
         @match_pos_label = FXLabel.new(text_view_header, "0/0", :opts => LAYOUT_FILL_Y)
         @match_pos_label.textColor = 'grey'
 
-        @nmatch_btn = FXButton.new(text_view_header, ">", nil, nil, 0, FRAME_RAISED|LAYOUT_FILL_Y)
+        @nmatch_btn = FXButton.new(text_view_header, ">", nil, nil, 0, FRAME_RAISED | LAYOUT_FILL_Y)
         @nmatch_btn.disable
 
         @nmatch_btn.connect(SEL_COMMAND) {
@@ -56,7 +56,7 @@ module Watobo #:nodoc: all
         # :target => @filter_dt, :selector => FXDataTarget::ID_VALUE,
         # :opts => FRAME_SUNKEN|FRAME_THICK|LAYOUT_FILL_X|LAYOUT_FILL_Y)
 
-        @filter_text = FXComboBox.new(text_view_header, 20, @filter_dt, 0, FRAME_SUNKEN|FRAME_THICK|LAYOUT_SIDE_TOP|LAYOUT_FILL_X)
+        @filter_text = FXComboBox.new(text_view_header, 20, @filter_dt, 0, FRAME_SUNKEN | FRAME_THICK | LAYOUT_SIDE_TOP | LAYOUT_FILL_X)
         @filter_text.connect(SEL_COMMAND) {
           applyFilter()
           addFilterHistory()
@@ -67,18 +67,18 @@ module Watobo #:nodoc: all
         }
         inputFieldHotkeyHandler(@filter_text)
 
-        @auto_select_cbtn = FXCheckButton.new(text_view_header, "auto-select", nil, 0, ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP|LAYOUT_RIGHT|LAYOUT_FILL_Y)
+        @auto_select_cbtn = FXCheckButton.new(text_view_header, "auto-select", nil, 0, ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP | LAYOUT_RIGHT | LAYOUT_FILL_Y)
         #@mode_btn = FXButton.new(text_view_header, "Highlight", :opts=> MENUBUTTON_DOWN|FRAME_RAISED|FRAME_THICK|ICON_AFTER_TEXT|LAYOUT_RIGHT|LAYOUT_FILL_Y)
 
-        reset_button = FXButton.new(text_view_header, "&Reset", nil, nil, 0, FRAME_RAISED|FRAME_THICK|LAYOUT_FILL_Y)
+        reset_button = FXButton.new(text_view_header, "&Reset", nil, nil, 0, FRAME_RAISED | FRAME_THICK | LAYOUT_FILL_Y)
         reset_button.connect(SEL_COMMAND) { resetTextbox() }
 
         #-----------------------
-        text_frame = FXVerticalFrame.new(self, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_SUNKEN|FRAME_THICK, :padding => 0)
+        text_frame = FXVerticalFrame.new(self, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y | FRAME_SUNKEN | FRAME_THICK, :padding => 0)
 
         @textbox_dt = FXDataTarget.new('')
 
-        @textbox = Watobo::Gui::TextView2.new(text_frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
+        @textbox = Watobo::Gui::TextView2.new(text_frame, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y)
         #  @textbox = Watobo::Gui::TextView2.new(text_frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
         # @textbox = FXText.new(text_frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
         # @textbox = FXText.new(text_frame, :target => @textbox_dt, :selector => FXDataTarget::ID_VALUE, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
@@ -153,7 +153,7 @@ module Watobo #:nodoc: all
         @textbox.setText('')
       end
 
-      def setText(text=nil)
+      def setText(text = nil)
         return false if text.nil?
         if text.is_a? Array
           new_text = text.join
@@ -173,7 +173,7 @@ module Watobo #:nodoc: all
 
       end
 
-      def parseRequest(prefs={})
+      def parseRequest(prefs = {})
         begin
           return @textbox.to_request(prefs)
         rescue SyntaxError, LocalJumpError, NameError
@@ -187,7 +187,7 @@ module Watobo #:nodoc: all
         return nil
       end
 
-      def to_response(prefs={})
+      def to_response(prefs = {})
         begin
           return @textbox.to_response(prefs)
         rescue SyntaxError, LocalJumpError, NameError
@@ -248,16 +248,16 @@ module Watobo #:nodoc: all
 
           if @ctrl_pressed
             case event.code
-              when KEY_w
-                @textbox.textStyle ^= TEXT_WORDWRAP
-              when KEY_n
-                @textbox.showNextMatch()
-                addFilterHistory()
-              when KEY_N
-                @textbox.showPrevMatch()
-                addFilterHistory()
-              when KEY_r
-                @textbox.reset_filter()
+            when KEY_w
+              @textbox.textStyle ^= TEXT_WORDWRAP
+            when KEY_n
+              @textbox.showNextMatch()
+              addFilterHistory()
+            when KEY_N
+              @textbox.showPrevMatch()
+              addFilterHistory()
+            when KEY_r
+              @textbox.reset_filter()
             end
           end
 
@@ -331,16 +331,16 @@ module Watobo #:nodoc: all
           else
 
             case event.code
-              when KEY_w
-                @textbox.textStyle ^= TEXT_WORDWRAP
-              when KEY_n
-                @textbox.showNextMatch()
-                addFilterHistory()
-              when KEY_N
-                @textbox.showPrevMatch()
-                addFilterHistory()
-              when KEY_r
-                resetTextbox()
+            when KEY_w
+              @textbox.textStyle ^= TEXT_WORDWRAP
+            when KEY_n
+              @textbox.showNextMatch()
+              addFilterHistory()
+            when KEY_N
+              @textbox.showPrevMatch()
+              addFilterHistory()
+            when KEY_r
+              resetTextbox()
             end
 
             pos = @textbox.selStartPos
@@ -351,19 +351,19 @@ module Watobo #:nodoc: all
               len = @input_len
             end
 
-            unless len==0
+            unless len == 0
               text = @textbox.extractText(pos, len)
               rptxt = case event.code
-                        when KEY_u
-                          CGI::escape(text).strip
-                        when KEY_b
-                          Base64.encode64(text).strip
-                        when KEY_U
-                          CGI::unescape(text).strip
-                        when KEY_B
-                          Base64.decode64(text).strip
-                        else
-                          text
+                      when KEY_u
+                        CGI::escape(text).strip
+                      when KEY_b
+                        Base64.encode64(text).strip
+                      when KEY_U
+                        CGI::unescape(text).strip
+                      when KEY_B
+                        Base64.decode64(text).strip
+                      else
+                        text
                       end
               @textbox.replaceText(pos, len, rptxt, false)
               @textbox.setSelection(pos, rptxt.length)
@@ -437,18 +437,17 @@ module Watobo #:nodoc: all
 
         @request_lock.synchronize do
           Watobo.save_thread do
-          #   enable_buttons()
-          #@request_queue << new_request
-          @request_list << new_request
-          if @request_list.length > 0 and @request_box_available
-            @requestbox.setRequest @request_list.first[:request]
-            @request_box_available = false
-          end
-          @request_tab.text = "Request (#{@request_list.length})"
-          update_buttons
+            #   enable_buttons()
+            #@request_queue << new_request
+            @request_list << new_request
+            if @request_list.length > 0 and @request_box_available
+              @requestbox.setRequest @request_list.first[:request]
+              @request_box_available = false
+            end
+            @request_tab.text = "Request (#{@request_list.length})"
+            update_buttons
           end
         end
-
 
 
         # enable_buttons()
@@ -470,17 +469,25 @@ module Watobo #:nodoc: all
 
         @response_lock.synchronize do
           Watobo.save_thread do
-          #@response_queue.push new_response
-          @response_list << new_response
-          if @response_list.length > 0 and @response_box_available
-            # @responsebox.setText @response_list.first[:response]
-            @responsebox.setRequest @response_list.first[:response]
-            @response_box_available = false
-          end
+            #@response_queue.push new_response
+            @response_list << new_response
+            if @response_list.length > 0 and @response_box_available
+              # @responsebox.setText @response_list.first[:response]
+              @responsebox.setRequest @response_list.first[:response]
+              @response_box_available = false
             end
+          end
           @response_tab.text = "Response (#{@response_list.length})"
           update_buttons
         end
+      end
+
+      def egress_handler?
+        @egress.checked?
+      end
+
+      def egress_handler
+        @egress_handlers.getItem(@egress_handlers.currentItem)
       end
 
       def initialize(owner, opts)
@@ -509,39 +516,39 @@ module Watobo #:nodoc: all
         @response_box_available = true
 
         # initial frame setup
-        mr_splitter = FXSplitter.new(self, LAYOUT_FILL_X|LAYOUT_FILL_Y|SPLITTER_VERTICAL|SPLITTER_REVERSED|SPLITTER_TRACKING)
+        mr_splitter = FXSplitter.new(self, LAYOUT_FILL_X | LAYOUT_FILL_Y | SPLITTER_VERTICAL | SPLITTER_REVERSED | SPLITTER_TRACKING)
 
-        top_frame = FXVerticalFrame.new(mr_splitter, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y||LAYOUT_FIX_HEIGHT|LAYOUT_BOTTOM, :height => 500)
-        top_splitter = FXSplitter.new(top_frame, LAYOUT_FILL_X|SPLITTER_HORIZONTAL|LAYOUT_FILL_Y|SPLITTER_TRACKING)
+        top_frame = FXVerticalFrame.new(mr_splitter, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y || LAYOUT_FIX_HEIGHT | LAYOUT_BOTTOM, :height => 500)
+        top_splitter = FXSplitter.new(top_frame, LAYOUT_FILL_X | SPLITTER_HORIZONTAL | LAYOUT_FILL_Y | SPLITTER_TRACKING)
 
         #log_frame = FXVerticalFrame.new(mr_splitter, :opts => LAYOUT_FILL_X|LAYOUT_SIDE_BOTTOM,:height => 100)
 
-        filter_frame = FXVerticalFrame.new(top_splitter, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y||LAYOUT_FIX_HEIGHT|LAYOUT_BOTTOM)
-        gbframe = FXGroupBox.new(filter_frame, "Intercept", LAYOUT_SIDE_RIGHT|FRAME_GROOVE|LAYOUT_FILL_X, 0, 0, 0, 0)
-        frame = FXVerticalFrame.new(gbframe, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
+        filter_frame = FXVerticalFrame.new(top_splitter, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y || LAYOUT_FIX_HEIGHT | LAYOUT_BOTTOM)
+        gbframe = FXGroupBox.new(filter_frame, "Intercept", LAYOUT_SIDE_RIGHT | FRAME_GROOVE | LAYOUT_FILL_X, 0, 0, 0, 0)
+        frame = FXVerticalFrame.new(gbframe, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y, :padding => 0)
         #  FXLabel.new(filter_frame, "Intercept:" )
         @intercept_request = FXCheckButton.new(frame, "Requests", nil, 0,
-                                               ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
+                                               ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
         @intercept_request.connect(SEL_COMMAND, method(:onInterceptChanged))
 
         @intercept_response = FXCheckButton.new(frame, "Response", nil, 0,
-                                                ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
+                                                ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
         @intercept_response.connect(SEL_COMMAND, method(:onInterceptChanged))
-        @filter_options_btn = FXButton.new(frame, "Options", nil, nil, 0, FRAME_RAISED|FRAME_THICK|LAYOUT_LEFT)
+        @filter_options_btn = FXButton.new(frame, "Options", nil, nil, 0, FRAME_RAISED | FRAME_THICK | LAYOUT_LEFT)
         @filter_options_btn.connect(SEL_COMMAND, method(:onBtnFilterOptions))
 
-        gbframe = FXGroupBox.new(filter_frame, "Rewrite", LAYOUT_SIDE_RIGHT|FRAME_GROOVE|LAYOUT_FILL_X, 0, 0, 0, 0)
-        frame = FXVerticalFrame.new(gbframe, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
+        gbframe = FXGroupBox.new(filter_frame, "Rewrite", LAYOUT_SIDE_RIGHT | FRAME_GROOVE | LAYOUT_FILL_X, 0, 0, 0, 0)
+        frame = FXVerticalFrame.new(gbframe, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y, :padding => 0)
         #FXLabel.new(filter_frame, "Rewrite:" )
         @rewrite_request = FXCheckButton.new(frame, "Requests", nil, 0,
-                                             ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
+                                             ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
         @rewrite_request.connect(SEL_COMMAND, method(:onInterceptChanged))
 
         @rewrite_response = FXCheckButton.new(frame, "Response", nil, 0,
-                                              ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
+                                              ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
         @rewrite_response.connect(SEL_COMMAND, method(:onInterceptChanged))
 
-        @rewrite_options_btn = FXButton.new(frame, "Options", nil, nil, 0, FRAME_RAISED|FRAME_THICK|LAYOUT_LEFT)
+        @rewrite_options_btn = FXButton.new(frame, "Options", nil, nil, 0, FRAME_RAISED | FRAME_THICK | LAYOUT_LEFT)
         @rewrite_options_btn.connect(SEL_COMMAND) { open_rewrite_options_dialog }
 
         #@intercept_request.checkState = false
@@ -552,43 +559,77 @@ module Watobo #:nodoc: all
           @intercept_response.checkState = Watobo::Interceptor.intercept_requests?
         end
 
-        view_frame = FXVerticalFrame.new(top_splitter, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y||LAYOUT_FIX_HEIGHT|LAYOUT_BOTTOM)
+        # Egress Handler Selection
+        #
+        gbframe = FXGroupBox.new(filter_frame, "Egress Handler", LAYOUT_SIDE_RIGHT | FRAME_GROOVE | LAYOUT_FILL_X, 0, 0, 0, 0)
+        frame = FXVerticalFrame.new(gbframe, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y, :padding => 0)
+        #FXLabel.new(filter_frame, "Rewrite:" )
+        @egress = FXCheckButton.new(frame, "enable", nil, 0,
+                                           ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
 
-        @tabBook = FXTabBook.new(view_frame, nil, 0, LAYOUT_FILL_X|LAYOUT_FILL_Y|LAYOUT_RIGHT)
+        @egress.checkState = false
+
+        @egress_handlers = FXComboBox.new(frame, 5, nil, 0, COMBOBOX_STATIC | FRAME_SUNKEN | FRAME_THICK | LAYOUT_SIDE_TOP)
+        #@filterCombo.width =200
+
+        @egress_handlers.numVisible = 0
+        @egress_handlers.numColumns = 23
+        @egress_handlers.editable = false
+        @egress_handlers.connect(SEL_COMMAND) { |sender, sel, name|
+          Watobo::EgressHandlers.last = name
+        }
+
+        eframe = FXHorizontalFrame.new(frame, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y, :padding => 0)
+        # @egress_handlers.appendItem('none', nil)
+        @egress_add_btn = FXButton.new(eframe, "add", nil, nil, 0, FRAME_RAISED | FRAME_THICK)
+        @egress_add_btn.connect(SEL_COMMAND) { add_handler }
+        #@egress_handlers.connect(SEL_COMMAND, method(:onRequestChanged))
+        @egress_btn = FXButton.new(eframe, "reload", nil, nil, 0, FRAME_RAISED | FRAME_THICK)
+        @egress_btn.connect(SEL_COMMAND) {
+          Watobo::EgressHandlers.reload
+          update_egress
+        }
+
+        update_egress
+
+
+        view_frame = FXVerticalFrame.new(top_splitter, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y || LAYOUT_FIX_HEIGHT | LAYOUT_BOTTOM)
+
+        @tabBook = FXTabBook.new(view_frame, nil, 0, LAYOUT_FILL_X | LAYOUT_FILL_Y | LAYOUT_RIGHT)
 
         button_frame = FXHorizontalFrame.new(view_frame, LAYOUT_FILL_X)
         @tabBook.connect(SEL_COMMAND) { |sender, sel, item|
           case item
-            when 0
-              enable_buttons if @request_list.length > 0
-            when 1
-              enable_buttons if @response_list.length > 0
+          when 0
+            enable_buttons if @request_list.length > 0
+          when 1
+            enable_buttons if @response_list.length > 0
           end
 
         }
         @request_tab = FXTabItem.new(@tabBook, "Request (0)", nil)
-        request_frame_outer = FXVerticalFrame.new(@tabBook, LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_RAISED)
+        request_frame_outer = FXVerticalFrame.new(@tabBook, LAYOUT_FILL_X | LAYOUT_FILL_Y | FRAME_RAISED)
         # request_frame = FXVerticalFrame.new(request_frame_outer, LAYOUT_FILL_X|LAYOUT_FILL_Y)
 
         # @requestbox = Watobo::Gui::InterceptEditor.new(request_frame_outer, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
-        @requestbox = Watobo::Gui::RequestBuilder.new(request_frame_outer, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
+        @requestbox = Watobo::Gui::RequestBuilder.new(request_frame_outer, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y)
 
         @response_tab = FXTabItem.new(@tabBook, "Response (0)", nil)
-        response_frame_outer = FXVerticalFrame.new(@tabBook, LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_RAISED)
+        response_frame_outer = FXVerticalFrame.new(@tabBook, LAYOUT_FILL_X | LAYOUT_FILL_Y | FRAME_RAISED)
         #response_frame = FXVerticalFrame.new(response_frame_outer, LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding=>0)
         # @responsebox = Watobo::Gui::RequestEditor.new(response_frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y )
 
         #@responsebox = Watobo::Gui::InterceptEditor.new(response_frame_outer, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
-        @responsebox = Watobo::Gui::RequestBuilder.new(response_frame_outer, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
+        @responsebox = Watobo::Gui::RequestBuilder.new(response_frame_outer, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y)
         # @responsebox.editable = true
 
-        @accept_button = FXButton.new(button_frame, "Accept", nil, nil, 0, FRAME_RAISED|FRAME_THICK|LAYOUT_LEFT)
+        @accept_button = FXButton.new(button_frame, "Accept", nil, nil, 0, FRAME_RAISED | FRAME_THICK | LAYOUT_LEFT)
         @accept_button.connect(SEL_COMMAND, method(:onAcceptChanges))
 
-        @discard_button = FXButton.new(button_frame, "Discard", nil, nil, 0, FRAME_RAISED|FRAME_THICK|LAYOUT_LEFT)
+        @discard_button = FXButton.new(button_frame, "Discard", nil, nil, 0, FRAME_RAISED | FRAME_THICK | LAYOUT_LEFT)
         @discard_button.connect(SEL_COMMAND, method(:onDiscard))
 
-        @drop_button = FXButton.new(button_frame, "Drop", nil, nil, 0, FRAME_RAISED|FRAME_THICK|LAYOUT_LEFT)
+        @drop_button = FXButton.new(button_frame, "Drop", nil, nil, 0, FRAME_RAISED | FRAME_THICK | LAYOUT_LEFT)
         @drop_button.connect(SEL_COMMAND, method(:onDrop))
 
         #  log_text_frame = FXVerticalFrame.new(log_frame, LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_SUNKEN|FRAME_THICK, :padding=>0)
@@ -647,6 +688,34 @@ module Watobo #:nodoc: all
       end
 
       private
+
+      def update_egress
+        @egress_handlers.clearItems
+        @egress.disable
+        @egress_handlers.disable
+        if Watobo::EgressHandlers.length > 0
+          @egress.enable
+          @egress_handlers.enable
+          #@egress_btn.enable
+          Watobo::EgressHandlers.list {|h|
+            @egress_handlers.appendItem(h.to_s, nil)
+          }
+        end
+      end
+
+      def add_handler
+        @handler_path ||= Watobo.working_directory + '/'
+        handler_filename = FXFileDialog.getOpenFilename(self, "Select handler file", @handler_path, "*.rb\n*")
+        if handler_filename != "" then
+          if File.exist?(handler_filename) then
+            @handler_file = handler_filename
+            @handler_path = File.dirname(handler_filename) + "/"
+            Watobo::EgressHandlers.add(handler_filename)
+            update_egress
+          end
+        end
+
+      end
 
       def onAcceptChanges(sender, sel, ptr)
         if @tabBook.current == 0 then
@@ -791,18 +860,18 @@ module Watobo #:nodoc: all
 
       def update_buttons
         if @tabBook.current == 0 then
-            if @request_list.length > 0
-              enable_buttons
-            else
-              disable_buttons
-            end
-        else
-            if @response_list.length > 0
-              enable_buttons
-            else
-              disable_buttons
-            end
+          if @request_list.length > 0
+            enable_buttons
+          else
+            disable_buttons
           end
+        else
+          if @response_list.length > 0
+            enable_buttons
+          else
+            disable_buttons
+          end
+        end
       end
 
       def onBtnFilterOptions(sender, sel, ptr)
@@ -876,18 +945,18 @@ module Watobo #:nodoc: all
 
         FXMAPFUNC(SEL_COMMAND, ID_ACCEPT, :onAccept)
 
-        base_frame = FXVerticalFrame.new(self, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
-        @tabbook = FXTabBook.new(base_frame, nil, 0, LAYOUT_FILL_X|LAYOUT_FILL_Y|LAYOUT_RIGHT)
+        base_frame = FXVerticalFrame.new(self, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y, :padding => 0)
+        @tabbook = FXTabBook.new(base_frame, nil, 0, LAYOUT_FILL_X | LAYOUT_FILL_Y | LAYOUT_RIGHT)
         buttons_frame = FXHorizontalFrame.new(base_frame, :opts => LAYOUT_FILL_X)
         @req_opt_tab = FXTabItem.new(@tabbook, "Request Options", nil)
-        frame = FXVerticalFrame.new(@tabbook, :opts => FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_FILL_Y)
-        scroll_window = FXScrollWindow.new(frame, SCROLLERS_NORMAL|LAYOUT_FILL_X|LAYOUT_FILL_Y)
-        @req_opt_frame = FXVerticalFrame.new(scroll_window, :opts => FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_FILL_Y)
+        frame = FXVerticalFrame.new(@tabbook, :opts => FRAME_THICK | FRAME_RAISED | LAYOUT_FILL_X | LAYOUT_FILL_Y)
+        scroll_window = FXScrollWindow.new(frame, SCROLLERS_NORMAL | LAYOUT_FILL_X | LAYOUT_FILL_Y)
+        @req_opt_frame = FXVerticalFrame.new(scroll_window, :opts => FRAME_THICK | FRAME_RAISED | LAYOUT_FILL_X | LAYOUT_FILL_Y)
 
         @resp_opt_tab = FXTabItem.new(@tabbook, "Response Options", nil)
-        frame= FXVerticalFrame.new(@tabbook, :opts => FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_FILL_Y)
-        scroll_window = FXScrollWindow.new(frame, SCROLLERS_NORMAL|LAYOUT_FILL_X|LAYOUT_FILL_Y)
-        @resp_opt_frame = FXVerticalFrame.new(scroll_window, :opts => FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_FILL_Y)
+        frame = FXVerticalFrame.new(@tabbook, :opts => FRAME_THICK | FRAME_RAISED | LAYOUT_FILL_X | LAYOUT_FILL_Y)
+        scroll_window = FXScrollWindow.new(frame, SCROLLERS_NORMAL | LAYOUT_FILL_X | LAYOUT_FILL_Y)
+        @resp_opt_frame = FXVerticalFrame.new(scroll_window, :opts => FRAME_THICK | FRAME_RAISED | LAYOUT_FILL_X | LAYOUT_FILL_Y)
 
         initRequestFilterFrame()
         updateRequestFilterFrame()
@@ -895,7 +964,7 @@ module Watobo #:nodoc: all
         initResponseFilterFrame()
         updateResponseFilterFrame()
 
-        @finishButton = FXButton.new(buttons_frame, "Accept", nil, nil, :opts => BUTTON_NORMAL|LAYOUT_RIGHT)
+        @finishButton = FXButton.new(buttons_frame, "Accept", nil, nil, :opts => BUTTON_NORMAL | LAYOUT_RIGHT)
         @finishButton.enable
         @finishButton.connect(SEL_COMMAND) do |sender, sel, item|
           #self.handle(self, FXSEL(SEL_COMMAND, ID_CANCEL), nil)
@@ -904,7 +973,7 @@ module Watobo #:nodoc: all
 
         @cancelButton = FXButton.new(buttons_frame, "Cancel",
                                      :target => self, :selector => FXDialogBox::ID_CANCEL,
-                                     :opts => BUTTON_NORMAL|LAYOUT_RIGHT)
+                                     :opts => BUTTON_NORMAL | LAYOUT_RIGHT)
       end
 
       private
@@ -948,23 +1017,23 @@ module Watobo #:nodoc: all
 
       def initResponseFilterFrame()
 
-        gbframe = FXGroupBox.new(@resp_opt_frame, "Content Type", LAYOUT_SIDE_RIGHT|FRAME_GROOVE|LAYOUT_FILL_X, 0, 0, 0, 0)
+        gbframe = FXGroupBox.new(@resp_opt_frame, "Content Type", LAYOUT_SIDE_RIGHT | FRAME_GROOVE | LAYOUT_FILL_X, 0, 0, 0, 0)
         frame = FXVerticalFrame.new(gbframe, :opts => LAYOUT_FILL_X, :padding => 0)
-        fxtext = FXText.new(frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|TEXT_WORDWRAP)
+        fxtext = FXText.new(frame, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y | TEXT_WORDWRAP)
         fxtext.backColor = fxtext.parent.backColor
         fxtext.disable
         text = "Regular expression for HTTP Content-Type. E.g., '(text|script)'"
         fxtext.setText(text)
         @content_type_filter_dt = FXDataTarget.new('')
         @content_type_filter_dt.value = @response_filter[:content_type_filter]
-        @content_type_filter = FXTextField.new(frame, 20, :target => @content_type_filter_dt, :selector => FXDataTarget::ID_VALUE, :opts => TEXTFIELD_NORMAL|LAYOUT_SIDE_LEFT|LAYOUT_FILL_X)
-        @neg_ctype_filter_cb = FXCheckButton.new(frame, "Negate Filter", nil, 0, JUSTIFY_LEFT|JUSTIFY_TOP|ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
+        @content_type_filter = FXTextField.new(frame, 20, :target => @content_type_filter_dt, :selector => FXDataTarget::ID_VALUE, :opts => TEXTFIELD_NORMAL | LAYOUT_SIDE_LEFT | LAYOUT_FILL_X)
+        @neg_ctype_filter_cb = FXCheckButton.new(frame, "Negate Filter", nil, 0, JUSTIFY_LEFT | JUSTIFY_TOP | ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
         #@neg_method_filter_cb.checkState = false
         @neg_ctype_filter_cb.checkState = @response_filter[:negate_content_type_filter]
 
-        gbframe = FXGroupBox.new(@resp_opt_frame, "Response Code", LAYOUT_SIDE_RIGHT|FRAME_GROOVE|LAYOUT_FILL_X, 0, 0, 0, 0)
+        gbframe = FXGroupBox.new(@resp_opt_frame, "Response Code", LAYOUT_SIDE_RIGHT | FRAME_GROOVE | LAYOUT_FILL_X, 0, 0, 0, 0)
         frame = FXVerticalFrame.new(gbframe, :opts => LAYOUT_FILL_X, :padding => 0)
-        fxtext = FXText.new(frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|TEXT_WORDWRAP)
+        fxtext = FXText.new(frame, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y | TEXT_WORDWRAP)
         fxtext.backColor = fxtext.parent.backColor
         fxtext.disable
         text = "Regular expression for HTTP Content-Type. E.g., '200'"
@@ -972,17 +1041,17 @@ module Watobo #:nodoc: all
         @rcode_filter_dt = FXDataTarget.new('')
         @rcode_filter_dt.value = @response_filter[:response_code_filter]
 
-        @rcode_filter = FXTextField.new(frame, 20, :target => @rcode_filter_dt, :selector => FXDataTarget::ID_VALUE, :opts => TEXTFIELD_NORMAL|LAYOUT_SIDE_LEFT|LAYOUT_FILL_X)
-        @neg_rcode_filter_cb = FXCheckButton.new(frame, "Negate Filter", nil, 0, JUSTIFY_LEFT|JUSTIFY_TOP|ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
+        @rcode_filter = FXTextField.new(frame, 20, :target => @rcode_filter_dt, :selector => FXDataTarget::ID_VALUE, :opts => TEXTFIELD_NORMAL | LAYOUT_SIDE_LEFT | LAYOUT_FILL_X)
+        @neg_rcode_filter_cb = FXCheckButton.new(frame, "Negate Filter", nil, 0, JUSTIFY_LEFT | JUSTIFY_TOP | ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
         #@neg_method_filter_cb.checkState = false
         @neg_rcode_filter_cb.checkState = @response_filter[:negate_response_code_filter]
 
       end
 
       def initRequestFilterFrame()
-        gbframe = FXGroupBox.new(@req_opt_frame, "URL Filter", LAYOUT_SIDE_RIGHT|FRAME_GROOVE|LAYOUT_FILL_X, 0, 0, 0, 0)
+        gbframe = FXGroupBox.new(@req_opt_frame, "URL Filter", LAYOUT_SIDE_RIGHT | FRAME_GROOVE | LAYOUT_FILL_X, 0, 0, 0, 0)
         frame = FXVerticalFrame.new(gbframe, :opts => LAYOUT_FILL_X, :padding => 0)
-        fxtext = FXText.new(frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|TEXT_WORDWRAP)
+        fxtext = FXText.new(frame, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y | TEXT_WORDWRAP)
         fxtext.backColor = fxtext.parent.backColor
         fxtext.disable
         text = "Regular Expression Filter For URL. E.g., '.*www.mysite.com.*login.php'"
@@ -990,50 +1059,50 @@ module Watobo #:nodoc: all
 
         @url_filter_dt = FXDataTarget.new('')
         @url_filter_dt.value = @request_filter[:url_filter]
-        @url_filter = FXTextField.new(frame, 20, :target => @url_filter_dt, :selector => FXDataTarget::ID_VALUE, :opts => TEXTFIELD_NORMAL|LAYOUT_SIDE_LEFT|LAYOUT_FILL_X)
-        @neg_url_filter_cb = FXCheckButton.new(frame, "Negate Filter", nil, 0, JUSTIFY_LEFT|JUSTIFY_TOP|ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
+        @url_filter = FXTextField.new(frame, 20, :target => @url_filter_dt, :selector => FXDataTarget::ID_VALUE, :opts => TEXTFIELD_NORMAL | LAYOUT_SIDE_LEFT | LAYOUT_FILL_X)
+        @neg_url_filter_cb = FXCheckButton.new(frame, "Negate Filter", nil, 0, JUSTIFY_LEFT | JUSTIFY_TOP | ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
         #@neg_url_filter_cb.checkState = false
         @neg_url_filter_cb.checkState = @request_filter[:negate_url_filter]
 
-        gbframe = FXGroupBox.new(@req_opt_frame, "Method Filter", LAYOUT_SIDE_RIGHT|FRAME_GROOVE|LAYOUT_FILL_X, 0, 0, 0, 0)
+        gbframe = FXGroupBox.new(@req_opt_frame, "Method Filter", LAYOUT_SIDE_RIGHT | FRAME_GROOVE | LAYOUT_FILL_X, 0, 0, 0, 0)
         frame = FXVerticalFrame.new(gbframe, :opts => LAYOUT_FILL_X, :padding => 0)
-        fxtext = FXText.new(frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|TEXT_WORDWRAP)
+        fxtext = FXText.new(frame, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y | TEXT_WORDWRAP)
         fxtext.backColor = fxtext.parent.backColor
         fxtext.disable
         text = "Regular expression for HTTP method. E.g., '(get|PoSt)'"
         fxtext.setText(text)
         @method_filter_dt = FXDataTarget.new('')
         @method_filter_dt.value = @request_filter[:method_filter]
-        @method_filter = FXTextField.new(frame, 20, :target => @method_filter_dt, :selector => FXDataTarget::ID_VALUE, :opts => TEXTFIELD_NORMAL|LAYOUT_SIDE_LEFT|LAYOUT_FILL_X)
-        @neg_method_filter_cb = FXCheckButton.new(frame, "Negate Filter", nil, 0, JUSTIFY_LEFT|JUSTIFY_TOP|ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
+        @method_filter = FXTextField.new(frame, 20, :target => @method_filter_dt, :selector => FXDataTarget::ID_VALUE, :opts => TEXTFIELD_NORMAL | LAYOUT_SIDE_LEFT | LAYOUT_FILL_X)
+        @neg_method_filter_cb = FXCheckButton.new(frame, "Negate Filter", nil, 0, JUSTIFY_LEFT | JUSTIFY_TOP | ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
         #@neg_method_filter_cb.checkState = false
         @neg_method_filter_cb.checkState = @request_filter[:negate_method_filter]
 
-        gbframe = FXGroupBox.new(@req_opt_frame, "Parm Filter", LAYOUT_SIDE_RIGHT|FRAME_GROOVE|LAYOUT_FILL_X, 0, 0, 0, 0)
+        gbframe = FXGroupBox.new(@req_opt_frame, "Parm Filter", LAYOUT_SIDE_RIGHT | FRAME_GROOVE | LAYOUT_FILL_X, 0, 0, 0, 0)
         frame = FXVerticalFrame.new(gbframe, :opts => LAYOUT_FILL_X, :padding => 0)
-        fxtext = FXText.new(frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|TEXT_WORDWRAP)
+        fxtext = FXText.new(frame, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y | TEXT_WORDWRAP)
         fxtext.backColor = fxtext.parent.backColor
         fxtext.disable
         text = "Regular Expression Filter For Parameter Names. E.g., for intercepting requests containing parameters beginning with 'act' use the regex pattern '^act.*' (without single quotes)"
         fxtext.setText(text)
         @parms_filter_dt = FXDataTarget.new('')
         @parms_filter_dt.value = @request_filter[:parms_filter]
-        @parms_filter = FXTextField.new(frame, 20, :target => @parms_filter_dt, :selector => FXDataTarget::ID_VALUE, :opts => TEXTFIELD_NORMAL|LAYOUT_SIDE_LEFT|LAYOUT_FILL_X)
-        @neg_parms_filter_cb = FXCheckButton.new(frame, "Negate Filter", nil, 0, JUSTIFY_LEFT|JUSTIFY_TOP|ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
+        @parms_filter = FXTextField.new(frame, 20, :target => @parms_filter_dt, :selector => FXDataTarget::ID_VALUE, :opts => TEXTFIELD_NORMAL | LAYOUT_SIDE_LEFT | LAYOUT_FILL_X)
+        @neg_parms_filter_cb = FXCheckButton.new(frame, "Negate Filter", nil, 0, JUSTIFY_LEFT | JUSTIFY_TOP | ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
         #@neg_parm_filter_cb.checkState = false
         @neg_parms_filter_cb.checkState = @request_filter[:negate_parms_filter]
 
-        gbframe = FXGroupBox.new(@req_opt_frame, "File Type Filter", LAYOUT_SIDE_RIGHT|FRAME_GROOVE|LAYOUT_FILL_X, 0, 0, 0, 0)
+        gbframe = FXGroupBox.new(@req_opt_frame, "File Type Filter", LAYOUT_SIDE_RIGHT | FRAME_GROOVE | LAYOUT_FILL_X, 0, 0, 0, 0)
         frame = FXVerticalFrame.new(gbframe, :opts => LAYOUT_FILL_X, :padding => 0)
-        fxtext = FXText.new(frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|TEXT_WORDWRAP)
+        fxtext = FXText.new(frame, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y | TEXT_WORDWRAP)
         fxtext.backColor = fxtext.parent.backColor
         fxtext.disable
         text = "Regular expression for file types by its extension. E.g., for intercepting requests where file type is PHP use '^php$' (without single quotes)"
         fxtext.setText(text)
         @ftype_filter_dt = FXDataTarget.new('')
         @ftype_filter_dt.value = @request_filter[:file_type_filter]
-        @ftype_filter = FXTextField.new(frame, 20, :target => @ftype_filter_dt, :selector => FXDataTarget::ID_VALUE, :opts => TEXTFIELD_NORMAL|LAYOUT_SIDE_LEFT|LAYOUT_FILL_X)
-        @neg_ftype_filter_cb = FXCheckButton.new(frame, "Negate Filter", nil, 0, JUSTIFY_LEFT|JUSTIFY_TOP|ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
+        @ftype_filter = FXTextField.new(frame, 20, :target => @ftype_filter_dt, :selector => FXDataTarget::ID_VALUE, :opts => TEXTFIELD_NORMAL | LAYOUT_SIDE_LEFT | LAYOUT_FILL_X)
+        @neg_ftype_filter_cb = FXCheckButton.new(frame, "Negate Filter", nil, 0, JUSTIFY_LEFT | JUSTIFY_TOP | ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
         #@neg_parm_filter_cb.checkState = false
         @neg_ftype_filter_cb.checkState = @request_filter[:negate_file_type_filter]
       end
@@ -1047,7 +1116,7 @@ if __FILE__ == $0
     def initialize(app)
       # Call base class initializer first
       super(app, "Test Application", :width => 800, :height => 600)
-      frame = FXVerticalFrame.new(self, LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_GROOVE)
+      frame = FXVerticalFrame.new(self, LAYOUT_FILL_X | LAYOUT_FILL_Y | FRAME_GROOVE)
       Watobo::Gui::InterceptorUI.new(frame, nil, nil)
     end
 

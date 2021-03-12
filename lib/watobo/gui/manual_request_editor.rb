@@ -276,6 +276,8 @@ module Watobo #:nodoc: all
       end
 
       def update_egress
+        #binding.pry
+        last_item = @egress_handlers.currentItem
         @egress_handlers.clearItems
         @egress.disable
         @egress_handlers.disable
@@ -287,6 +289,7 @@ module Watobo #:nodoc: all
             @egress_handlers.appendItem(h.to_s, nil)
           }
         end
+        @egress_handlers.currentItem = last_item if last_item >= 0
       end
 
       def initialize(owner, project, chat)
@@ -387,6 +390,7 @@ module Watobo #:nodoc: all
           menu = FXMenuPane.new(self)
           FXMenuCommand.new(menu, "-> GET").connect(SEL_COMMAND, method(:trans2Get))
           FXMenuCommand.new(menu, "-> POST").connect(SEL_COMMAND, method(:trans2Post))
+          FXMenuCommand.new(menu, "-> Multi").connect(SEL_COMMAND, method(:trans2Multi))
           #  FXMenuCommand.new(menu, "POST <=> GET").connect(SEL_COMMAND, method(:switchMethod))
 
           req_reset_button = FXButton.new(req_edit_header, "Reset", nil, nil, 0, FRAME_RAISED|FRAME_THICK|LAYOUT_RIGHT|LAYOUT_FILL_Y)
@@ -414,7 +418,7 @@ module Watobo #:nodoc: all
 
           eframe = FXHorizontalFrame.new(opt, :opts => FRAME_NONE|LAYOUT_FILL_X, :padding => 0)
           @egress = FXCheckButton.new(eframe, "Egress", nil, 0, JUSTIFY_LEFT|JUSTIFY_CENTER_Y|ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
-          @egress.checkState = false
+
 
 
           @egress_handlers = FXComboBox.new(eframe, 5, nil, 0, COMBOBOX_STATIC|FRAME_SUNKEN|FRAME_THICK|LAYOUT_SIDE_TOP)
@@ -690,6 +694,13 @@ module Watobo #:nodoc: all
 
         end
         @req_builder.setRequest(request)
+      end
+
+      def trans2Multi(sender,sel, item)
+        request = @req_builder.parseRequest
+        return nil if request.nil?
+        mp = Watobo::Transformers.to_multipart(request)
+        @req_builder.setRequest(mp)
       end
 
       def simulatePressSendBtn()

@@ -25,6 +25,7 @@ OPTS = Optimist::options do
   opt :extensions, "add one or more extensions. name and value seperated by first colon, e.g. basicConstraints:CA:TRUE", :type => :strings, :multi => true
   opt :days_valid, "Set number of days the certificate is valid in days from now, e.g. 365 for one year", :type => :string
   opt :url, "URL for testing with the spoofed certificate", :type => :string, :default => ''
+  opt :passphrase, "Passphrase for private key (sometimes required by software, e.g. NetworkManager)", :type => String, :default => ''
 end
 
 
@@ -148,8 +149,16 @@ puts '+ sign certificate with new keypair'
 new_cert.public_key = keypair.public_key
 new_cert.sign keypair, OpenSSL::Digest::SHA256.new
 
-outfile = "/tmp/fake_cert_#{Time.now.to_i}.pem"
+file_base ="/tmp/fake_cert_#{Time.now.to_i}"
+outfile = "#{file_base}.pem"
 File.open(outfile, 'w') { |fh| fh << new_cert.to_pem }
+
+keydata = keypair.to_pem
+unless OPTS[:passphrase].empty?
+  keydata = keypair.export('AES-128-CBC', OPTS[:passphrase])
+end
+keyfile = "#{file_base}-key.pem"
+File.open(keyfile, 'w') { |fh| fh << keydata }
 
 #binding.pry
 
@@ -158,6 +167,7 @@ puts new_cert.to_text
 puts "DER-Format (Base64):"
 puts new_cert_b64
 puts "+ cert has been written to #{outfile}"
+puts "+ private key has been written to #{keyfile}"
 
 unless OPTS[:url].empty?
   uri = URI.parse(OPTS[:url])

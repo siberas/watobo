@@ -36,6 +36,7 @@ module Watobo#:nodoc: all
     AC_GROUP_SSTI = "SSTI"
     AC_GROUP_CMD = "CMD Injection"
     AC_GROUP_AXIS = 'Apache AXIS'
+    AC_GROUP_PARAMS = 'Parameters'
     
     AC_GROUP_DOMINO = "Lotus Domino"
     AC_GROUP_SAP = "SAP"

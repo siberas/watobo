@@ -1,5 +1,5 @@
 # @private 
-module Watobo#:nodoc: all
+module Watobo #:nodoc: all
   module Mixins
     # This mixin can be used to parse a String or any object which supports method.to_s into a valid http request string
     module RequestParser
@@ -13,8 +13,8 @@ module Watobo#:nodoc: all
       #
       # returns nil on parse error
 
-      def parse_code(prefs={})
-        cprefs = { :code_dlmtr => '%%' } # default delimiter for ruby code
+      def parse_code(prefs = {})
+        cprefs = {:code_dlmtr => '%%'} # default delimiter for ruby code
         cprefs.update(prefs)
 
         #pattern="(#{cprefs[:code_dlmtr]}.*?#{cprefs[:code_dlmtr]})"
@@ -34,11 +34,11 @@ module Watobo#:nodoc: all
             code_offset = request.index(pattern, pos)
 
             unless code_offset.nil?
-              new_line_index = request.index("\n", pos)   
+              new_line_index = request.index("\n", pos)
               unless new_line_index.nil?
                 if new_line_index < code_offset
                   # new_request << request[match[0]..code_offset-1] unless match.empty?
-                  match = [] 
+                  match = []
                   # pos = code_offset
                 end
               end
@@ -55,11 +55,11 @@ module Watobo#:nodoc: all
           end
 
           new_request = ''
-          unless code_marks.empty?           
-            code_marks.each_with_index do |cm,i|
+          unless code_marks.empty?
+            code_marks.each_with_index do |cm, i|
               #puts cm.to_yaml
-              last = i > 0 ? ( code_marks[i-1][1] + pattern.length ) : 0
-              new_request << request[last..cm[0]-1] if cm[0] > 0
+              last = i > 0 ? (code_marks[i - 1][1] + pattern.length) : 0
+              new_request << request[last..cm[0] - 1] if cm[0] > 0
               exp_start = cm[0] + pattern.length
               exp_end = cm[1] - 1
 
@@ -82,7 +82,7 @@ module Watobo#:nodoc: all
               end
               new_request << data
             end
-            new_request << request[code_marks.last[1]+pattern.length..-1] unless code_marks.last[1] >= request.length-1
+            new_request << request[code_marks.last[1] + pattern.length..-1] unless code_marks.last[1] >= request.length - 1
 
           else
             new_request = request
@@ -100,12 +100,18 @@ module Watobo#:nodoc: all
       end
 
 
-      def to_request(opts={})
-        options = { :update_content_length => false }
+      def to_request(opts = {})
+        options = {:update_content_length => false}
         options.update opts
         body = nil
         begin
           text = parse_code
+          b = binding
+          parser = ERB.new text
+          text = parser.result(b)
+          puts ">>> ERB"
+          puts text
+          puts '<<< ERB'
           return nil if text.nil?
           request = []
 
@@ -113,10 +119,10 @@ module Watobo#:nodoc: all
           eoh = text.index("\n\n") unless text.nil?
 
           unless eoh.nil?
-            header = text.slice(0, eoh).split("\n").map{|h| "#{h.strip}\r\n"}
-            body = text.slice(eoh+2, text.length-1)
+            header = text.slice(0, eoh).split("\n").map { |h| "#{h.strip}\r\n" }
+            body = text.slice(eoh + 2, text.length - 1)
           else
-            header = text.split(/\n/).map{|h| "#{h}\r\n"}
+            header = text.split(/\n/).map { |h| "#{h}\r\n" }
             body = nil
           end
 
@@ -151,7 +157,7 @@ module Watobo#:nodoc: all
                   cbody = nil
                 end
                 new_chunk = cheader.join("\r\n")
-                new_chunk +=  "\r\n\r\n"
+                new_chunk += "\r\n\r\n"
                 new_chunk += cbody.strip + "\r\n" if cbody
 
                 # puts cbody
@@ -182,8 +188,8 @@ module Watobo#:nodoc: all
         #return nil
       end
 
-      def to_response(opts={})
-        options = { :update_content_length => false }
+      def to_response(opts = {})
+        options = {:update_content_length => false}
         options.update opts
         begin
           text = parse_code
@@ -224,8 +230,8 @@ module Watobo#:nodoc: all
       end
 
 
-      def to_request_UNUSED(opts={})
-        options = { :update_content_length => false }
+      def to_request_UNUSED(opts = {})
+        options = {:update_content_length => false}
         options.update opts
         begin
           text = parse_code
@@ -261,7 +267,7 @@ module Watobo#:nodoc: all
               new_body = []
               chunks.each do |c|
                 new_chunk = ''
-                c.gsub!(/[\-]+$/,'')
+                c.gsub!(/[\-]+$/, '')
                 next if c.nil?
                 next if c.strip.empty?
                 c.strip!
@@ -274,7 +280,7 @@ module Watobo#:nodoc: all
                   cbody = nil
                 end
                 new_chunk = cheader.join("\r\n")
-                new_chunk +=  "\r\n\r\n"
+                new_chunk += "\r\n\r\n"
                 new_chunk += cbody.strip + "\r\n" if cbody
 
                 # puts cbody
@@ -307,12 +313,12 @@ module Watobo#:nodoc: all
 end
 
 if $0 == __FILE__
-  inc_path = File.expand_path(File.join(File.dirname(__FILE__), "..", "..", "..","lib"))
+  inc_path = File.expand_path(File.join(File.dirname(__FILE__), "..", "..", "..", "lib"))
   $: << inc_path
 
   require 'watobo'
 
-  text =<<'EOF'
+  text = <<'EOF'
 %%"GET"%% http://www.siberas.de/ HTTP/1.1
 Content-Type: text/html
 %%"x"*10%%Vary: Accept-Encoding
@@ -323,15 +329,15 @@ Date: Thu, 19 Jul 2012 06:57:20 GMT
 Content-Length: 203
 Connection: close%%"XXXX"%%
 
-<html></html>
+<html><%= ( 3 * 3 ).to_s %></html>
 EOF
 
-text.strip!
-puts text
-puts 
-puts "==="
-puts 
-text.extend Watobo::Mixins::RequestParser
-puts text.to_request
-Watobo::Utils.hexprint text
+  text.strip!
+  puts text
+  puts
+  puts "==="
+  puts
+  text.extend Watobo::Mixins::RequestParser
+  puts text.to_request
+  Watobo::Utils.hexprint text
 end

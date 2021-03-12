@@ -13,7 +13,11 @@ module Watobo #:nodoc: all
 
           # Exploitation notes:
           # https://www.christian-schneider.net/GenericXxeDetection.html
+          #
+          # Example
+          # <!DOCTYPE test [
           # <!ENTITY % three SYSTEM "file:///etc/passwd">
+          # ]>
           # <!ENTITY % two "<!ENTITY % four SYSTEM 'file:///%three;'>">
 
           @info.update(
