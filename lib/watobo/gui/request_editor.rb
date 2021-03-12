@@ -109,6 +109,7 @@ module Watobo #:nodoc: all
               addEncoder(menu_pane, sender)
               menu_pane.create
               menu_pane.popup(nil, event.root_x, event.root_y)
+
               app.runModalWhileShown(menu_pane)
             end
 
@@ -264,14 +265,14 @@ module Watobo #:nodoc: all
 
       def onTextChanged(sender, sel, changed)
         begin
-          dummy = changed.ins
-          dummy += changed.del
+          #dummy = changed.ins
+          #  dummy += changed.del
 
-          pos = changed.pos
+          #pos = changed.pos
 
           highlight_markers
 
-          @textbox.setCursorPos(pos)
+          #@textbox.setCursorPos(pos)
             # else
             #   @markers.each do |start, len|
             #     if pos >= start and pos <= start + len then

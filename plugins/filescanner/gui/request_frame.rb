@@ -31,7 +31,7 @@ module Watobo #:nodoc: all
 
 
             @request_tab = FXTabBook.new(self, nil, 0, :opts => LAYOUT_FILL_X, padding: 0)
-
+            @request_tab.connect(SEL_COMMAND) { updateView }
             #
             # SITE / PATH TAB
             #
@@ -110,6 +110,7 @@ module Watobo #:nodoc: all
 
           private
 
+
           def update_request
 
           end
@@ -180,14 +181,12 @@ module Watobo #:nodoc: all
                 chats = Watobo::Chats.select(@site, :method => "GET")
                 updateRequestEditor(chats.first.request)
 
-                if @project then
-                  Watobo::Chats.dirs(@site) do |dir|
-                    text = "/" + dir.slice(0..35)
-                    text.gsub!(/\/+/, '/')
-                    @dir_combo.appendItem(text, dir)
-                  end
-                  @dir_combo.setCurrentItem(0, true) if @dir_combo.numItems > 0
+                Watobo::Chats.dirs(@site).each do |dir|
+                  text = "/" + dir.slice(0..80)
+                  text.gsub!(/\/+/, '/')
+                  @dir_combo.appendItem(text, dir)
                 end
+                @dir_combo.setCurrentItem(0, true) if @dir_combo.numItems > 0
               end
               @dir_combo.enable
 
@@ -208,6 +207,16 @@ module Watobo #:nodoc: all
               @dir = ""
             end
             chats = Watobo::Chats.select(@site, :method => "GET", :dir => @dir)
+
+            if chats.empty?
+              chats = Watobo::Chats.select(@site, :dir => @dir)
+            end
+
+            if !chats.empty?
+              updateRequestEditor(chats.first.request)
+            else
+              updateRequestEditor([''])
+            end
 
           end
 

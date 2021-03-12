@@ -101,6 +101,7 @@ module Watobo #:nodoc: all
 
       def stop
         # stop scanner
+        @scanner.stop if @scanner.respond_to? :stop
       end
 
       # @return [Hash]

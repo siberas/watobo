@@ -113,14 +113,14 @@ EOF
                         val = "#{orig_value}"
                         # val << "AB" if val.empty?
                         val << check_t
-
+                        test = chat.request.copy
                         param.value = val
                         test.set param
                         true_request, true_response = doRequest(test, :default => true)
                         text_true, hash_true = Watobo::Utils.smartHash(chat.request, true_request, true_response)
 
                         val = "#{orig_value}"
-                        val = (1..8).inject("") {|x, v| x << rand(16).to_s(16)} if val.empty?
+                        val = (1..8).inject("") { |x, v| x << rand(16).to_s(16) } if val.empty?
                         val.reverse!
                         val += check_t
 

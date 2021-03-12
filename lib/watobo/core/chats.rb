@@ -180,7 +180,7 @@ module Watobo #:nodoc: all
             d = dir.gsub(/#{Regexp.quote(opts[:base_dir])}/, '')
             d.gsub!(/^\//, '')
             unless d.match?(/\//)
-              dir_list << dir
+              dir_list << "#{dir}"
               yield dir if block_given?
             end
           end

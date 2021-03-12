@@ -29,7 +29,8 @@ module Watobo #:nodoc: all
             file.gsub!(/^\//, "")
             m, method, scheme, site, port, path, query, version = self.first.match(/#{URL_SPLIT}/i).to_a
             unless m.nil?
-              new_path = path.empty? ? '/' : File.dirname(path) + '/'
+              i = path.rindex('/')
+              new_path = i.nil? ? '/' : path[0..i]
               new_path << new_file
               new_site = site + (port.nil? ? '' : port)
               self.first.gsub!(/#{Regexp.quote(new_site)}(.*)/, "#{new_site}#{new_path} #{version}")

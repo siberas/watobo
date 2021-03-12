@@ -40,7 +40,7 @@ module Watobo #:nodoc: all
 
             unless element.pre_script.nil? or element.pre_script.empty?
               f = eval(element.pre_script)
-              f.call(request)
+              f.call(request) if f.respond_to? :call
             end
 
             if element.egress_handler.respond_to? :length
@@ -49,14 +49,14 @@ module Watobo #:nodoc: all
               end
             end
 
-            test_req, test_resp = self.doRequest(request, prefs)
+            test_req, response = self.doRequest(request, prefs)
 
             unless element.post_script.nil? or element.post_script.empty?
               f = eval(element.post_script)
-              f.call(test_resp)
+              f.call(response) if f.respond_to? :call
             end
 
-            chat = Watobo::Chat.new(test_req, test_resp, :source => CHAT_SOURCE_MANUAL, :run_passive_checks => false)
+            chat = Watobo::Chat.new(test_req, response, :source => CHAT_SOURCE_MANUAL, :run_passive_checks => false)
 
             Watobo::Chats.add(chat) if logging == true
           rescue => bang

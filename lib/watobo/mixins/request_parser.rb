@@ -106,6 +106,12 @@ module Watobo #:nodoc: all
         body = nil
         begin
           text = parse_code
+          b = binding
+          parser = ERB.new text
+          text = parser.result(b)
+          puts ">>> ERB"
+          puts text
+          puts '<<< ERB'
           return nil if text.nil?
           request = []
 
@@ -323,7 +329,7 @@ Date: Thu, 19 Jul 2012 06:57:20 GMT
 Content-Length: 203
 Connection: close%%"XXXX"%%
 
-<html></html>
+<html><%= ( 3 * 3 ).to_s %></html>
 EOF
 
   text.strip!

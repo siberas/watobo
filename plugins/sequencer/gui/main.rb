@@ -99,7 +99,7 @@ module Watobo #:nodoc: all
             end
 
             @list_frame.subscribe(:element_selected) { |element|
-              @details_frame.element = element
+              @details_frame.element = element.element
             }
 
             @details_frame = DetailsFrame.new(splitter, LAYOUT_FILL_X | LAYOUT_FILL_Y | FRAME_RAISED)

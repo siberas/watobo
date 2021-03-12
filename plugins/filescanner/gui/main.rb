@@ -42,7 +42,6 @@ module Watobo #:nodoc: all
         def start_scan
           update_and_save_config
           #  puts @settings_frame.settings
-          binding.pry
           @scanner = Watobo::Plugin::Filescanner.new( @request_frame.request, @settings_frame.settings )
           #puts @scanner.status
 

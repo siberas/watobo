@@ -32,6 +32,13 @@ describe Watobo::Request do
       expect(request.to_s).to include('www.Domain-with_allowED_ch4rz.de:8080/path/to/xxx')
     end
 
+    it 'URI with port and path and trailing slash' do
+      request = Watobo::Request.new 'http://www.Domain-with_allowED_ch4rz.de:8080/path/to/file/'
+      request.replaceFileExt('xxx')
+      puts request.url
+      expect(request.to_s).to include('www.Domain-with_allowED_ch4rz.de:8080/path/to/file/xxx')
+    end
+
     it 'URI with port, path and query' do
       request = Watobo::Request.new 'http://www.Domain-with_allowED_ch4rz.de:8080/path/to/file?x=y'
       request.replaceFileExt('xxx')

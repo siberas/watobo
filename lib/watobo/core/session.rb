@@ -102,13 +102,17 @@ module Watobo #:nodoc: all
             #puts request.body.unpack("H*")[0]
             #puts (request.body.unpack("H*")[0].length / 2).to_s
 
-            request.fix_content_length()
+            request.fix_content_length
             #puts "New: #{request.content_length}"
             #puts request.body.encoding
             #puts "--"
           else
             #request.set_header('Content-Length', 0)
-            request.removeHeader('Content-Length')
+            if request.method =~ /(post|put)/i
+              request.fix_content_length
+            else
+              request.removeHeader('Content-Length')
+            end
           end
         end
 

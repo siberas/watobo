@@ -41,6 +41,7 @@ require 'stringio'
 require 'mechanize'
 require 'jwt'
 require 'ostruct'
+require 'erb'
 
 print '+ looking for DEV_ENV environment variable ...'
 if ENV['DEV_ENV']

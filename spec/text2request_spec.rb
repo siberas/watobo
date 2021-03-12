@@ -39,4 +39,3 @@ Queues
 EOF
 
 request = Watobo::Utils.text2request(TEXT)
-binding.pry
