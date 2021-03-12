@@ -354,7 +354,8 @@ module Watobo #:nodoc: all
                                   "OCSP;" << @ca_config[:ocsp_location])
       end
 =end
-      ex = [ef.create_extension("subjectAltName", "DNS: *.#{cert_config[:hostname]}, DNS: #{cert_config[:hostname]}")]
+      #ex = [ef.create_extension("subjectAltName", "DNS: *.#{cert_config[:hostname]}, DNS: #{cert_config[:hostname]}")]
+      ex = [ef.create_extension("subjectAltName", "DNS: #{cert_config[:hostname]}")]
       cert.extensions = ex
       # cert.sign ca_keypair, OpenSSL::Digest::SHA1.new
       cert.sign ca_keypair, OpenSSL::Digest::SHA256.new
