@@ -450,8 +450,6 @@ module Watobo #:nodoc: all
           puts bang
         end
 
-        puts request
-
         request
       end
 

@@ -52,7 +52,7 @@ EOD
             collection = []
             Watobo::Chats.in_scope do |chat|
               response = chat.response
-              response.header_names .each do |h|
+              response.header_names.each do |h|
                 next if @@excluded_headers.include? h
                 collection << h
               end

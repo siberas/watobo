@@ -243,6 +243,19 @@ module Watobo #:nodoc: all
       l
     end
 
+    def self.request_header_names(&block)
+      headers = []
+       @chats.each do |chat|
+         chat.request.header_names do |header|
+           unless headers.include?(header)
+             headers << header
+             yield header if block_given?
+           end
+         end
+       end
+      headers
+    end
+
     def self.in_scope(&block)
       scan_prefs = Watobo::Conf::Scanner.to_h
       #puts scan_prefs.to_yaml

@@ -262,10 +262,19 @@ module Watobo #:nodoc: all
             #puts data.unpack("H*")[0]#.gsub(/0d0a/,"0d0a\n")
             # puts "---"
             unless socket.nil?
-              puts data if $DEBUG
+              if $DEBUG
+                puts "[Session.sendHTTPRequest] send data >>"
+                puts data
+                puts '---'
+              end
               socket.print data
               socket.flush
               response_header = readHTTPHeader(socket, current_prefs)
+              if $DEBUG
+                puts "[Session.sendHTTPRequest] response HEADER >>"
+                puts response_header
+                puts '---'
+              end
             end
             # RESTORE URI FOR HISTORY/LOG
             request.restoreURI(uri_cache)
@@ -416,6 +425,11 @@ module Watobo #:nodoc: all
           end
         end
 
+        if $DEBUG
+          puts "[Session.doRequest] Header before readHTTPBody"
+          puts response
+          puts '---'
+        end
         readHTTPBody(socket, response, request, opts)
 
         unless response.body.nil?
@@ -437,9 +451,25 @@ module Watobo #:nodoc: all
 
       #response.extend Watobo::Mixin::Parser::Web10
       # resp = Watobo::Response.new(response)
+      if $DEBUG
+        puts "[Session.doRequest] Response before unchunk and unzip"
+        puts response
+        puts '---'
+      end
 
       response.unchunk!
+      if $DEBUG
+        puts "[Session.doRequest] Response after unchunk"
+        puts response
+        puts '---'
+      end
       response.unzip!
+
+      if $DEBUG
+        puts "[Session.doRequest] Response after unzip"
+        puts response
+        puts '---'
+      end
 
       return Request.new(request), response
     end

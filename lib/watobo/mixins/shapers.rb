@@ -249,9 +249,8 @@ module Watobo #:nodoc: all
 
         def removeHeader(header)
           begin
-
             while i = headers.index { |h| h =~ /#{header}/i }
-              self.delete_at i
+              self.delete_at i + 1
             end
 
           rescue => bang
@@ -341,57 +340,8 @@ module Watobo #:nodoc: all
         end
 
         def fix_content_length
-          return false if self.body.nil?
-          # had trouble with length calculation of binary data in multipart request          
-          blen = self.body.force_encoding("ASCII-8BIT").length
+          blen = self.has_body? ? self.body.force_encoding("ASCII-8BIT").length : 0
           set_header("Content-Length", blen)
-        end
-
-        def fixupContentLength_UNUSED
-          te = self.transferEncoding
-          if te == TE_CHUNKED then
-            # puts "Transfer-Encoding = TE_CHUNKED"
-            # puts self.body
-            self.removeHeader("Transfer-Encoding")
-            self.addHeader("Content-Length", "0")
-            new_r = []
-            new_r.concat self.headers
-            new_r.push "\r\n"
-
-            bytes_to_read = 0
-            body = []
-            is_new_chunk = false
-
-            off = 0
-            new_body = ''
-
-            body_orig = self.body
-            puts body_orig.class
-            while body_orig[off..-1] =~ /^([0-9a-fA-F]{1,6})\r\n/
-              len_raw = "#{$1}"
-
-              len = len_raw.hex
-
-              chunk_start = off + len_raw.length + 2
-              chunk_end = chunk_start + len
-
-              break if len == 0
-
-              new_body.chomp!
-              new_body += "#{body_orig[chunk_start..chunk_end]}"
-
-              off = chunk_end + 2
-            end
-
-            new_r.push new_body
-            self.replace(new_r)
-            self.fix_content_length
-            # puts "= FIXED ="
-            # puts self.headers
-          elsif te == TE_NONE then
-            self.fix_content_length
-          end
-
         end
 
         def fixupContentLength
@@ -490,6 +440,7 @@ module Watobo #:nodoc: all
           return false unless self.has_body?
 
           unchunked = self.unchunk
+
           self.replace(unchunked)
           self.fix_content_length
 
@@ -498,11 +449,13 @@ module Watobo #:nodoc: all
         def unchunk
           return Response.new(self) unless self.has_body?
 
-          if self.transfer_encoding == TE_CHUNKED then
+          if self.transfer_encoding == TE_CHUNKED
             self.removeHeader("Transfer-Encoding")
             self.addHeader("Content-Length", "0")
             new_r = []
+            new_r << self.first
             new_r.concat self.headers
+
             new_r.push "\r\n"
 
             bytes_to_read = 20
