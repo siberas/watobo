@@ -22,9 +22,9 @@ spec = Gem::Specification.new do |s|
   s.required_ruby_version     = '>= 2.3'
 
   s.add_dependency 'bundler', '>= 1.15.0', '< 2.0'
-  s.add_dependency 'mechanize', '2.7.4'
-  s.add_dependency 'fxruby', '1.6.38'
-  s.add_dependency 'jwt', '1.5.4'
+  s.add_dependency 'mechanize', '2.7.7'
+  s.add_dependency 'fxruby', '1.6.44'
+  s.add_dependency 'jwt', '2.2.2'
   s.add_dependency 'selenium-webdriver', '>=3.0.1'
 
   files = []

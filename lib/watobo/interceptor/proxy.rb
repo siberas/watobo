@@ -188,6 +188,7 @@ module Watobo #:nodoc: all
                 begin
 
                   request = c_sock.request
+                  Thread.exit if request.nil?
 
                   if request.nil? or request.empty? then
                     print "c/"
@@ -201,7 +202,11 @@ module Watobo #:nodoc: all
                 rescue => bang
                   puts "!!! Error reading client request "
                   puts bang
-                  puts bang.backtrace
+                  if $DEBUG
+                    puts bang.backtrace
+                    puts request
+
+                  end
                   c_sock.close
                   Thread.exit
                 end

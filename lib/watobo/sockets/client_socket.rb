@@ -89,18 +89,21 @@ module Watobo #:nodoc: all
             puts "* CLEN = #{clen} - read body (#{body.length})"
             request << body
           end
+          clean_request request
+
+          return request
         rescue => bang
           puts bang
+          if $DEBUG
+            puts bang.backtrace
+            puts "\n>> Request RAW:"
+            puts request
+            puts "\n>> Request RAW (HEX):"
+            puts request.unpack("H*")[0]
+          end
         end
 
-        #puts "\n>> Request RAW:"
-        #puts request
-        #puts "\n>> Request RAW (HEX):"
-        #  puts request.unpack("H*")[0]
-
-        clean_request request
-
-        request
+        return nil
       end
 
       def send_response(response)
@@ -120,7 +123,6 @@ module Watobo #:nodoc: all
         # TODO: Fake Certs Should be global accessable
 
       end
-
 
 
       def self.connect(socket)
@@ -256,12 +258,12 @@ module Watobo #:nodoc: all
             #  @ctx.key = OpenSSL::PKey::DSA.new(File.read(key_file))
             #ctx.key = @key
             ctx.key = @fake_certs[site][:key]
-            ctx.extra_chain_cert =  @fake_certs[site][:extra_chain_cert]
+            ctx.extra_chain_cert = @fake_certs[site][:extra_chain_cert]
 
-            ctx.tmp_dh_callback = proc {|*args|
+            ctx.tmp_dh_callback = proc { |*args|
               @dh_key
             }
-            
+
             # if ctx.respond_to? :tmp_ecdh_callback
             #   ctx.tmp_ecdh_callback = ->(*args) {
             #     called = true
@@ -448,8 +450,6 @@ module Watobo #:nodoc: all
           puts bang
         end
 
-        puts request
-
         request
       end
 
@@ -596,7 +596,7 @@ module Watobo #:nodoc: all
             #  @ctx.key = OpenSSL::PKey::DSA.new(File.read(key_file))
             #ctx.key = @key
             ctx.key = @fake_certs[site][:key]
-            ctx.tmp_dh_callback = proc {|*args|
+            ctx.tmp_dh_callback = proc { |*args|
               @dh_key
             }
 

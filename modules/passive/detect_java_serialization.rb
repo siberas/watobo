@@ -39,8 +39,8 @@ module Watobo #:nodoc: all
             parms = chat.request.parameters
 
             parms.each do |parm|
-
-              if parm.value =~ /(#{@pattern})/i then
+              puts parm.value.to_s
+              if parm.value.to_s =~ /(#{@pattern})/i then
                 match = $1
                 #   puts match
                 addFinding(

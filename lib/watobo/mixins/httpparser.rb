@@ -511,15 +511,15 @@ module Watobo #:nodoc: all
               dummy = $1.strip
               # puts dummy
               te = case dummy
-                     when 'chunked'
+                     when /chunked/i
                        TE_CHUNKED
-                     when 'compress'
+                     when /compress/i
                        TE_COMPRESS
-                     when 'zip'
+                     when /zip/i
                        TE_GZIP
-                     when 'deflate'
+                     when /deflate/i
                        TE_DEFLATE
-                     when 'identity'
+                     when /identity/i
                        TE_IDENTITY
                      else
                        TE_NONE
@@ -711,6 +711,8 @@ module Watobo #:nodoc: all
           return cs
         end
 
+        # @return [Array] list of all header names
+        # @param [&block] can be given
         def header_names(filter=nil, &b)
           hnames = []
           headers do |h|
@@ -727,7 +729,8 @@ module Watobo #:nodoc: all
           begin
             filter = '.*' if filter.nil?
             header_list=[]
-            self.each do |hl|
+            self.each_with_index do |hl, i|
+              next if i == 0 # skip first entry -> Request Line
               line = "#{hl}"
               cl = line.force_encoding('ASCII-8BIT')
               return header_list if cl.strip.empty?

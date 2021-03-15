@@ -35,6 +35,8 @@ module Watobo #:nodoc: all
       @prefs[:type]
     end
 
+    # determins if parameter is of type value (string or integer)
+    # returns false if parameter is a container (hash or array)
     def is_value?
       t = @prefs[:type]
       return true if t.nil?
