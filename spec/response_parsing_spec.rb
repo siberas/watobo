@@ -20,39 +20,62 @@ Transfer-Encoding: chunked
 Content-Type: application/json;charset=utf-8
 EOF
 
-body = <<EOF
+chunked_body = <<EOF
 0A
 AAAAAAAAAA
 0
 EOF
 
-a = []
+chunked = []
 headers.each_line do |l|
-  a << l
+  chunked << l
 end
-a << "\r\n"
-a << body
+chunked << "\r\n"
+chunked << chunked_body
+
+
+headers = <<EOF
+
+EOF
+
+chunked_body = <<EOF
+0A
+AAAAAAAAAA
+0
+EOF
 
 
 describe Watobo::Response do
   context "unchunk" do
 
-    it "check server header" do
+    it "check server header of chunked response" do
       #  puts simple.url
-      response = Watobo::Response.new a
+      response = Watobo::Response.new chunked
       response.unchunk!
 
       # binding.pry
       expect(response.headers('Server').length).to eq(1)
     end
 
-    it "check content-length" do
+    it "check content-length of chunked response" do
       #  puts simple.url
-      response = Watobo::Response.new a
+      response = Watobo::Response.new chunked
       response.unchunk!
 
       clen = response.headers('Content-Length').first.split(':')[1].strip.to_i
       expect(clen).to eq(10)
+    end
+
+
+  end
+
+  context "unzip!" do
+    it "unzip! chunked response" do
+      #  puts simple.url
+      response = Watobo::Response.new chunked
+      response.unzip!
+
+      expect(response.status).to eq("200 OK")
     end
   end
 end
