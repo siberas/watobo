@@ -168,6 +168,7 @@ module Watobo #:nodoc: all
 
         def addHeader(header, value)
           self_copy = []
+          self_copy << self.first
           self_copy.concat(self.headers)
           self_copy.push "#{header}: #{value}\r\n"
 
@@ -458,10 +459,6 @@ module Watobo #:nodoc: all
 
             new_r.push "\r\n"
 
-            bytes_to_read = 20
-            body = []
-            is_new_chunk = false
-
             off = 0
             new_body = ''
 
@@ -483,6 +480,7 @@ module Watobo #:nodoc: all
               end
             end
             new_r.push new_body
+
             return Watobo::Response.new new_r
 
           end
