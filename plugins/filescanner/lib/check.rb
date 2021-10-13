@@ -26,16 +26,7 @@ module Watobo #:nodoc: all
           @extensions << ext
         end
 
-        def evasion_level
-          @prefs.has_key?(:evasion_level) ? @prefs[:evasion_level] : 0
-        end
-
-        def set_extensions(extensions)
-          @extensions = extensions if extensions.is_a? Array
-          @extensions << nil
-        end
-
-        def append_slash
+        def append_slash?
           !!@prefs[:append_slash] ? @prefs[:append_slash] : false
         end
 
@@ -54,7 +45,7 @@ module Watobo #:nodoc: all
         #  additionally following keys are accepted:
         #  file_extension: [Array],
         #  append_slash: [Boolean]
-        #  evasion_level: [Integer]
+        #  evasion_extensions: [Array]
         #
         def initialize(project, file_list, prefs)
           super(project, prefs)
@@ -73,7 +64,7 @@ module Watobo #:nodoc: all
         # create final path list for fileExist checks
         # @return [Array] of modified paths including the query for filter evasion
         # original query will be removed
-        def sample_files
+        def sample_files(&block)
           uris = []
           @file_list.each do |orig|
             next if orig.strip =~ /^#/
@@ -84,23 +75,63 @@ module Watobo #:nodoc: all
             orig.gsub!(/\/$/, '')
             next if orig.strip.empty?
 
+            # first we save the original
             uris << orig
+
+            # we keep the orig path also in the extended array
+            # for later evasions
+            extended = [orig]
+
             # append extensions
             #
             file_extensions.each do |ext|
               next if ext.nil? or ext.empty?
-              uris << "#{orig}.#{ext}"
+              fext = ext =~ /^\./ ? ext : ".#{ext}"
+              extended << apply_extension(orig, fext)
             end
 
-            evasion_extensions.each do |ext|
-              next if ext.nil? or ext.empty?
-              uris << "#{orig}#{ext}"
+            extended.each do |mpath|
+              evasion_extensions.each do |ext|
+                next if ext.nil? or ext.empty?
+                uris << apply_extension(mpath, ext)
+              end
             end
             # append slash (only to orig)
-            uris << "#{orig}/" if append_slash
+            uris << "#{orig}/" if append_slash?
 
           end
-          uris
+          uris.compact!
+          uris.uniq
+        end
+
+        def apply_extension(orig, ext, &block)
+          return nil if orig.nil? || orig.empty?
+          return nil if ext.nil? || ext.empty?
+
+          dummy = Watobo::Request.new 'http://my.dummy.url'
+          dummy.path = orig
+
+          # file extensions start with '.', e.g. '.tar.gz'
+          if ext =~ /^\./
+            dummy.set_file_extension ext, :keep_query
+            return dummy.path_ext
+          end
+
+          # if extension starts with / it means that it's a path modification
+          # e.g. '/;' will make orig path '/xxx/y.php' to '/xxx;/y.php'
+          if ext =~ /^\//
+            file_ext = dummy.file_ext
+            dir = dummy.dir
+            return "#{dir}#{ext.gsub(/^\//,'')}/#{file_ext}"
+          end
+          # if extension starts with '?' it is handled as a query extension
+          if ext =~ /^\?(.*)/
+            dummy.appendQueryParms $1
+            return dummy.path_ext
+          end
+
+          # seems like a bad extension format
+          return nil
         end
 
 

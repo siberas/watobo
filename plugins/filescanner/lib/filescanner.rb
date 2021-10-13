@@ -2,14 +2,43 @@ module Watobo #:nodoc: all
   module Plugin
     class Filescanner
 
-      extend Forwardable
+      STATUS_IDLE = 0x00
+      STATUS_RUNNING = 0x01
+      STATUS_FINISHED = 0x02
+      # extend Forwardable
 
-      def_delegators :@scanner, :sum_progress, :sum_total, :status, :running?, :finished?
+      # def_delegators :@scanner, :sum_progress, :sum_total, :status, :running?, :finished?
 
       attr :settings, :request, :file_list, :chat_list
 
+      @@lock = Mutex.new
+
+      def sum_progress
+        return {} if @scanner.nil?
+        @scanner.sum_progress
+      end
+
+      def sum_total
+        return 0 if @scanner.nil?
+        @scanner.sum_total
+      end
+
+      def status
+        return 0 if @scanner.nil?
+        @scanner.status
+      end
+
+      def running?
+        @status == STATUS_RUNNING
+      end
+
+      def finished?
+        @status == STATUS_FINISHED
+      end
+
       # @return [Object] Watobo::Scanner3
       def run(prefs = {})
+        @status = STATUS_RUNNING
         scan_prefs = Watobo.project.getScanPreferences
         scan_prefs.update prefs
 
@@ -20,29 +49,45 @@ module Watobo #:nodoc: all
           puts Watobo::Conf::Scanner.to_h
         end
 
-        patterns = get_not_found_pattern(scan_prefs)
-        scan_prefs[:custom_error_patterns].concat patterns
-        scan_prefs[:custom_error_patterns].uniq!
+        Thread.new {
+          @@lock.synchronize {
+            patterns = get_not_found_pattern(scan_prefs)
+            scan_prefs[:custom_error_patterns].concat patterns
+            scan_prefs[:custom_error_patterns].uniq!
 
-        if $VERBOSE
-          puts '>>> PATTERNS <<<'
-          puts scan_prefs[:custom_error_patterns].to_yaml
-          puts '--- EOP ---'
-        end
+            if $VERBOSE || $DEBUG
+              puts '>>> PATTERNS <<<'
+              puts scan_prefs[:custom_error_patterns].to_yaml
+              puts '--- EOP ---'
+            end
+          }
 
-        @check = Watobo::Plugin::Filescanner::Check.new Watobo.project, @file_list, scan_prefs
-        @scanner = Watobo::Scanner3.new(@chat_list, [@check], [], scan_prefs)
-        @scanner.run
+        }
 
+        # sleep a bit to ensure that thread for get_not_found_patterns gets @@lock first
+        sleep 1
+
+        Thread.new {
+          @@lock.synchronize {
+            @check = Watobo::Plugin::Filescanner::Check.new Watobo.project, @file_list, scan_prefs
+            @scanner = Watobo::Scanner3.new(@chat_list, [@check], [], scan_prefs)
+            @scanner.subscribe(:scanner_finished){
+              @status = STATUS_FINISHED
+            }
+            @scanner.run
+          }
+        }
+        @scanner
       end
 
       # automatically detects pattern for F
       def get_not_found_pattern(prefs)
         sender = Watobo::Session.new(self.object_id, prefs)
-        notfound = '404notfound' + SecureRandom.hex(3)
+
         nfpatterns = []
 
         @chat_list.each do |chat|
+          notfound = '404notfound' + SecureRandom.hex(3)
           request = chat.copyRequest
           request.replaceFileExt(notfound)
 
@@ -66,9 +111,13 @@ module Watobo #:nodoc: all
           end
 
 
+          next unless test_resp.has_body?
           # get plain words of body
-          text = test_resp.has_body? ? Nokogiri::HTML(test_resp.body.to_s).text : ''
+          text = Nokogiri::HTML(test_resp.body.to_s).text
           words = text.split
+          if words.length < 3
+            words = test_resp.body.to_s.split
+          end
 
           # check if words contain not found
           nfi = words.index { |w| w =~ /#{notfound}/i }
@@ -80,7 +129,7 @@ module Watobo #:nodoc: all
               wstart = words[1]
               wend = words[3]
             end
-            pattern = Regexp.quote(wstart) + '.*' + Regexp.quote(wend) + '{1}'
+            pattern = Regexp.quote(wstart) + '.*' + Regexp.quote(wend)
             nfpatterns << pattern
             next
           end
@@ -91,11 +140,12 @@ module Watobo #:nodoc: all
             mindex = words.length / 2
             wstart = words[mindex - 1]
             wend = words[mindex + 1]
-            pattern = Regexp.quote(wstart) + '.*' + Regexp.quote(wend) + '{1}'
+            pattern = Regexp.quote(wstart) + '.*' + Regexp.quote(wend)
             nfpatterns << pattern
             next
           end
         end
+
         nfpatterns
       end
 
@@ -136,14 +186,13 @@ module Watobo #:nodoc: all
         @settings = OpenStruct.new prefs
         @chat_list = nil
         @file_list = nil
+        @status =
 
         file_list_init
         chatlist_init
 
 
-
       end
-
 
 
       private
@@ -164,12 +213,11 @@ module Watobo #:nodoc: all
       end
 
 
-
       def chatlist_init
         @chat_list = []
         @chat_list << Watobo::Chat.new(request, [], :id => 0)
         if settings.test_all_dirs
-          Watobo::Chats.dirs(request.site, :base_dir => request.dir) do |dir|
+          Watobo::Chats.dirs(request.site, :base_dir => request.dir).each do |dir|
             chat = Watobo::Chat.new(request, [], :id => 0)
             chat.request.replaceFileExt('')
             chat.request.setDir(dir)

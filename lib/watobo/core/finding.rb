@@ -19,6 +19,25 @@ module Watobo#:nodoc: all
       @details[:id]
     end
 
+    # return severity score 0 (none) - 10 (critical)
+    def severity
+      return 0.0 unless !!@details[:type]
+      return 0.0 unless @details[:type] == Watobo::Constants::FINDING_TYPE_VULN
+      score = case @details[:rating]
+              when Watobo::Constants::VULN_RATING_CRITICAL
+                10.0
+              when Watobo::Constants::VULN_RATING_HIGH
+                9.0
+              when Watobo::Constants::VULN_RATING_MEDIUM
+                7.0
+              when Watobo::Constants::VULN_RATING_LOW
+                3.0
+              else
+                0.0
+              end
+      score
+    end
+
     def false_positive?
       @details[:false_positive]
     end

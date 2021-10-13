@@ -83,8 +83,8 @@ module Watobo #:nodoc: all
 
         # create a notification chain for SEL_COMMAND
         # we can't register the regular way here, because it's already used by the CheckboxTreeList
-        @tree.subscribe(:sel_command) {
-          notify(:sel_command)
+        @tree.subscribe(:sel_changed) {
+          notify(:sel_changed)
         }
 
         set_checks @checks

@@ -2,6 +2,7 @@
 module Watobo #:nodoc: all
   class Chats
     @chats = []
+    @uniq_chats = {}
     @chats_lock = Mutex.new
     @event_dispatcher_listeners = Hash.new
 
@@ -21,6 +22,10 @@ module Watobo #:nodoc: all
           m.call(*args) if m.respond_to? :call
         end
       end
+    end
+
+    def self.clear_uniq
+      @uniq_chats = {}
     end
 
     def self.reset
@@ -330,7 +335,7 @@ module Watobo #:nodoc: all
 
     def self.match?(chat, filter)
       begin
-
+        @uniq_chats ||= {}
         if filter[:unique]
           uniq_hash = chat.request.uniq_hash
           return false if @uniq_chats.has_key? uniq_hash

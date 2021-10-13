@@ -10,8 +10,7 @@ module Watobo #:nodoc: all
           @@tested_paths = []
 
           details = <<EOD
-This check inserts the HTTP header Max-Forwards with a zero value. In general this header is only used in conjunction with the TRACE or OPTIONS method. But sometimes also regular methods will get answered.
-The response might include sensitive information about the underlying system. As well it might be interesting for further attacks like connecting to internal hosts by modifying the host header.
+This check is injecting HTTP headers which are known to be able to manipulate the request flow of Loadbalancers or Reverse-Proxies.
 EOD
 
           @info.update(
@@ -23,10 +22,10 @@ EOD
           )
 
           @finding.update(
-              :threat => 'Packet routing might be manipulated, which could lead to url filter evaseion.', # thread of vulnerability, e.g. loss of information
+              :threat => 'Packet routing might be manipulated, which could lead to url filter evasion.', # thread of vulnerability, e.g. loss of information
               :class => "X-HTTP-Header", # vulnerability class, e.g. Stored XSS, SQL-Injection, ...
               :rating => VULN_RATING_INFO,
-              :measure => "Filter injected headers.",
+              :measure => "Filter/remove injected headers.",
               :details => details,
               :type => FINDING_TYPE_HINT # FINDING_TYPE_HINT, FINDING_TYPE_INFO, FINDING_TYPE_VULN
           )

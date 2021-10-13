@@ -80,10 +80,10 @@ module Watobo#:nodoc: all
       return true
     end
 
-    def self.start
+    def self.start(settings = {})
      # @proxy = Watobo::InterceptProxy.new()
 
-      @proxy = Watobo::Interceptor::Proxy.start()
+      @proxy = Watobo::Interceptor::Proxy.start(settings)
       puts "DEBUG: Proxy running" if $DEBUG
     #   puts "* set www_auth for interceptor"
     #   puts YAML.dump(@project.settings[:www_auth])

@@ -227,7 +227,7 @@ module Watobo #:nodoc: all
 
       [@conversation_path, @findings_path, @log_path, @scanlog_path].each do |folder|
         if not File.exist?(folder) then
-          puts "create path #{folder}"
+          puts "create path #{folder}" if $VERBOSE
           begin
             Dir.mkdir(folder)
           rescue SystemCallError => bang

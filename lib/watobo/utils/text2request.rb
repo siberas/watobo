@@ -28,8 +28,7 @@ module Watobo #:nodoc: all
       result = Watobo::Request.new result
 
       ct = result.content_type
-      puts result.content_type
-      puts result.content_type_ex
+
       # last line is without "\r\n" if text has a body
       if ct =~ /multipart/ and body then
         #Content-Type: multipart/form-data; boundary=---------------------------3035221901842

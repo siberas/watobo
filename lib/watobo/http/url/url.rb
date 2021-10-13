@@ -2,6 +2,11 @@
 module Watobo #:nodoc: all
   module HTTP
     class Url
+
+      def to_str
+        @root.url_string
+      end
+
       def to_s
         @root.url_string
       end

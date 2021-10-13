@@ -68,7 +68,7 @@ module Watobo #:nodoc: all
     def clear_parameters(*locations)
       plocs = @valid_param_locations
       unless locations.empty?
-        plocs = @valid_param_locations.select {|loc| locations.include? loc}
+        plocs = @valid_param_locations.select { |loc| locations.include? loc }
       end
 
       @url.clear if !@url.nil? and plocs.include?(:url)
@@ -82,7 +82,7 @@ module Watobo #:nodoc: all
       plocs = @valid_param_locations
       locations = [] if locations.first == :all
       unless locations.empty?
-        plocs = @valid_param_locations.select {|loc| locations.include? loc}
+        plocs = @valid_param_locations.select { |loc| locations.include? loc }
       end
 
       parms = []
@@ -102,23 +102,29 @@ module Watobo #:nodoc: all
       parms
     end
 
+    # @param parm Array||Parameter
+    # @return TrueFalse
+    #
     def set(parm)
-      return false unless parm.respond_to?(:location)
-      case parm.location
-      when :data
-        #
-        # replace_post_parm(parm.name, parm.value)
-        @data.set parm unless @data.nil?
-      when :url
-        @url.set parm unless @url.nil?
-      when :xml
-        @xml.set parm unless @xml.nil?
-      when :cookie
-        cookies.set parm
-      when :json
-        @json.set parm unless @json.nil?
-      when :header
-        @headers.set parm unless @headers.nil?
+      params = parm.is_a?(Array) ? parm : [parm]
+      params.each do |parm|
+        return false unless parm.respond_to?(:location)
+        case parm.location
+        when :data
+          #
+          # replace_post_parm(parm.name, parm.value)
+          @data.set parm unless @data.nil?
+        when :url
+          @url.set parm unless @url.nil?
+        when :xml
+          @xml.set parm unless @xml.nil?
+        when :cookie
+          cookies.set parm
+        when :json
+          @json.set parm unless @json.nil?
+        when :header
+          @headers.set parm unless @headers.nil?
+        end
       end
       true
     end

@@ -139,7 +139,7 @@ module Watobo #:nodoc: all
       super(Watobo::Gui.application, title, copts)
 
       # make configuration settings available
-      extend Watobo::Config
+      #extend Watobo::Config
 
       @chat_reciever = false
       @update_timer = nil

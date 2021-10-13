@@ -42,7 +42,7 @@ module Watobo #:nodoc: all
             elsif end_of_file_index == 0
               @file = ""
             else
-              @file = tmp[0..end_of_file_index-1]
+              @file = tmp[0..end_of_file_index - 1]
             end
 
           else
@@ -68,7 +68,7 @@ module Watobo #:nodoc: all
             return nil if off.nil?
             eop = self.first.index(' HTTP/')
             return nil if eop.nil?
-            parms = self.first[off+1..eop-1]
+            parms = self.first[off + 1..eop - 1]
             return parms
           rescue => bang
             puts bang
@@ -142,7 +142,7 @@ module Watobo #:nodoc: all
             #parts.shift
             # puts "HTTPParser.query: #{parts.join('?')}"
             return "" if off.nil?
-            return uri[off+1..-1]
+            return uri[off + 1..-1]
           rescue => bang
             puts "!!! Could not parse query !!!"
             puts bang
@@ -271,7 +271,7 @@ module Watobo #:nodoc: all
             return [] if off.nil?
             eop = self.first.index(' HTTP/')
             return [] if eop.nil?
-            parms = self.first[off+1..eop-1].split('&').select { |x| x =~ /=/ }
+            parms = self.first[off + 1..eop - 1].split('&').select { |x| x =~ /=/ }
             #   puts parms
             return parms
           rescue => bang
@@ -295,8 +295,8 @@ module Watobo #:nodoc: all
 
         def get_parm_names(&block)
 
-          parm_names=[]
-          parmlist=[]
+          parm_names = []
+          parmlist = []
           parmlist.concat(get_parms)
 
           parmlist.each do |p|
@@ -318,7 +318,7 @@ module Watobo #:nodoc: all
               dummy = parm.split(/=/)
               if dummy.length > 1 then
                 #  parm_value=dummy[1].gsub(/^[ ]*/,"")
-                parm_value=dummy[1].strip
+                parm_value = dummy[1].strip
               end
             end
           end
@@ -326,7 +326,7 @@ module Watobo #:nodoc: all
         end
 
         def post_parm_value(parm_name)
-          parm_value=""
+          parm_value = ""
           self.post_parms.each do |parm|
             if parm =~ /#{Regexp.quote(parm_name)}/i then
               dummy = parm.split(/=/)
@@ -346,7 +346,7 @@ module Watobo #:nodoc: all
         include Watobo::Constants
 
         def post_parms
-          parmlist=[]
+          parmlist = []
           return parmlist unless has_body?
           parms = self.last.force_encoding('ASCII-8BIT')
           begin
@@ -367,7 +367,7 @@ module Watobo #:nodoc: all
         end
 
         def parms
-          parmlist=[]
+          parmlist = []
           parmlist.concat(get_parms)
           parmlist.concat(post_parms)
 
@@ -375,8 +375,8 @@ module Watobo #:nodoc: all
         end
 
         def parm_names
-          parm_names=[]
-          parmlist=[]
+          parm_names = []
+          parmlist = []
           parmlist.concat(get_parms)
           parmlist.concat(post_parms)
           parmlist.each do |p|
@@ -390,8 +390,8 @@ module Watobo #:nodoc: all
 
         def post_parm_names(&block)
 
-          parm_names=[]
-          parmlist=[]
+          parm_names = []
+          parmlist = []
 
           parmlist.concat(post_parms)
           parmlist.each do |p|
@@ -409,13 +409,13 @@ module Watobo #:nodoc: all
 
 
         def header_value(header_name)
-          header_values =[]
+          header_values = []
           self.headers.each do |header|
             begin
               if header =~ /^#{header_name}/i then
                 vstart = header.index ':'
                 unless vstart.nil?
-                  header_values.push header[vstart+1..-1].strip
+                  header_values.push header[vstart + 1..-1].strip
                 end
               end
             rescue => bang
@@ -426,7 +426,7 @@ module Watobo #:nodoc: all
           return header_values
         end
 
-        def content_type(default_ct='undefined')
+        def content_type(default_ct = 'undefined')
           ct = default_ct
           self.each do |line|
             begin
@@ -448,7 +448,7 @@ module Watobo #:nodoc: all
           return ct.strip
         end
 
-        def content_type_ex(default_ct='undefined')
+        def content_type_ex(default_ct = 'undefined')
           ct = default_ct
           self.each do |line|
             break if line.strip.empty?
@@ -484,18 +484,18 @@ module Watobo #:nodoc: all
               dummy = $1.strip
               #  puts "Content-Encoding => #{dummy}"
               te = case dummy
-                     when /chunked/i
-                       TE_CHUNKED
-                     when /compress/i
-                       TE_COMPRESS
-                     when /zip/i
-                       TE_GZIP
-                     when /deflate/i
-                       TE_DEFLATE
-                     when /identity/i
-                       TE_IDENTITY
-                     else
-                       TE_NONE
+                   when /chunked/i
+                     TE_CHUNKED
+                   when /compress/i
+                     TE_COMPRESS
+                   when /zip/i
+                     TE_GZIP
+                   when /deflate/i
+                     TE_DEFLATE
+                   when /identity/i
+                     TE_IDENTITY
+                   else
+                     TE_NONE
                    end
               break
             end
@@ -511,18 +511,18 @@ module Watobo #:nodoc: all
               dummy = $1.strip
               # puts dummy
               te = case dummy
-                     when /chunked/i
-                       TE_CHUNKED
-                     when /compress/i
-                       TE_COMPRESS
-                     when /zip/i
-                       TE_GZIP
-                     when /deflate/i
-                       TE_DEFLATE
-                     when /identity/i
-                       TE_IDENTITY
-                     else
-                       TE_NONE
+                   when /chunked/i
+                     TE_CHUNKED
+                   when /compress/i
+                     TE_COMPRESS
+                   when /zip/i
+                     TE_GZIP
+                   when /deflate/i
+                     TE_DEFLATE
+                   when /identity/i
+                     TE_IDENTITY
+                   else
+                     TE_NONE
                    end
               break
             end
@@ -553,7 +553,7 @@ module Watobo #:nodoc: all
         #      end
 
         def post_parm_value(parm_name)
-          parm_value=""
+          parm_value = ""
           self.post_parms.each do |parm|
             if parm =~ /#{Regexp.quote(parm_name)}/i then
               dummy = parm.split(/=/)
@@ -668,13 +668,19 @@ module Watobo #:nodoc: all
         alias :responseCode :status_code
 
         # returns array of new cookies
+        # Iterating over Response and looks for Set-Cookie Headers
         # Set-Cookie: mycookie=b41dc9e55d6163f78321996b10c940edcec1b4e55a76464c4e9d25e160ac0ec5b769806b; Path=/
         def new_cookies(&b)
           nc = []
           headers("Set-Cookie") do |h|
-            cookie = Watobo::Cookie.new(h)
-            yield cookie if block_given?
-            nc << cookie
+            begin
+              cookie = Watobo::Cookie.new(h)
+              yield cookie if block_given?
+              nc << cookie
+            rescue => bang
+              puts bang if $VERBOSE
+              puts bang.backtrace if $DEBUG
+            end
           end
           nc
         end
@@ -713,22 +719,22 @@ module Watobo #:nodoc: all
 
         # @return [Array] list of all header names
         # @param [&block] can be given
-        def header_names(filter=nil, &b)
+        def header_names(filter = nil, &b)
           hnames = []
           headers do |h|
             hsi = h.index(':')
             next if hsi.nil?
-            hname = h[0..hsi-1]
+            hname = h[0..hsi - 1]
             yield hname if block_given?
             hnames << hname
           end
           hnames
         end
 
-        def headers(filter=nil, &b)
+        def headers(filter = nil, &b)
           begin
             filter = '.*' if filter.nil?
-            header_list=[]
+            header_list = []
             self.each_with_index do |hl, i|
               next if i == 0 # skip first entry -> Request Line
               line = "#{hl}"

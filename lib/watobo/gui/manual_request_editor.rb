@@ -146,7 +146,7 @@ module Watobo #:nodoc: all
             req = @req_builder.parseRequest()
           end
 
-          scan_chats.push Chat.new(Watobo::Request.new(req), Watobo::Response.new(@chat.response), :id => @chat.id, :run_passive_checks => false)
+          scan_chats.push Chat.new(Watobo::Request.new(req), Watobo::Response.new(@chat.response), :id => @chat.id)
         end
 
         unless scan_chats.empty? then

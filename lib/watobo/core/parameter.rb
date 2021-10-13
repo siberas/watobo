@@ -10,6 +10,7 @@ module Watobo #:nodoc: all
 
 =end
   class Parameter
+
     def location
       @prefs[:location]
     end
@@ -51,9 +52,15 @@ module Watobo #:nodoc: all
       "#{name}=#{value}"
     end
 
+    # @param prefs [Hash]
+    # 3 settings are required:
+    # - :location
+    # - :name
+    # - :value
     def initialize(prefs)
       raise ":location is missing" unless prefs.has_key?(:location)
       raise ":name is missing" unless prefs.has_key?(:name)
+      raise ":value is missing" unless prefs.has_key?(:value)
 
       @prefs = prefs
     end

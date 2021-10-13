@@ -1,10 +1,11 @@
 # @private
 module Watobo #:nodoc: all
   module Gui
-    @application = FXApp.new('Watobo', 'Plugin Loader')
+    #@application = FXApp.new('Watobo', 'Plugin Loader')
 
     def self.application
-      @application
+      # @application
+      FXApp.instance
     end
 
     class PluginLoader < FXMainWindow

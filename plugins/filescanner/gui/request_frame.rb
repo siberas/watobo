@@ -179,14 +179,16 @@ module Watobo #:nodoc: all
                 @dir_combo.appendItem("/", nil)
 
                 chats = Watobo::Chats.select(@site, :method => "GET")
-                updateRequestEditor(chats.first.request)
+                unless chats.first.nil?
+                  updateRequestEditor(chats.first.request)
 
-                Watobo::Chats.dirs(@site).each do |dir|
-                  text = "/" + dir.slice(0..80)
-                  text.gsub!(/\/+/, '/')
-                  @dir_combo.appendItem(text, dir)
+                  Watobo::Chats.dirs(@site).each do |dir|
+                    text = "/" + dir.slice(0..80)
+                    text.gsub!(/\/+/, '/')
+                    @dir_combo.appendItem(text, dir)
+                  end
+                  @dir_combo.setCurrentItem(0, true) if @dir_combo.numItems > 0
                 end
-                @dir_combo.setCurrentItem(0, true) if @dir_combo.numItems > 0
               end
               @dir_combo.enable
 

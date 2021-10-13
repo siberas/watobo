@@ -1,8 +1,27 @@
 #!/bin/ruby
 # this is just a little wrapper to start watobo with another command than watobo_gui.rb
+
+require 'optimist'
+
+OPTS = Optimist::options do
+  version "#{$0} 1.0 (c) 2019 siberas"
+  opt :binding, "binding of interceptor (proxy), e.g. 127.0.0.1:8081", :type => :string, :default => ''
+  opt :project, "Project name", :type => :string, :default => ''
+  opt :session, "Session name", :type => :string, :default => ''
+end
+
 if $0 == __FILE__
   inc_path = File.expand_path(File.join(File.dirname(__FILE__), "..", "lib")) # this is the same as rubygems would do
   $: << inc_path
+end
+
+unless OPTS[:project].empty? || OPTS[:session].empty?
+  $startup_project = OPTS[:project]
+  $startup_session =  OPTS[:session]
+end
+
+unless OPTS[:binding].empty?
+  $startup_binding = OPTS[:binding]
 end
 
 path = File.dirname(File.expand_path(__FILE__))

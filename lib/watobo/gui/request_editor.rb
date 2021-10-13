@@ -116,8 +116,9 @@ module Watobo #:nodoc: all
           end
         end
 
-        @textbox.connect(SEL_REPLACED, method(:onTextChanged))
-        @textbox.connect(SEL_DELETED, method(:onTextChanged))
+        # @textbox.connect(SEL_REPLACED, method(:onTextChanged))
+        # @textbox.connect(SEL_DELETED, method(:onTextChanged))
+        @textbox.connect(SEL_CHANGED, method(:onTextChanged))
 
         # KEY_Return
         # KEY_Control_L

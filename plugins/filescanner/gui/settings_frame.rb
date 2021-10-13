@@ -78,7 +78,7 @@ module Watobo #:nodoc: all
             @append_extensions_cb = FXCheckButton.new(mode_frame, "append file extensions", nil, 0, ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP | LAYOUT_FILL_Y)
             frame = FXVerticalFrame.new(mode_frame, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y | FRAME_SUNKEN | FRAME_THICK, :padding => 0)
             @extensions_text = FXText.new(frame, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y | TEXT_WORDWRAP)
-            ext = "bak;php;asp;aspx;tgz;tar.gz;gz;tmp;temp;old;_"
+            ext = "svc;bak;php;asp;aspx;tgz;tar.gz;gz;tmp;temp;old;_"
 
             @extensions_text.setText(ext)
 
@@ -116,7 +116,7 @@ module Watobo #:nodoc: all
             FXLabel.new(frame, "Enter space separated chars/strings to append")
             frame = FXVerticalFrame.new(frame, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y | FRAME_SUNKEN | FRAME_THICK, :padding => 0)
             @l1_txt = FXText.new(frame, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y | TEXT_WORDWRAP)
-            @l1_txt.setText("; ?y=x.png ?debug=true")
+            @l1_txt.setText("/; ?y=x.png ?debug=true")
 
             frame = FXVerticalFrame.new(@switcher, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y, :padding => 0)
             FXLabel.new(frame, "Not yet available")

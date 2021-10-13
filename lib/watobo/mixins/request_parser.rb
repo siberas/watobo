@@ -103,15 +103,15 @@ module Watobo #:nodoc: all
       def to_request(opts = {})
         options = {:update_content_length => false}
         options.update opts
-        body = nil
+
         begin
           text = parse_code
-          b = binding
+
+          text.gsub!(/\r/,'')
+
           parser = ERB.new text
-          text = parser.result(b)
-          puts ">>> ERB"
-          puts text
-          puts '<<< ERB'
+          text = parser.result(binding)
+
           return nil if text.nil?
           request = []
 

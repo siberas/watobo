@@ -3,10 +3,6 @@ module Watobo #:nodoc: all
   module CertStore
     @fake_certs = Hash.new
 
-    def self.create_server_ctx(cn)
-
-    end
-
     def self.acquire_ssl_ctx(target, cn)
       #OpenSSL::SSL::SSLContext::DEFAULT_PARAMS[:ciphers] = 'TLSv1.2:!aNULL:!eNULL'
       #ctx = OpenSSL::SSL::SSLContext.new(:TLSv1_2_server)

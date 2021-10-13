@@ -16,6 +16,7 @@ module Watobo#:nodoc: all
         o[:use_orig_request] = @useOriginalRequest.checked?
         o[:detect_logout] = @detectLogout.checked?
         o[:follow_redirect] = @followRedirects.checked?
+        o[:run_passive_checks] = @passive_checks_chk.checked?
         o[:egress_handler] = egress_handler
         puts o.to_yaml if $DEBUG
         o
@@ -113,6 +114,11 @@ module Watobo#:nodoc: all
             @egress_handlers.appendItem(h.to_s, nil)
           }
         end
+
+        frame = FXGroupBox.new(self, "Enable passive checks", LAYOUT_SIDE_TOP|FRAME_GROOVE|LAYOUT_FILL_X, 0, 0, 0, 0)
+        egress_frame = FXHorizontalFrame.new(frame,:opts => LAYOUT_FILL_X|LAYOUT_SIDE_TOP, :padding => 0)
+        @passive_checks_chk = FXCheckButton.new(egress_frame, "Run passive checks during scan (may increase duration)", nil, 0, JUSTIFY_LEFT|JUSTIFY_TOP|ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
+        #@csrfToken.checkState = false
       end
 
       private

@@ -46,6 +46,8 @@ module Watobo #:nodoc: all
           #puts @scanner.status
 
           @scanner.run(@settings_frame.settings)
+
+          puts '[Filescanner-GUI] starting update timer'
           start_update_timer
             #puts @scanner.status
         end
@@ -61,7 +63,7 @@ module Watobo #:nodoc: all
           interval = 2000
           @_prev_progress = 0
           @timer = FXApp.instance.addTimeout(interval, :repeat => true) {
-            unless @scanner.nil?
+            if !@scanner.nil? && @scanner.respond_to?(:sum_progress)
               progress = @scanner.sum_progress
 
               speed = progress - @_prev_progress
@@ -69,7 +71,7 @@ module Watobo #:nodoc: all
 
               if @scanner.finished?
                 FXApp.instance.removeTimeout(@timer)
-                msg = "Scan Finished!"
+                msg = "[Filescanner-GUI] Scan Finished!"
                 #   @log_viewer.log(LOG_INFO, msg)
                 Watobo.log(msg, :sender => "Catalog")
                 @scanner = nil
@@ -85,10 +87,4 @@ module Watobo #:nodoc: all
       end
     end
   end
-end
-
-
-if __FILE__ == $0
-  puts "Running #{__FILE__}"
-  catalog = Watobo::Plugin::Catalog.new(project)
 end

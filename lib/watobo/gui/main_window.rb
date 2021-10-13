@@ -650,8 +650,14 @@ module Watobo #:nodoc: all
           @scan_button.enable
           @statusBar.statusInfoText = "Ready"
         end
-        @statusBar.bindAddress = Watobo::Conf::Interceptor.bind_addr.to_s
-        @statusBar.portNumber = Watobo::Conf::Interceptor.port.to_s
+        unless $startup_binding
+          @statusBar.bindAddress = Watobo::Conf::Interceptor.bind_addr.to_s
+          @statusBar.portNumber = Watobo::Conf::Interceptor.port.to_s
+        else
+          bip, bport = $startup_binding.split(':')
+         @statusBar.bindAddress = bip
+          @statusBar.portNumber = bport
+        end
         @statusBar.forwardingProxy = "-"
         #  puts Watobo::Conf::ForwardingProxy.default_proxy
 
@@ -759,16 +765,16 @@ module Watobo #:nodoc: all
 
         @project.subscribe(:update_progress) { |up|
           # Watobo.save_thread {
-            begin
-              # puts up
-              @progress_window.total = up[:total] if !!up[:total]
-              @progress_window.progress = up[:progress] if !!up[:progress]
-              @progress_window.message = up[:task] if !!up[:task]
-              @progress_window.increment(up[:increment]) if !!up[:increment]
-                #@progress_window.forceUpdate
-            rescue => bang
-              puts bang
-            end
+          begin
+            # puts up
+            @progress_window.total = up[:total] if !!up[:total]
+            @progress_window.progress = up[:progress] if !!up[:progress]
+            @progress_window.message = up[:task] if !!up[:task]
+            @progress_window.increment(up[:increment]) if !!up[:increment]
+              #@progress_window.forceUpdate
+          rescue => bang
+            puts bang
+          end
           #  }
         }
 
@@ -778,7 +784,7 @@ module Watobo #:nodoc: all
         @findings_tree.hide
         #TODO: Disable Menu
 
-          Watobo.save_thread {
+        Watobo.save_thread {
           begin
             print "\n* setting up project ..."
             @project.setupProject()
@@ -1811,7 +1817,6 @@ module Watobo #:nodoc: all
         #disable_menu
         update_menu
 
-
       end
 
       def create
@@ -1820,6 +1825,30 @@ module Watobo #:nodoc: all
         frame_height = (@chat_frame_splitter.getSplit(1) + @chat_frame_splitter.getSplit(0)) / 2
         @chat_frame_splitter.setSplit(0, frame_height)
         @chat_frame_splitter.setSplit(1, frame_height)
+
+        Watobo.save_thread do
+          # open session if startup parameters are given
+          loop do
+
+            break if self.visible?
+            sleep 2
+          end
+          if $startup_project && $startup_session
+            project = Watobo.create_project(
+                :project_name => $startup_project,
+                :session_name => $startup_session
+            )
+
+            puts "* starting project"
+            startProject(project)
+
+            $startup_project = nil
+            $startup_session = nil
+          end
+
+        end
+
+
       end
 
       # !!!

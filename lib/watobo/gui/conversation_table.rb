@@ -120,6 +120,7 @@ module Watobo #:nodoc: all
           if @filter[:unique]
             unless Watobo::Gui.project.nil?
               uniq_hash = Watobo::Gui.project.uniqueRequestHash chat.request
+              binding.pry
               return false if @uniq_chats.has_key? uniq_hash
               @uniq_chats[uniq_hash] = nil
             end
@@ -505,6 +506,7 @@ module Watobo #:nodoc: all
        #   add_chat_row(chat)
        # end
 
+        Watobo::Chats.clear_uniq
         @current_chat_list.each do |chat|
           if Watobo::Chats.match?(chat, @filter)
             add_chat_row(chat)

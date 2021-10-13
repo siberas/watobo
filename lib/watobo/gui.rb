@@ -36,7 +36,6 @@ include Fox
 module Watobo #:nodoc: all
   module Gui
     @application = nil
-    @icon_path = File.expand_path(File.join(File.dirname(__FILE__), "..", "..", "icons"))
 
     @project = nil
 
@@ -80,7 +79,7 @@ module Watobo #:nodoc: all
       check_first_run()
 
       @application.run
-
+      # this will not be reached before window is closed
     end
 
     def self.create_application

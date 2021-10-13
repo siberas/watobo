@@ -23,10 +23,11 @@ module Watobo #:nodoc: all
           self.first.gsub!(/^[^[:space:]]{1,}/i, "#{new_method}")
         end
 
-        def replaceFileExt(new_file)
+        def replaceFileExt(file_ext)
           begin
-            file = new_file.strip
-            file.gsub!(/^\//, "")
+            new_file = file_ext.dup
+            new_file.strip!
+            new_file.gsub!(/^\//, "")
             m, method, scheme, site, port, path, query, version = self.first.match(/#{URL_SPLIT}/i).to_a
             unless m.nil?
               i = path.rindex('/')
@@ -85,6 +86,8 @@ module Watobo #:nodoc: all
           end
           return false
         end
+
+        alias :path= :set_path
 
         #
         # set a new file extension, e.g. mysite.html to mysite.php
@@ -166,11 +169,12 @@ module Watobo #:nodoc: all
 
         alias :add_url_parm :add_get_parm
 
-        def addHeader(header, value)
+        def addHeader(header, value=nil)
           self_copy = []
           self_copy << self.first
           self_copy.concat(self.headers)
-          self_copy.push "#{header}: #{value}\r\n"
+          hv = value.nil? ? "#{header}\r\n" : "#{header}: #{value}\r\n"
+          self_copy.push hv
 
           unless self.body.nil?
             self_copy.push "\r\n"
@@ -179,7 +183,6 @@ module Watobo #:nodoc: all
           end
 
           self.replace(self_copy)
-
         end
 
         alias_method :add_header, :addHeader
@@ -290,8 +293,8 @@ module Watobo #:nodoc: all
           begin
             pattern = '^Cookie'
             while i = headers.index { |h| h =~ /#{pattern}/i }
-              #puts "* remove #{self[i]}"
-              self.delete_at i
+              # remove i + 1 because of first request line, which is not part of headers
+              self.delete_at i + 1
             end
           rescue => bang
             puts bang
@@ -332,13 +335,13 @@ module Watobo #:nodoc: all
           end
         end
 
-        def replace_header(header, value)
+        # def replace_header(header, value)
 
-        end
+        #end
 
-        def fix_session(pattern, value)
+        #def fix_session(pattern, value)
 
-        end
+        #end
 
         def fix_content_length
           blen = self.has_body? ? self.body.force_encoding("ASCII-8BIT").length : 0
@@ -349,6 +352,8 @@ module Watobo #:nodoc: all
           self.unchunk
           self.fix_content_length
         end
+
+        alias :update_content_length :fixupContentLength
 
         def setRawQueryParms(parm_string)
           return nil if parm_string.nil?
@@ -365,13 +370,10 @@ module Watobo #:nodoc: all
         def appendQueryParms(parms)
           return if parms.nil?
           return if parms == ''
-
-          puts self.first
-          puts self.file_ext
-
-          pref = (self.file_ext =~ /\?/) ? '&' : '?'
-          puts "append query parms"
-          self.first.gsub!(/(.*) (HTTP\/.*)/, "\\1#{pref}#{parms} \\2")
+          #remove leading separators & and ?
+          parms.gsub!(/^[&?]+/,'')
+          prefix = (self.file_ext =~ /\?/) ? '&' : '?'
+          self.first.gsub!(/(.*) (HTTP\/.*)/, "\\1#{prefix}#{parms} \\2")
 
         end
 
@@ -383,9 +385,18 @@ module Watobo #:nodoc: all
           set_header("Content-Type", ctype)
         end
 
-        def set_header(header, value)
+        # set a http-header
+        # @param header [String]
+        #   - name of header, if @param value is set
+        # or
+        #   - full header (with or without CRLF) if no @param value is given
+        #   e.g. "X-Atlassian-token: no-check"
+        # @return true or false
+        def set_header(header, value=nil)
           begin
             new_header = "#{header}: #{value}\r\n"
+            new_header = "#{header.strip}\r\n" if value.nil?
+
             self.each_with_index do |h, i|
               if h =~ /^#{Regexp.quote(header)}:/i
                 self[i] = new_header

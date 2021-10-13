@@ -166,7 +166,7 @@ module Watobo #:nodoc: all
     end
 
     def enabled=(status)
-      @enabled = status.is_a? TrueClass|FalseClass
+      @enabled = status.is_a? TrueClass | FalseClass
     end
 
     def enable
@@ -186,7 +186,7 @@ module Watobo #:nodoc: all
 
     def checkid()
       cn = self.class.to_s.downcase
-      cn.gsub!(/.*::/,'')
+      cn.gsub!(/.*::/, '')
 
       t_hex = Time.now.to_i.to_s(16)
 
@@ -224,15 +224,38 @@ module Watobo #:nodoc: all
       cancel()
     end
 
-    def fileExists?(request, prefs={})
+    def fileExists?(request, prefs = {})
       begin
         t_request, t_response = doRequest(request, prefs)
-        #puts t_response.status
+        # first custom error patterns are checked
         status = t_response.status
-        return false, t_request, t_response if status.empty?
-        return false, t_request, t_response if status =~ /^404/ # Not Found
+        if @settings.has_key? :custom_error_patterns
+          @settings[:custom_error_patterns].each do |pat|
+            return false, t_request, t_response if t_response.to_s =~ /#{pat}/
+          end
+        end
+        #if @settings.has_key? :custom_error_patterns
+        #  @settings[:custom_error_patterns].each do |pat|
+        #    t_response.headers.each do |hl|
+        #      return false, t_request, t_response if hl =~ /#{pat}/
+        #    end
+
+        #    unless t_response.body.nil?
+        #      return false, t_request, t_response if t_response.body.to_s =~ /#{pat}/
+        # also check if pattern exists in plain text representation of body
+        #      return false, t_request, t_response if Nokogiri::HTML(t_response.body.to_s).text =~ /#{pat}/
+        #    end
+        #  end
+        #end
 
         return true, t_request, t_response if status =~ /^405/ # Method Not Allowed
+
+        return false, t_request, t_response if status.empty?
+
+        #return false, t_request, t_response if status =~ /^404/ # Not Found
+        #return false, t_request, t_response if status =~ /^400/ # Bad Request
+        return false, t_request, t_response if status =~ /^40/ # expect all 40ers as no valid response
+
 
 
         if status =~ /^50\d/
@@ -242,19 +265,6 @@ module Watobo #:nodoc: all
 
         #puts @settings[:custom_error_patterns]
 
-        if @settings.has_key? :custom_error_patterns
-          @settings[:custom_error_patterns].each do |pat|
-            t_response.headers.each do |hl|
-              return false, t_request, t_response if hl =~ /#{pat}/
-            end
-
-            unless t_response.body.nil?
-              return false, t_request, t_response if t_response.body.to_s =~ /#{pat}/
-              # also check if pattern exists in plain text representation of body
-              return false, t_request, t_response if Nokogiri::HTML(t_response.body.to_s).text =~ /#{pat}/
-            end
-          end
-        end
 
         # return false if status is 200 (OK) but has no body
         if t_response.status =~ /^200/ && !t_response.has_body?
@@ -280,7 +290,7 @@ module Watobo #:nodoc: all
       return info[:check_name]
     end
 
-    def initialize(session_name=nil, prefs={})
+    def initialize(session_name = nil, prefs = {})
       #@project = project
       super(session_name, prefs)
 

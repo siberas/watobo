@@ -16,6 +16,10 @@ module Watobo#:nodoc: all
     @project
   end
 
+  def self.dev_mode
+    @project = 'dev'
+  end
+
   # create_project is a wrapper function to create a new project
   # you can either create a project by giving a URL (:url),
   # or by giving a :project_name AND a :session_name

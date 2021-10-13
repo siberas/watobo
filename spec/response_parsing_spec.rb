@@ -1,7 +1,4 @@
-#!/usr/bin/ruby
-# rspec --format documentation ./spec/response_spec.rb
-require 'devenv'
-require 'watobo'
+require 'spec_helper'
 
 headers = <<EOF
 HTTP/1.1 200 OK
@@ -18,6 +15,8 @@ Content-Language: de-DE
 Connection: close
 Transfer-Encoding: chunked
 Content-Type: application/json;charset=utf-8
+Set-Cookie: X-WTF-PERSIST=!lSwuCMdu19OFFjZmaYk2lqNqyW1Div9DTKMXqprlPvxB/oXZFhD5nru7toMS6dLJcByIyRV1YvxQf8Y=; path=/; Httponly; Secure
+Set-Cookie2: X-GONZO=!lSwuCMdu19OFFjZmaYk2lqNqyW1Div9DTKMXqprlPvxB/oXZFhD5nru7toMS6dLJcByIyRV1YvxQf8Y=; path=/; Httponly; Secure
 EOF
 
 chunked_body = <<EOF
@@ -76,6 +75,12 @@ describe Watobo::Response do
       response.unzip!
 
       expect(response.status).to eq("200 OK")
+    end
+  end
+
+  context "Response Cookies" do
+    it "Cookie Count" do
+      #binding.pry
     end
   end
 end
