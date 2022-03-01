@@ -14,7 +14,7 @@ module Watobo #:nodoc: all
       @@lock = Mutex.new
 
       def sum_progress
-        return {} if @scanner.nil?
+        return 0 if @scanner.nil?
         @scanner.sum_progress
       end
 

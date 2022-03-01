@@ -119,14 +119,17 @@ module Watobo#:nodoc: all
             res = line
             self.class.patterns do |pat|
               begin
+                puts pat
                 if line =~ /#{pat}/i then
                   key = Regexp.quote($1.upcase)
                   old_value = $2
                   if @tokens.has_key?(key) then
-                    res = line.gsub!(/#{Regexp.quote(old_value)}/, @tokens[key])
+                    res = line.gsub!(/#{Regexp.quote(old_value)}/, CGI.unescapeHTML(@tokens[key]))
                     if res.nil? then
                       res = line
                       puts "!!!could not update token (#{key})"
+                    else
+                      puts "[OTT-Update]\nToken: #{key}\nOld: #{old_value}\nNew: #{CGI.unescapeHTML(@tokens[key])}}"
                     end
                   else
                     if $DEBUG

@@ -38,6 +38,20 @@ module Watobo#:nodoc: all
       score
     end
 
+    def type_str
+      s = case @details[:type]
+          when FINDING_TYPE_INFO
+            'info'
+          when FINDING_TYPE_HINT
+            'hint'
+          when FINDING_TYPE_VULN
+            'vulnerability'
+          else
+            'n/a'
+          end
+      s
+    end
+
     def false_positive?
       @details[:false_positive]
     end

@@ -34,7 +34,12 @@ module Watobo #:nodoc: all
             login_chats = Watobo::Conf::Scanner.login_chat_ids.uniq.map {|id| Watobo::Chats.get_by_id(id)}
             #  puts "running #{login_chats.length} login requests"
             #  puts login_chats.first.class
-            runLogin(login_chats, prefs)
+            runLogin(login_chats, prefs) do |request,response|
+              current_chat = Watobo::Chat.new(request, response, :source => CHAT_SOURCE_MANUAL, :run_passive_checks => false)
+
+              Watobo::Chats.add(current_chat)
+
+            end
           else
             #TODO: Show warning message that no login-chats are defined
           end
@@ -387,6 +392,9 @@ module Watobo #:nodoc: all
           hnext = FXButton.new(history_navigation, ">", nil, nil, 0, FRAME_RAISED|FRAME_THICK)
           hnext.connect(SEL_COMMAND) {showHistory(1)}
 
+          hd = FXButton.new(history_navigation, "hex", nil, nil, 0, FRAME_RAISED|FRAME_THICK)
+          hd.connect(SEL_COMMAND) { binding.pry }
+
           menu = FXMenuPane.new(self)
           FXMenuCommand.new(menu, "-> GET").connect(SEL_COMMAND, method(:trans2Get))
           FXMenuCommand.new(menu, "-> POST").connect(SEL_COMMAND, method(:trans2Post))
@@ -632,7 +640,7 @@ module Watobo #:nodoc: all
             Watobo.save_thread do
               logger("got answer")
               unless request.nil? then
-                unless response.nil?
+                unless response.nil? || !response.is_a?(Array)
                   @response_viewer.setText response
                   @current_chat = Watobo::Chat.new(request, response, :source => CHAT_SOURCE_MANUAL, :run_passive_checks => false)
 

@@ -3,7 +3,7 @@
 
 module Watobo #:nodoc: all
   module CA
-    @cadir = File.join(Watobo.working_directory, "CA")
+    @cadir = ENV['WATOBO_CA'] ? File.join(ENV['WATOBO_CA']) : File.join(Watobo.working_directory, "CA")
     @crl_dir = File.join(@cadir, "crl")
     @hostname = %x('hostname').strip
     @hostname = "watobo" if @hostname.empty?

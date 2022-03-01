@@ -513,14 +513,15 @@ module Watobo #:nodoc: all
         @target = nil
         #  @sender = Watobo::Session.new(@target)
 
-        unless $startup_binding
+
+        unless ENV['WATOBO_BINDING']
           @bind_addr = Watobo::Conf::Interceptor.bind_addr
           # puts "> Server: #{@bind_addr}"
           @port = Watobo::Conf::Interceptor.port
           # puts "> Port: #{@port}"
           @proxy_mode = Watobo::Conf::Interceptor.proxy_mode
         else
-          bip, bport = $startup_binding.split(':')
+          bip, bport = ENV['WATOBO_BINDING'].split(':')
           @bind_addr = bip
           # puts "> Server: #{@bind_addr}"
           @port = bport

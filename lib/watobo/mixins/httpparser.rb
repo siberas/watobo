@@ -622,7 +622,7 @@ module Watobo #:nodoc: all
 
         def is_json?
           ct = self.content_type
-          return true if ct =~ /\/json/i
+          return true if ct =~ /json/i
           return false
         end
 

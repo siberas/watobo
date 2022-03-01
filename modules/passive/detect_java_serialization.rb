@@ -36,6 +36,8 @@ module Watobo #:nodoc: all
 
         def do_test(chat)
           begin
+            # we only care about serialization if response is valid
+            return unless chat.response.status_code =~ /^2\d\d/
             parms = chat.request.parameters
 
             parms.each do |parm|

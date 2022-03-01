@@ -175,7 +175,7 @@ module Watobo #:nodoc: all
       case self.content_type
       when /www-form/i
         @data = Watobo::HTTPData::WWW_Form.new(self)
-      when /application\/json/i
+      when /\/.*json/i
         @json = Watobo::HTTPData::Json.new(self)
       when /\/xml/i
         @xml = Watobo::HTTPData::Xml.new(self)

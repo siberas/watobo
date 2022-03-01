@@ -16,8 +16,8 @@ module Watobo #:nodoc: all
             rc.set_body doc.to_xml
           elsif rc.is_json?
             begin
-            jb = JSON.parse(rc.body)
-            rc.set_body JSON.pretty_generate jb
+              jb = JSON.parse(rc.body)
+              rc.set_body JSON.pretty_generate jb
             rescue => bang
               puts bang if $DEBUG
               rc = request.copy
@@ -206,7 +206,7 @@ module Watobo #:nodoc: all
                         when KEY_x
                           out = text
                           begin
-                           # binding.pry
+                            # binding.pry
                             out = Nokogiri.XML(text, &:noblanks).to_xml
                             puts out
                           rescue => bang
@@ -274,15 +274,15 @@ module Watobo #:nodoc: all
           highlight_markers
 
           #@textbox.setCursorPos(pos)
-            # else
-            #   @markers.each do |start, len|
-            #     if pos >= start and pos <= start + len then
-            #       @markers = highlight(pattern)
-            #       @textbox.setCursorPos(pos)
-            #       break
-            #     end
-            #   end
-            # end
+          # else
+          #   @markers.each do |start, len|
+          #     if pos >= start and pos <= start + len then
+          #       @markers = highlight(pattern)
+          #       @textbox.setCursorPos(pos)
+          #       break
+          #     end
+          #   end
+          # end
 
           notify(:text_changed)
 

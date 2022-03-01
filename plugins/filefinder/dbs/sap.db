@@ -1,3 +1,7 @@
+# Post-Auth RCE (CVE-2021-38163) in SAP NetWeaver
+# https://twitter.com/ptswarm/status/1472929717938532353?t=cwmio3G086Qb7T2TNbu0OA&s=09
+/irj/servlet/prt/portal/prtroot/com.sap.visualcomposer.VCParMigrator
+
 # https://www.owasp.org/index.php/Category:OWASP_Fuzzing_Code_Database
 /rep/build_info.html
 /rep/build_info.jsp

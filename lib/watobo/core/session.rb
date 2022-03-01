@@ -18,7 +18,7 @@ module Watobo #:nodoc: all
     @@login_in_progress = false
 
 
-    def runLogin(chat_list, prefs = {})
+    def runLogin(chat_list, prefs = {}, &block)
       #puts @session.object_id
       @@login_mutex.synchronize do
         begin
@@ -27,13 +27,15 @@ module Watobo #:nodoc: all
           login_prefs.update prefs
           dummy = {:ignore_logout => true, :update_sids => true, :update_session => true, :update_contentlength => true}
           login_prefs.update dummy
-          puts "! Start Login ..." if $DEBUG
+          puts "! Start Login ..." #if $DEBUG
           unless chat_list.empty?
             #  puts login_prefs.to_yaml
             chat_list.each do |chat|
+              puts chat.request.url
               puts "! LoginRequest: #{chat.id}" if $DEBUG
               test_req = chat.copyRequest
               request, response = doRequest(test_req, login_prefs)
+              yield [request, response] if block_given?
             end
           else
             puts "! no login script configured !"
@@ -41,6 +43,7 @@ module Watobo #:nodoc: all
         rescue => bang
           puts "!ERROR in runLogin"
           puts bang.backtrace if $DEBUG
+          binding.pry
         ensure
           @@login_in_progress = false
           @@login_cv.signal
@@ -243,6 +246,7 @@ module Watobo #:nodoc: all
             end
 
             data = request.join
+
             unless request.has_body?
               data << "\r\n" unless data =~ /\r\n\r\n$/
             end
@@ -333,6 +337,7 @@ module Watobo #:nodoc: all
     # + function:
     #
     def doRequest(request, opts = {})
+
       begin
         ott_cache = Watobo::OTTCache.acquire(request)
         @session.update opts
@@ -433,8 +438,9 @@ module Watobo #:nodoc: all
         readHTTPBody(socket, response, request, opts)
 
         unless response.body.nil?
-          @sid_cache.update_sids(request.site, [response.body]) if @session[:update_sids] == true and response.content_type =~ /text\//
+          #@sid_cache.update_sids(request.site, [response.body]) if @session[:update_sids] == true and response.content_type =~ /text\//
         end
+        @sid_cache.update_sids(request.site, response) if @session[:update_sids]
 
         #socket.close
         closeSocket(socket)
@@ -522,6 +528,7 @@ module Watobo #:nodoc: all
       session = Digest::MD5.hexdigest(Time.now.to_f.to_s) if session_id.nil?
 
       @sid_cache = Watobo::SIDCache.acquire(session)
+
 
       unless @@settings.has_key? session
         @@settings[session] = {

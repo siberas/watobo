@@ -174,14 +174,16 @@ module Watobo#:nodoc: all
 
     class BrowserPreview
       attr_accessor :proxy
+
       def show(request, response)
         begin
-          if watoboProxy? then
-            hashid = @proxy.addPreview(response)
-            url = request.url.to_s
-            url += request.query != '' ? '&' : '?'
-            url += "WATOBOPreview=#{hashid}"
-            puts "PreviewURL: #{url}"
+          hashid = @proxy.addPreview(response)
+          url = request.url.to_s
+          url += request.query != '' ? '&' : '?'
+          url += "WATOBOPreview=#{hashid}"
+          puts "PreviewURL: #{url}"
+
+          if @browser && watoboProxy? then
             @browser.navigate(url) if hashid
             return url
           else
@@ -215,8 +217,11 @@ module Watobo#:nodoc: all
 
         acquireBrowser()
 
+        max_retry = 3
+        retry_count = 0
         begin
           #@browser.visible = false
+          retry_count += 1
           url = "http://watobo.localhost/?WATOBOPreview=ProxyTest"
           timeout(5.0) do
             @browser.navigate(url)
@@ -235,7 +240,7 @@ module Watobo#:nodoc: all
           puts bang
           puts bang.backtrace if $DEBUG
           acquireBrowser(true)
-          retry
+          retry if retry_count < max_retry
         end
       #  @browser.close
         

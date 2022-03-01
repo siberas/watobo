@@ -46,6 +46,7 @@ module Watobo#:nodoc: all
     AC_GROUP_FLASH = "Flash"
     AC_GROUP_APACHE = "Apache"
     AC_GROUP_APACHE_SOLR = "Apache SOLR"
+    AC_GROUP_JAVA = "Generic Java"
     
     ICON_PATH = "icons"
     

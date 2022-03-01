@@ -34,7 +34,50 @@ Queues
 -----------------------------5543245338999447031528066707--
 EOF
 
+mpr=<<EOS
+POST https://performancemanager5.successfactors.eu:443/odata/v2/restricted/ONB2WhatToBringActivity,ONB2WhatToBringConfig,ONB2WhatToBringItemConfig/$batch HTTP/1.1
+Host: performancemanager5.successfactors.eu
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:83.0) Gecko/20100101 Firefox/83.0
+Accept: multipart/mixed
+Accept-Language: en-US
+Referer: https://performancemanager5.successfactors.eu/sf/start?_s.crb=KL0DfqiKsuUfpIQjD8pb0jmOmo6tdTpgRs4evKxUG8A%253d
+sap-contextid-accept: header
+DataServiceVersion: 2.0
+MaxDataServiceVersion: 2.0
+sap-cancel-on-close: true
+Content-Type: multipart/mixed;boundary=batch_d117-9084-d69b
+OPTR_CXT: 01000500014502f2bb-a4e2-4933-9c2b-e72023b23f2829820909-1501-babe-face-000000000003befe62df-ab52-4552-bf23-a5ef23f46027HTTP    ;
+X-Subaction: 1
+X-Event-ID: EVENT-UNKNOWN-UNKNOWN-urb6500088-20220224143326-129414-3
+X-Ajax-Token: KL0DfqiKsuUfpIQjD8pb0jmOmo6tdTpgRs4evKxUG8A%3d
+X-SAP-Page-Info: companyId=lbbwT3&moduleId=HOME&pageId=HOME_TAB&pageQualifier=HOME_V3&uiVersion=V12&userId=124
+Content-Length: 540
+Origin: https://performancemanager5.successfactors.eu
+Cookie: bizxCompanyId=lbbwT3; route=bc85789f28b05122883fdeafe04fd0144a17b18d; JSESSIONID=71F7FDE8DEFD5E892E1F4FBD50340AF0.vsa7611199; oiosaml-fragment=; zsessionid=c394f068-9a4e-4c65-bd7d-225828ff1afb; bizxThemeId=3pspt10gf7; %2Flogin-markFromServer=true
+Sec-Fetch-Dest: empty
+Sec-Fetch-Mode: cors
+Sec-Fetch-Site: same-origin
+Connection: close
+
+
+--batch_d117-9084-d69b
+Content-Type: application/http
+Content-Transfer-Encoding: binary
+
+GET ONB2WhatToBringActivity?$select=supplementalInformation%2C%20whatToBringConfigNav%2FwhatToBringItemsConfig%2Ftitle_localized&$expand=whatToBringConfigNav%2FwhatToBringItemsConfig&$filter=process%20eq%20%27E562D4DCC2F44054B948B92402C57D39%27 HTTP/1.1
+sap-cancel-on-close: true
+sap-contextid-accept: header
+Accept: application/json
+Accept-Language: en-US
+DataServiceVersion: 2.0
+MaxDataServiceVersion: 2.0
+
+
+--batch_d117-9084-d69b--
+EOS
+
 request = Watobo::Utils.text2request(rt)
+multipart_request = mpr.extend Watobo::Mixins::RequestParser
 
 describe Watobo::Request do
   context "URL Mixin" do
@@ -53,5 +96,9 @@ describe Watobo::Request do
       expect(request.cookies.to_a.count).to eq(3)
     end
 
+  end
+
+  context "Multipart" do
+    binding.pry
   end
 end

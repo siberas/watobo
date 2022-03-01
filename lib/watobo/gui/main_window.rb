@@ -441,7 +441,7 @@ module Watobo #:nodoc: all
 
       def openFuzzer(chat)
         begin
-          fuzzer = FuzzerGui.new(FXApp.instance, @project, chat)
+          fuzzer = Fuzzer::FuzzerGui.new(FXApp.instance, @project, chat)
           fuzzer.create
           fuzzer.show(Fox::PLACEMENT_SCREEN)
         rescue => bang
@@ -650,11 +650,11 @@ module Watobo #:nodoc: all
           @scan_button.enable
           @statusBar.statusInfoText = "Ready"
         end
-        unless $startup_binding
+        unless ENV['WATOBO_BINDING']
           @statusBar.bindAddress = Watobo::Conf::Interceptor.bind_addr.to_s
           @statusBar.portNumber = Watobo::Conf::Interceptor.port.to_s
         else
-          bip, bport = $startup_binding.split(':')
+          bip, bport = ENV['WATOBO_BINDING'].split(':')
          @statusBar.bindAddress = bip
           @statusBar.portNumber = bport
         end
@@ -849,7 +849,7 @@ module Watobo #:nodoc: all
 
         #TODO: reactivate browser preview
 
-        # @browserView = BrowserPreview.new(Watobo::Interceptor.proxy)
+        @browserView = BrowserPreview.new(Watobo::Interceptor.proxy)
 
         puts "Project Started"
         puts "Active Modules: #{Watobo::ActiveModules.length}"

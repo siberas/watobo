@@ -54,10 +54,12 @@ module Watobo #:nodoc: all
           @path = nil
           @file_list = file_list
           @prefs = prefs.to_h
+          @known_responses = []
         end
 
 
         def reset()
+          @known_responses = []
           # @catalog_checks.clear
         end
 
@@ -122,7 +124,7 @@ module Watobo #:nodoc: all
           if ext =~ /^\//
             file_ext = dummy.file_ext
             dir = dummy.dir
-            return "#{dir}#{ext.gsub(/^\//,'')}/#{file_ext}"
+            return "#{dir}#{ext.gsub(/^\//, '')}/#{file_ext}"
           end
           # if extension starts with '?' it is handled as a query extension
           if ext =~ /^\?(.*)/
@@ -151,17 +153,20 @@ module Watobo #:nodoc: all
                 #puts test.url if $VERBOSE
                 fexist, test_request, test_response = fileExists?(test, @prefs)
 
-
                 if fexist == true
-                  addFinding(test_request, test_response,
-                             :test_item => uri,
-                             # :proof_pattern => "#{Regexp.quote(uri)}",
-                             :check_pattern => "#{Regexp.quote(uri)}",
-                             :chat => chat,
-                             :threat => "depends on the file ;)",
-                             :title => "[#{uri}]"
+                  rhash = Watobo::Utils.responseHash(test_request, test_response)
+                  unless @known_responses.include?(rhash)
+                    @known_responses << rhash
+                    addFinding(test_request, test_response,
+                               :test_item => uri,
+                               # :proof_pattern => "#{Regexp.quote(uri)}",
+                               :check_pattern => "#{Regexp.quote(uri)}",
+                               :chat => chat,
+                               :threat => "depends on the file ;)",
+                               :title => "[#{uri}]"
 
-                  )
+                    )
+                  end
 
                 end
 
