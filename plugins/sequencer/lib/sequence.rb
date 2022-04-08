@@ -16,7 +16,7 @@ module Watobo
       seq
     end
 
-    attr :name, :file
+    attr :name, :file, :vars
 
     def add(element)
       self << element
@@ -30,7 +30,7 @@ module Watobo
       each do |e|
         h[:elements] << e.to_h
       end
-      h[:vars] = []
+      h[:vars] = @vars
       h
     end
 
@@ -45,7 +45,7 @@ module Watobo
       @file = prefs[:file]
       if prefs.has_key? :elements
         prefs[:elements].each do |element|
-          self << Watobo::Plugin::Sequencer::Element.new(element)
+          self << Watobo::Plugin::Sequencer::Element.new(self, element)
             #binding.pry
         end
       end

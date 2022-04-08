@@ -60,6 +60,11 @@ module Watobo#:nodoc: all
     def source()
       @settings[:source]
     end
+
+    def source_str
+      return 'unknown' unless @settings[:source]
+      Watobo::Utils::Chat.source_str @settings[:source]
+    end
     
     def to_h
       h = {}

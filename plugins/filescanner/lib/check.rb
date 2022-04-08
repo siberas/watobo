@@ -3,6 +3,7 @@ module Watobo #:nodoc: all
     class Filescanner
 
       class Check < Watobo::ActiveCheck
+        attr :prefs
         attr_accessor :db_file
         attr_accessor :path
         attr_accessor :append_slash
@@ -47,7 +48,7 @@ module Watobo #:nodoc: all
         #  append_slash: [Boolean]
         #  evasion_extensions: [Array]
         #
-        def initialize(project, file_list, prefs)
+        def initialize(project, file_list, prefs = {})
           super(project, prefs)
 
 
@@ -140,46 +141,64 @@ module Watobo #:nodoc: all
         def generateChecks(chat)
           begin
             sample_files.each do |uri|
+              request_paths(chat) do |rpath|
+                checker = proc {
+                  test_request = nil
+                  test_response = nil
+                  # !!! ATTENTION !!!
+                  # MAKE COPY BEFORE MODIFIYING REQUEST
+                  test = chat.copyRequest
+                  test.set_path rpath
 
-              checker = proc {
-                test_request = nil
-                test_response = nil
-                # !!! ATTENTION !!!
-                # MAKE COPY BEFORE MODIFIYING REQUEST
-                test = chat.copyRequest
+                  # puts ">> #{new_uri}"
+                  test.replaceFileExt(uri)
+                  #puts test.url if $VERBOSE
+                  fexist, test_request, test_response = fileExists?(test, @prefs)
 
-                # puts ">> #{new_uri}"
-                test.replaceFileExt(uri)
-                #puts test.url if $VERBOSE
-                fexist, test_request, test_response = fileExists?(test, @prefs)
+                  if fexist == true
+                    rhash = Watobo::Utils.responseHash(test_request, test_response)
+                    unless @known_responses.include?(rhash)
+                      @known_responses << rhash
+                      addFinding(test_request, test_response,
+                                 :test_item => uri,
+                                 # :proof_pattern => "#{Regexp.quote(uri)}",
+                                 :check_pattern => "#{Regexp.quote(uri)}",
+                                 :chat => chat,
+                                 :threat => "depends on the file ;)",
+                                 :title => "[#{uri}]"
 
-                if fexist == true
-                  rhash = Watobo::Utils.responseHash(test_request, test_response)
-                  unless @known_responses.include?(rhash)
-                    @known_responses << rhash
-                    addFinding(test_request, test_response,
-                               :test_item => uri,
-                               # :proof_pattern => "#{Regexp.quote(uri)}",
-                               :check_pattern => "#{Regexp.quote(uri)}",
-                               :chat => chat,
-                               :threat => "depends on the file ;)",
-                               :title => "[#{uri}]"
+                      )
+                    end
 
-                    )
                   end
 
-                end
-
-                # notify(:db_finished)
-                [test_request, test_response]
-              }
-              yield checker
+                  # notify(:db_finished)
+                  [test_request, test_response]
+                }
+                yield checker
+              end
             end
-
           rescue => bang
             puts "!error in module #{Module.nesting[0].name}"
             puts bang
           end
+        end
+
+        def request_paths(chat, &block)
+          binding.pry
+          unless !!@prefs[:test_sub_dirs]
+            yield chat.request.path if block_given?
+            return chat.request.path
+          end
+          paths = []
+          path = chat.request.path
+          while !path.empty? and path != '.'
+            puts path
+            yield path if block_given?
+            paths << path
+            path = File.dirname(path)
+          end
+          paths
         end
       end
     end

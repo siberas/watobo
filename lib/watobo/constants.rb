@@ -1,9 +1,4 @@
-$debug_project = false
-$debug_active_check = false
-$debug_scanner = false
-
-
-# @private 
+# @private
 module Watobo#:nodoc: all
   module Constants    
     CHAT_SOURCE_UNDEF = 0x00

@@ -64,6 +64,7 @@ end
 
 
 require 'watobo/constants'
+require 'watobo/resources'
 require 'watobo/utils'
 require 'watobo/mixins'
 require 'watobo/config'
@@ -76,6 +77,7 @@ require 'watobo/framework'
 require 'watobo/parser'
 require 'watobo/interceptor'
 require 'watobo/sockets'
+require 'watobo/scanner4'
 
 require 'watobo/transformers/multipart'
 

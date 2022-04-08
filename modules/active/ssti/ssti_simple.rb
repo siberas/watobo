@@ -76,7 +76,7 @@ EOF
 
                     parm.value = inj
                     if parm.location == :url
-                      parm.value = URI.escape(inj)
+                      parm.value = CGI.escape(inj)
                     end
                     test.set parm
 

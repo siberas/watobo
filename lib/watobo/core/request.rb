@@ -94,6 +94,7 @@ module Watobo #:nodoc: all
       parms.concat @json.parameters if !@json.nil? && plocs.include?(:json)
 
       parms.concat @xml.parameters if !@xml.nil? && plocs.include?(:xml)
+      parms.concat @multipart.parameters if !@multipart.nil? && plocs.include?(:multipart)
       if block_given?
         parms.each do |p|
           yield p
@@ -124,6 +125,9 @@ module Watobo #:nodoc: all
           @json.set parm unless @json.nil?
         when :header
           @headers.set parm unless @headers.nil?
+        when :multipart
+          #puts "! Set Multipart Parameter"
+          @multipart.set parm if @multipart
         end
       end
       true
@@ -140,7 +144,7 @@ module Watobo #:nodoc: all
     def initialize(r)
       # super
 
-      @valid_param_locations = [:url, :data, :wwwform, :xml, :cookies, :json, :headers, :body]
+      @valid_param_locations = [:url, :data, :wwwform, :xml, :cookies, :json, :headers, :body, :multipart]
       # Base Object behaves like an empty parameter set
       @data = @json = @url = @json = @xml = nil #Watobo::HTTPData::Base.new
       if r.respond_to? :push
@@ -179,6 +183,8 @@ module Watobo #:nodoc: all
         @json = Watobo::HTTPData::Json.new(self)
       when /\/xml/i
         @xml = Watobo::HTTPData::Xml.new(self)
+      when /multipart/i
+        @multipart = Watobo::HTTPData::Multipart.new(self)
       else
         #puts "UNKONWN CONTENT-TYPE"
         @data = Watobo::HTTPData::WWW_Form.new(self)

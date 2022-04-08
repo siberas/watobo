@@ -40,6 +40,7 @@ module Watobo #:nodoc: all
       def run(prefs = {})
         @status = STATUS_RUNNING
         scan_prefs = Watobo.project.getScanPreferences
+        scan_prefs.update @settings.to_h
         scan_prefs.update prefs
 
         if $VERBOSE

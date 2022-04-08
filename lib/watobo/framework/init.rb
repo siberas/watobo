@@ -119,6 +119,8 @@ module Watobo #:nodoc: all
         end
       end
     end
+
+    # create directories inside workspace
     unless File.exist? Conf::General.working_directory
       $first_time_watobo = true
       begin

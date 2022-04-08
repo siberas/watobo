@@ -23,7 +23,7 @@ module Watobo #:nodoc: all
 
             s = {
                 db_file: db_file,
-                test_all_dirs: @test_all_dirs.checked?,
+                test_sub_dirs: @test_all_dirs.checked?,
                 egress_handler: @egress_handler_frame.egress_handler,
                 scanlog_name: @scanlog_name_dt.value,
                 run_passive_checks: false,

@@ -25,6 +25,15 @@ module Watobo
           h
         end
 
+        def run_pre(request)
+          eval(pre_script)
+
+        end
+
+        def run_post(request, response)
+          eval(post_script)
+        end
+
         def enabled?
           @enabled
         end
@@ -37,15 +46,22 @@ module Watobo
           @enabled = false
         end
 
-        def initialize(prefs)
+        def initialize(sequence, prefs)
           @request = nil
           @pre_script = nil
           @post_script = nil
           @egress_handler = nil
           @enabled = true
-          %w( name request pre_script post_script enable egress_handler).each do |e|
+          @sequence = sequence
+          %w( name request pre_script post_script enable egress_handler ).each do |e|
             instance_variable_set("@#{e}", prefs[e.to_sym])
           end
+        end
+
+        def method_missing?(name, *args, &block)
+          v = @sequence.vars[name.downcase]
+          return v if v
+          super
         end
       end
     end

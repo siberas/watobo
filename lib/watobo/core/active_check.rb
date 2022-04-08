@@ -175,7 +175,7 @@ module Watobo #:nodoc: all
 
     def checksRunning?
       begin
-        puts @inner_pool.size
+        #puts @inner_pool.size
         return true if @inner_pool.size > 0
         return false
       rescue => bang

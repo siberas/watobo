@@ -7,6 +7,7 @@ module Watobo #:nodoc: all
  - header
  - cookie
  - data (body)
+ - multipart
 
 =end
   class Parameter
@@ -66,7 +67,14 @@ module Watobo #:nodoc: all
     end
 
     def copy
-      Parameter.new(self.to_h)
+      # Don't copy with
+      #   Parameter.new(self.to_h)
+      # because we will loose Parameter specific methods, needed for internal parsing
+      # TODO:
+      # Alternative might be to use OpenStruct instead??
+      #
+      # For now we use Marshalling
+      Marshal.load(Marshal.dump(self))
     end
 
     def method_missing(name, *args, &block)
@@ -126,6 +134,22 @@ module Watobo #:nodoc: all
       super prefs
       # @parent = prefs.has_key?(:parent) ? prefs[:parent] : ""
       # @namespace = prefs.has_key?(:namespace) ? prefs[:namespace] : nil
+    end
+  end
+
+  class MultipartParameter < Parameter
+
+    def sub_name
+      @prefs[:sub_name]
+    end
+
+    def index
+      @prefs[:index]
+    end
+
+    def initialize(prefs)
+      prefs[:location] = :multipart
+      super prefs
     end
   end
 end

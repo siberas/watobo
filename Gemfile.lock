@@ -8,7 +8,7 @@ GEM
     domain_name (0.5.20190701)
       unf (>= 0.0.5, < 1.0.0)
     ffi (1.12.2)
-    fxruby (1.6.44)
+    fxruby (1.6.45)
       mini_portile2 (~> 2.1)
     http-cookie (1.0.3)
       domain_name (~> 0.5)
@@ -62,7 +62,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  fxruby (= 1.6.44)
+  fxruby (= 1.6.45)
   jwt (= 2.2.2)
   mechanize (= 2.7.7)
   net-http-pipeline (= 1.0.1)
@@ -72,4 +72,4 @@ DEPENDENCIES
   xmlrpc
 
 BUNDLED WITH
-   2.1.4
+   2.2.32

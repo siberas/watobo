@@ -268,17 +268,8 @@ module Watobo #:nodoc: all
         @last_response = chat.response
         @switcher.current = 0
         @lastViewed = chat
-        src = case chat.source
-              when CHAT_SOURCE_INTERCEPT
-                "Interceptor"
-              when CHAT_SOURCE_PROXY
-                "Proxy"
-              when CHAT_SOURCE_MANUAL
-                "Manual"
-              when CHAT_SOURCE_FUZZER
-                "Fuzzer"
-              end
-        @quickViewTitle.text = "Chat-ID: #{chat.id} (#{src})"
+
+        @quickViewTitle.text = "Chat-ID: #{chat.id} (#{chat.source_str})"
         @quickViewSubTitle.text = ""
         true
       end

@@ -7,8 +7,8 @@ module Watobo #:nodoc: all
       class Gui < Watobo::PluginGui
 
         window_title "Sequencer"
-        icon_file "sequence32x32.png"
-
+        # icon_file "sequence32x32.png"
+        icon_file "sequence_32x32.png"
 
         def start
           @results = []

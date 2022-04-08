@@ -50,7 +50,7 @@ EOF
 
                  inj = '{!xmlparser v=\'<!DOCTYPE a SYSTEM "http://solr-xxe-' + SecureRandom.hex(3) + '.' + Watobo::Conf::Scanner.dns_sensor + '/xxx\"><a></a>\'}'
                   if parm.location == :url
-                    parm.value = URI.escape(inj)
+                    parm.value = CGI.escape(inj)
                   else
                     parm.value = inj
                   end
