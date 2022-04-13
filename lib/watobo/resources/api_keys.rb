@@ -96,6 +96,6 @@ module Watobo::Resources
       "artifactory-password" : "(?: |=|:|\"|^)AP[0-9ABCDEF][a-zA-Z0-9]{8,}"
   }
 EOF
-  API_KEYS = JSON.parse patterns
+  API_KEYS = JSON.parse(patterns).freeze
 
 end

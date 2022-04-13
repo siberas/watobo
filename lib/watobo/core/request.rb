@@ -39,6 +39,8 @@ module Watobo #:nodoc: all
       Watobo::Request.new c
     end
 
+    alias :clone :copy
+
     def uniq_hash()
       begin
         settings = Watobo::Conf::Scanner.to_h

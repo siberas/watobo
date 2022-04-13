@@ -250,14 +250,14 @@ module Watobo #:nodoc: all
 
     def self.request_header_names(&block)
       headers = []
-       @chats.each do |chat|
-         chat.request.header_names do |header|
-           unless headers.include?(header)
-             headers << header
-             yield header if block_given?
-           end
-         end
-       end
+      @chats.each do |chat|
+        chat.request.header_names do |header|
+          unless headers.include?(header)
+            headers << header
+            yield header if block_given?
+          end
+        end
+      end
       headers
     end
 
@@ -298,6 +298,13 @@ module Watobo #:nodoc: all
       end
 
       filtered_chats
+    end
+
+
+    def self.set(chats)
+      @chats_lock.synchronize do
+        @chats = chats
+      end
     end
 
     def self.add(chat, prefs = {})
@@ -348,6 +355,16 @@ module Watobo #:nodoc: all
         # puts "* passed scope"
         if filter[:hide_tested]
           return false if chat.tested?
+        end
+
+        if filter[:expression]
+          expr_filter = Proc.new() { |chat| eval(filter[:expression]) }
+          begin
+            return false unless expr_filter.call(chat)
+          rescue => bang
+            puts bang
+            puts bang.backtrace
+          end
         end
 
         if filter.has_key?(:status_codes) and not filter[:status_codes].empty?

@@ -22,9 +22,11 @@ module Watobo#:nodoc: all
           rescue => bang
             pattern = Regexp.quote(@text_filter.text)
           end
-        
-        
         end
+
+        expression = @expression.text.strip.empty? ? nil : @expression.text.strip
+        fs[:expression] = expression
+
         fs[:url_pattern] = @foption_url.checked? ? pattern : ''
         fs[:request_pattern] = @foption_req.checked? ? pattern : ''
         fs[:response_pattern] = @foption_res.checked? ? pattern : ''
@@ -200,6 +202,16 @@ module Watobo#:nodoc: all
         state = ( filter.has_key?(:negate_pattern_search) and filter[:negate_pattern_search] )
         @negate_pattern_search.setCheck state
 
+       #--------- Expression
+       # TODO: !!! implement precheck of expression validity
+        frame = FXVerticalFrame.new(pattern_frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
+        FXLabel.new(frame, "Expression, e.g. 'chat.request.site =~ /mysite/'")
+        @expression = FXTextField.new(frame, 40, nil, 0, FRAME_SUNKEN|FRAME_THICK|LAYOUT_FILL_X)
+        if filter[:expression]
+          @expression.text = filter[:expression]
+        end
+
+
        buttons = FXHorizontalFrame.new(main, :opts => LAYOUT_FILL_X)
           @accept_btn = FXButton.new(buttons, "&Apply", nil, self, ID_ACCEPT,
         FRAME_RAISED|FRAME_THICK|LAYOUT_RIGHT|LAYOUT_CENTER_Y)
@@ -250,7 +262,7 @@ module Watobo#:nodoc: all
       
       def default_filter
         fs = {
-          :scope_only => false  ,       
+          :scope_only => false,
           :hide_tested => false,
           :unique => false
         }

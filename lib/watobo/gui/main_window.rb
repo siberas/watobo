@@ -494,6 +494,13 @@ module Watobo #:nodoc: all
         # @sites_tree.addChat(chat)
       end
 
+      def update_chats(chats)
+        binding.pry
+         @chatTable.setChatList(chats)
+         @chatTable.update_table
+
+      end
+
       def showPassiveModulestatus
         @switcher.current = 2
         @dashboard.tabBook.current = 1
@@ -1892,6 +1899,12 @@ module Watobo #:nodoc: all
       end
 
       def subscribeProject()
+        Watobo::Chats.subscribe(:update_chats) { |chats|
+          Watobo.save_thread do
+            update_chats(chats)
+          end
+        }
+
         Watobo::Chats.subscribe(:new) { |c|
           Watobo.save_thread do
             addChat(c)

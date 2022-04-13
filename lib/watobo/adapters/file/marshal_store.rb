@@ -1,6 +1,9 @@
 # @private 
 module Watobo #:nodoc: all
   class FileSessionStore < SessionStore
+
+    attr :conversation_path, :findings_path
+
     def num_chats
       get_file_list(@conversation_path, "*-chat*").length
     end
@@ -52,7 +55,7 @@ module Watobo #:nodoc: all
 
     end
 
-    def open_scan(scan_name, &block)
+    def open_scan_UNUSED(scan_name, &block)
       begin
 
         return false if scan_name.nil?
@@ -157,9 +160,13 @@ module Watobo #:nodoc: all
       return false
     end
 
+    def chat_files
+      get_file_list(@conversation_path, "*-chat*")
+    end
+
     def each_chat(&block)
-      list = get_file_list(@conversation_path, "*-chat*")
-      list.each do |fname|
+      #list = get_file_list(@conversation_path, "*-chat*")
+      chat_files.each do |fname|
         #puts 
         chat = nil
         if fname =~ /\.mrs$/
@@ -172,9 +179,12 @@ module Watobo #:nodoc: all
       end
     end
 
+    def finding_files
+      get_file_list(@findings_path, "*-finding*")
+    end
+
     def each_finding(&block)
-      list = get_file_list(@findings_path, "*-finding*")
-      list.each do |fname|
+      finding_files.each do |fname|
         f = nil
         if fname =~ /\.mrs$/
           f = Watobo::Utils.loadFindingMarshal(fname)

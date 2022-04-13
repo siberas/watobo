@@ -169,7 +169,7 @@ module Watobo #:nodoc: all
 
         alias :add_url_parm :add_get_parm
 
-        def addHeader(header, value=nil)
+        def addHeader(header, value = nil)
           self_copy = []
           self_copy << self.first
           self_copy.concat(self.headers)
@@ -202,15 +202,6 @@ module Watobo #:nodoc: all
 
         def removeBody
           self.pop if self[-2].strip.empty?
-        end
-
-        def set_body(content)
-          if self[-2].strip.empty?
-            self.pop
-          else
-            self << "\r\n"
-          end
-          self << content
         end
 
         def rewrite_body(pattern, content)
@@ -371,7 +362,7 @@ module Watobo #:nodoc: all
           return if parms.nil?
           return if parms == ''
           #remove leading separators & and ?
-          parms.gsub!(/^[&?]+/,'')
+          parms.gsub!(/^[&?]+/, '')
           prefix = (self.file_ext =~ /\?/) ? '&' : '?'
           self.first.gsub!(/(.*) (HTTP\/.*)/, "\\1#{prefix}#{parms} \\2")
 
@@ -392,13 +383,15 @@ module Watobo #:nodoc: all
         #   - full header (with or without CRLF) if no @param value is given
         #   e.g. "X-Atlassian-token: no-check"
         # @return true or false
-        def set_header(header, value=nil)
+        def set_header(header, value = nil)
           begin
-            new_header = "#{header}: #{value}\r\n"
-            new_header = "#{header.strip}\r\n" if value.nil?
+            header_name = value.nil? ? header.split(':')[0].strip : header
+            header_value = value.nil? ? header.split(':')[1..-1].join(':').strip : value
+
+            new_header = "#{header_name}: #{header_value}\r\n"
 
             self.each_with_index do |h, i|
-              if h =~ /^#{Regexp.quote(header)}:/i
+              if h =~ /^#{Regexp.quote(header_name)}:/i
                 self[i] = new_header
                 return true
               end
@@ -419,13 +412,25 @@ module Watobo #:nodoc: all
         # sets post data
         def setData(data)
           return if data.nil?
-          if self.has_body?
+          self.pop if self.has_body?
+
+          while self.last.strip.empty?
             self.pop
-            self.push data
-          else
-            self.push("\r\n")
-            self.push data
           end
+
+          self.push("\r\n")
+          self.push data
+        end
+
+        alias :set_body :setData
+
+        def set_body_UNUSED(content)
+          if self[-2].strip.empty?
+            self.pop
+          else
+            self << "\r\n"
+          end
+          self << content
         end
 
         alias :setBody :setData

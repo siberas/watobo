@@ -2,7 +2,7 @@
 module Watobo #:nodoc: all
   module HTTP
     class Headers
-      SKIP_HEADERS = %w( Connection Content-Length ).map{|m| m.upcase }
+
       def to_s
         s = []
         @headers.each_value do |v|
@@ -75,7 +75,8 @@ module Watobo #:nodoc: all
             next if i.nil?
 
             name = line[0..i - 1]
-            next if SKIP_HEADERS.include?( name.upcase )
+            skip_headers = %w( Connection Content-Length ).map{|m| m.upcase }
+            next if skip_headers.include?( name.upcase )
             value = i < line.length ? line[i + 1..-1] : ""
             header_prefs = {}
             header_prefs[:name] = name.strip

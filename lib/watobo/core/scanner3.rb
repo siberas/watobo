@@ -273,6 +273,9 @@ module Watobo #:nodoc: all
 
     end
 
+    # possible prefs
+    #   :evasions_enabled => TrueFalse, if true evasions module is enabled for checks
+
     def initialize(chat_list = [], active_checks = [], passive_checks = [], prefs = {})
       @chat_list = chat_list
       @active_checks = []
@@ -319,7 +322,15 @@ module Watobo #:nodoc: all
 
       @active_checks.uniq.each do |check|
 
+        # enable evasion module if available and active
+        # TODO: also set evasion_filter
+        if check.respond_to? :enable_evasion
+          !!@prefs[:evasions_enabled] ? check.enable_evasion : check.disable_evasion
+        end
+
         check.resetCounters()
+
+
         @chat_list.each_with_index do |chat, index|
           #print "."
           check.updateCounters(chat, @prefs)

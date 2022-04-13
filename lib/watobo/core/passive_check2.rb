@@ -1,70 +1,67 @@
-# @private 
+# @private
 module Watobo #:nodoc: all
-  class PassiveCheck
-    include Watobo::Constants
-    extend Watobo::Subscriber
 
-    @@lock = Mutex.new
+  # PassiveCheck2
+  # The new PassiveCheck version to make it multiprocessor ready for Ractor
+  class PassiveCheck2
+    include Watobo::Constants
+
     attr :info
 
 
-    def addFinding(details)
+    def create_finding(details)
       t = Time.now
 
       now = t.strftime("%m/%d/%Y@%H:%M:%S")
       #  @@lock.synchronize {
 
-        new_details = Hash.new
-        new_details.update(@finding)
-        new_details.update(details)
+      new_details = Hash.new
+      new_details.update(@finding)
+      new_details.update(details)
 
-        new_details[:tstamp] = now
+      new_details[:tstamp] = now
 
-        unless new_details.has_key?(:fid)
+      unless new_details.has_key?(:fid)
 
-          id_string = ''
+        id_string = ''
 
-          id_string << new_details[:chat].request.url.to_s if new_details[:chat]
-          id_string << new_details[:class] if new_details[:class]
-          id_string << new_details[:title] if new_details[:title]
-          id_string << new_details[:unique] if new_details[:unique]
+        id_string << new_details[:chat].request.url.to_s if new_details[:chat]
+        id_string << new_details[:class] if new_details[:class]
+        id_string << new_details[:title] if new_details[:title]
+        id_string << new_details[:unique] if new_details[:unique]
 
-          if id_string.empty? then
-            id_string = rand(10000)
-          end
-          #puts "Finding #{id_string}"
-          new_details[:fid] = Digest::MD5.hexdigest(id_string)
+        if id_string.empty? then
+          id_string = rand(10000)
         end
+        #puts "Finding #{id_string}"
+        new_details[:fid] = Digest::MD5.hexdigest(id_string)
+      end
 
-        new_details[:module] = self.class.to_s
+      new_details[:module] = self.class.to_s
 
-        if details[:debug] == true then
-          puts "---"
-          puts new_details[:class]
-          puts new_details[:title]
-          puts "---"
-        end
-        request = new_details[:chat].request
-        response = new_details[:chat].response
-        new_details[:chat_id] = new_details[:chat].id
+      if details[:debug] == true then
+        puts "---"
+        puts new_details[:class]
+        puts new_details[:title]
+        puts "---"
+      end
+      request = new_details[:chat].request
+      response = new_details[:chat].response
+      new_details[:chat_id] = new_details[:chat].id
 
-        # shorten pattern here because of crash in FXRex:match with large patterns
-        unless new_details[:proof_pattern].nil?
-          new_details[:proof_pattern] = new_details[:proof_pattern].length > 128 ? new_details[:proof_pattern][0..127] : new_details[:proof_pattern]
-        end
-        unless new_details[:check_pattern].nil?
-          new_details[:check_pattern] = new_details[:check_pattern].length > 128 ? new_details[:check_pattern][0..127] : new_details[:check_pattern]
-        end
+      # shorten pattern here because of crash in FXRex:match with large patterns
+      unless new_details[:proof_pattern].nil?
+        new_details[:proof_pattern] = new_details[:proof_pattern].length > 128 ? new_details[:proof_pattern][0..127] : new_details[:proof_pattern]
+      end
+      unless new_details[:check_pattern].nil?
+        new_details[:check_pattern] = new_details[:check_pattern].length > 128 ? new_details[:check_pattern][0..127] : new_details[:check_pattern]
+      end
 
-        new_details.delete(:chat)
+      #  new_details.delete(:chat)
 
-        new_finding = Watobo::Finding.new(request, response, new_details)
-
-        Watobo::Findings.add new_finding
-
-        #@project.addFinding(new_finding)
-        # notify(:new_finding, new_finding)
-        # }
+        # we don't create a finding object here, because of Ractor limitations
+        # new_finding = Watobo::Finding.new(request, response, new_details)
+      new_details
     end
 
     def enabled?

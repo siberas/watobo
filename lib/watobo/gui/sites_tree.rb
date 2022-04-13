@@ -248,7 +248,8 @@ module Watobo#:nodoc: all
         @quick_filter[new_item.object_id].push chat
         
         # also add findings here
-        addFindings4Chat(new_item, chat)
+        # TODO: addFindings4Chat takes far too long here. instead create menue item to load findings manually
+        # addFindings4Chat(new_item, chat)
         
         
         end

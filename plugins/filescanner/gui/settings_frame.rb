@@ -29,7 +29,8 @@ module Watobo #:nodoc: all
                 run_passive_checks: false,
                 evasion_level: @el_dt.value,
                 file_extensions: (@append_extensions_cb.checked? ? @extensions_text.text.split(';') : []),
-                evasion_extensions: ( @el_dt.value > 0 ? @l1_txt.text.split : [] )
+                evasion_extensions: (@el_dt.value > 0 ? @l1_txt.text.split : []),
+                evasions_enabled: @evasions_enabled_chk.checked?
             }
             s
           end
@@ -69,6 +70,23 @@ module Watobo #:nodoc: all
             group_box = FXGroupBox.new(self, "Egress Handler", LAYOUT_SIDE_TOP | FRAME_GROOVE | LAYOUT_FILL_X, 0, 0, 0, 0)
             @egress_handler_frame = Watobo::Gui::SubFrames::EgressHandlerSelection.new(group_box)
 
+            #--------- E V A S I O N S
+            frame = FXGroupBox.new(self, "Evasions", LAYOUT_SIDE_TOP | FRAME_GROOVE | LAYOUT_FILL_X, 0, 0, 0, 0)
+            evasion_frame = FXHorizontalFrame.new(frame, :opts => LAYOUT_FILL_X | LAYOUT_SIDE_TOP, :padding => 0)
+
+            @evasions_enabled_chk = FXCheckButton.new(evasion_frame, "Enable Evasions", nil, 0, JUSTIFY_LEFT | JUSTIFY_TOP | ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
+            @evasions_enabled_chk.checkState = false
+
+            @evasion_filter_dt = FXDataTarget.new('')
+            # @scanlog_name_dt.value = @project.scanLogDirectory() if File.exist?(@project.scanLogDirectory())
+            FXLabel.new(frame, "Filter:")
+            filter_frame = FXHorizontalFrame.new(frame, :opts => LAYOUT_FILL_X | LAYOUT_SIDE_TOP)
+            @evasion_filter_txt = FXTextField.new(filter_frame, 20, :target => @evasion_filter_dt,
+                                                  :selector => FXDataTarget::ID_VALUE,
+                                                  :opts => TEXTFIELD_NORMAL | LAYOUT_FILL_COLUMN | LAYOUT_FILL_X)
+            @evasion_filter_dt.value = Watobo::Evasions.list.join(' ')
+
+            #--------- E X T E N S I O N
 
             @fmode_dt = FXDataTarget.new(0)
             group_box = FXGroupBox.new(self, "Extensions", LAYOUT_SIDE_TOP | FRAME_GROOVE | LAYOUT_FILL_X, 0, 0, 0, 0)

@@ -34,7 +34,14 @@ module Watobo#:nodoc: all
       @findings.has_key?(finding.details[:fid])
     end
 
-    def self.set(finding, prefs)
+    def self.set(findings)
+      @findings.clear
+      findings.each do |f|
+      @findings[f.id] = f
+      end
+    end
+
+    def self.set_UNUSED(finding, prefs)
       @findings_lock.synchronize do
         if @findings.has_key? finding.fid
           @findings[finding.fid].details.update prefs

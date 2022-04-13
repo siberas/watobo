@@ -1,11 +1,11 @@
 # @private 
-module Watobo#:nodoc: all
+module Watobo #:nodoc: all
   module Gui
     class QuickScanOptionsFrame < FXVerticalFrame
       def options()
         csrf_requests = Watobo::OTTCache.requests(@target_chat)
         egress_handler = @egress_chk.checked? ? @egress_handlers.getItem(@egress_handlers.currentItem) : ''
-        
+
         o = Hash.new
         o[:enable_logging] = @logScanChats.checked?
         o[:scanlog_name] = @scanlog_name_dt.value
@@ -17,62 +17,85 @@ module Watobo#:nodoc: all
         o[:detect_logout] = @detectLogout.checked?
         o[:follow_redirect] = @followRedirects.checked?
         o[:run_passive_checks] = @passive_checks_chk.checked?
+        o[:evasions_enabled] = @evasions_enabled_chk.checked?
         o[:egress_handler] = egress_handler
         puts o.to_yaml if $DEBUG
         o
       end
 
-      def initialize(owner, prefs = {} )
+      def initialize(owner, prefs = {})
 
-        super(owner, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
+        super(owner, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y)
 
         @csrf_ids = []
         @csrf_patterns = []
         @target_chat = prefs[:target_chat]
 
         # scan_opt_frame= FXVerticalFrame.new(self, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
-        @useOriginalRequest = FXCheckButton.new(self, "Use original request", nil, 0, JUSTIFY_LEFT|JUSTIFY_TOP|ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
+        @useOriginalRequest = FXCheckButton.new(self, "Use original request", nil, 0, JUSTIFY_LEFT | JUSTIFY_TOP | ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
         @useOriginalRequest.checkState = true
-        
-        @followRedirects = FXCheckButton.new(self, "Follow redirects", nil, 0, JUSTIFY_LEFT|JUSTIFY_TOP|ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
+
+        @followRedirects = FXCheckButton.new(self, "Follow redirects", nil, 0, JUSTIFY_LEFT | JUSTIFY_TOP | ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
         @followRedirects.checkState = false
-        
-        @detectLogout = FXCheckButton.new(self, "Autom. login when logged out", nil, 0, JUSTIFY_LEFT|JUSTIFY_TOP|ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
+
+        #---------  E V A S I O N ---------
+
+        frame = FXGroupBox.new(self, "Evasions", LAYOUT_SIDE_TOP | FRAME_GROOVE | LAYOUT_FILL_X, 0, 0, 0, 0)
+        evasion_frame = FXHorizontalFrame.new(frame, :opts => LAYOUT_FILL_X | LAYOUT_SIDE_TOP, :padding => 0)
+
+        @evasions_enabled_chk = FXCheckButton.new(evasion_frame, "Enable Evasions", nil, 0, JUSTIFY_LEFT | JUSTIFY_TOP | ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
+        @evasions_enabled_chk.checkState = !!prefs[:enable_evasions]
+
+        @evasion_filter_dt = FXDataTarget.new('')
+        # @scanlog_name_dt.value = @project.scanLogDirectory() if File.exist?(@project.scanLogDirectory())
+        FXLabel.new(frame, "Filter:")
+        filter_frame = FXHorizontalFrame.new(frame, :opts => LAYOUT_FILL_X | LAYOUT_SIDE_TOP)
+        @evasion_filter_txt = FXTextField.new(filter_frame, 20, :target => @evasion_filter_dt,
+                                             :selector => FXDataTarget::ID_VALUE,
+                                             :opts => TEXTFIELD_NORMAL | LAYOUT_FILL_COLUMN | LAYOUT_FILL_X)
+        @evasion_filter_dt.value = Watobo::Evasions.list.join(' ')
+
+        #------ DETECT LOGOUT ------------
+
+        @detectLogout = FXCheckButton.new(self, "Autom. login when logged out", nil, 0, JUSTIFY_LEFT | JUSTIFY_TOP | ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
         @detectLogout.checkState = false
 
-        frame = FXGroupBox.new(self, "Logging", LAYOUT_SIDE_TOP|FRAME_GROOVE|LAYOUT_FILL_X, 0, 0, 0, 0)
-        @logScanChats = FXCheckButton.new(frame, "Log Scan", nil, 0, JUSTIFY_LEFT|JUSTIFY_TOP|ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
+
+        #-------  L O G G I N G ------------
+
+        frame = FXGroupBox.new(self, "Logging", LAYOUT_SIDE_TOP | FRAME_GROOVE | LAYOUT_FILL_X, 0, 0, 0, 0)
+        @logScanChats = FXCheckButton.new(frame, "Log Scan", nil, 0, JUSTIFY_LEFT | JUSTIFY_TOP | ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
         @logScanChats.checkState = false
         @logScanChats.connect(SEL_COMMAND) do |sender, sel, item|
           if @logScanChats.checked? then
             @scanlog_name_text.enabled = true
             @scanlog_dir_label.enabled = true
-          #  @scanlog_dir_btn.enable
+            #  @scanlog_dir_btn.enable
           else
             @scanlog_name_text.enabled = false
             @scanlog_dir_label.enabled = false
-           # @scanlog_dir_btn.disable
+            # @scanlog_dir_btn.disable
           end
         end
 
         @scanlog_name_dt = FXDataTarget.new('')
-       # @scanlog_name_dt.value = @project.scanLogDirectory() if File.exist?(@project.scanLogDirectory())
-        @scanlog_dir_label = FXLabel.new(frame, "Scan-Name:" )
-        scanlog_frame = FXHorizontalFrame.new(frame,:opts => LAYOUT_FILL_X|LAYOUT_SIDE_TOP)
-        @scanlog_name_text = FXTextField.new(scanlog_frame, 20,
-        :target => @scanlog_name_dt, :selector => FXDataTarget::ID_VALUE,
-        :opts => TEXTFIELD_NORMAL|LAYOUT_FILL_COLUMN|LAYOUT_FILL_X)
+        # @scanlog_name_dt.value = @project.scanLogDirectory() if File.exist?(@project.scanLogDirectory())
+        @scanlog_dir_label = FXLabel.new(frame, "Scan-Name:")
+        scanlog_frame = FXHorizontalFrame.new(frame, :opts => LAYOUT_FILL_X | LAYOUT_SIDE_TOP)
+        @scanlog_name_text = FXTextField.new(scanlog_frame, 20, :target => @scanlog_name_dt,
+                                             :selector => FXDataTarget::ID_VALUE,
+                                             :opts => TEXTFIELD_NORMAL | LAYOUT_FILL_COLUMN | LAYOUT_FILL_X)
         @scanlog_name_text.handle(self, FXSEL(SEL_UPDATE, 0), nil)
-       # @scanlog_dir_btn = FXButton.new(scanlog_frame, "Change")
-       # @scanlog_dir_btn.connect(SEL_COMMAND, method(:selectScanlogDirectory))
+        # @scanlog_dir_btn = FXButton.new(scanlog_frame, "Change")
+        # @scanlog_dir_btn.connect(SEL_COMMAND, method(:selectScanlogDirectory))
 
         @scanlog_name_text.enabled = false
         @scanlog_dir_label.enabled = false
-      #  @scanlog_dir_btn.disable
+        #  @scanlog_dir_btn.disable
 
-        frame = FXGroupBox.new(self, "One-Time-Token Settings", LAYOUT_SIDE_TOP|FRAME_GROOVE|LAYOUT_FILL_X, 0, 0, 0, 0)
-        csrf_frame = FXHorizontalFrame.new(frame,:opts => LAYOUT_FILL_X|LAYOUT_SIDE_TOP, :padding => 0)
-        @csrfToken = FXCheckButton.new(csrf_frame, "Update One-Time-Tokens", nil, 0, JUSTIFY_LEFT|JUSTIFY_TOP|ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
+        frame = FXGroupBox.new(self, "One-Time-Token Settings", LAYOUT_SIDE_TOP | FRAME_GROOVE | LAYOUT_FILL_X, 0, 0, 0, 0)
+        csrf_frame = FXHorizontalFrame.new(frame, :opts => LAYOUT_FILL_X | LAYOUT_SIDE_TOP, :padding => 0)
+        @csrfToken = FXCheckButton.new(csrf_frame, "Update One-Time-Tokens", nil, 0, JUSTIFY_LEFT | JUSTIFY_TOP | ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
         #@csrfToken.checkState = false
         @csrfToken.checkState = prefs.has_key?(:enable_one_time_tokens) ? prefs[:enable_one_time_tokens] : false
 
@@ -94,13 +117,13 @@ module Watobo#:nodoc: all
 
         #
         # Egress Settings
-        frame = FXGroupBox.new(self, "Use Egress Handler", LAYOUT_SIDE_TOP|FRAME_GROOVE|LAYOUT_FILL_X, 0, 0, 0, 0)
-        egress_frame = FXHorizontalFrame.new(frame,:opts => LAYOUT_FILL_X|LAYOUT_SIDE_TOP, :padding => 0)
-        @egress_chk = FXCheckButton.new(egress_frame, "Egress", nil, 0, JUSTIFY_LEFT|JUSTIFY_TOP|ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
+        frame = FXGroupBox.new(self, "Use Egress Handler", LAYOUT_SIDE_TOP | FRAME_GROOVE | LAYOUT_FILL_X, 0, 0, 0, 0)
+        egress_frame = FXHorizontalFrame.new(frame, :opts => LAYOUT_FILL_X | LAYOUT_SIDE_TOP, :padding => 0)
+        @egress_chk = FXCheckButton.new(egress_frame, "Egress", nil, 0, JUSTIFY_LEFT | JUSTIFY_TOP | ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
         #@csrfToken.checkState = false
         @egress_chk.checkState = prefs.has_key?(:egress_handler) && !prefs[:egress_handler].empty?
 
-        @egress_handlers = FXComboBox.new(egress_frame, 5, nil, 0, COMBOBOX_STATIC|FRAME_SUNKEN|FRAME_THICK|LAYOUT_SIDE_TOP)
+        @egress_handlers = FXComboBox.new(egress_frame, 5, nil, 0, COMBOBOX_STATIC | FRAME_SUNKEN | FRAME_THICK | LAYOUT_SIDE_TOP)
 
         @egress_handlers.clearItems
         @egress_chk.disable
@@ -110,14 +133,14 @@ module Watobo#:nodoc: all
           @egress_chk.enable
           @egress_handlers.enable
           #@egress_btn.enable
-          Watobo::EgressHandlers.list {|h|
+          Watobo::EgressHandlers.list { |h|
             @egress_handlers.appendItem(h.to_s, nil)
           }
         end
 
-        frame = FXGroupBox.new(self, "Enable passive checks", LAYOUT_SIDE_TOP|FRAME_GROOVE|LAYOUT_FILL_X, 0, 0, 0, 0)
-        egress_frame = FXHorizontalFrame.new(frame,:opts => LAYOUT_FILL_X|LAYOUT_SIDE_TOP, :padding => 0)
-        @passive_checks_chk = FXCheckButton.new(egress_frame, "Run passive checks during scan (may increase duration)", nil, 0, JUSTIFY_LEFT|JUSTIFY_TOP|ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
+        frame = FXGroupBox.new(self, "Enable passive checks", LAYOUT_SIDE_TOP | FRAME_GROOVE | LAYOUT_FILL_X, 0, 0, 0, 0)
+        egress_frame = FXHorizontalFrame.new(frame, :opts => LAYOUT_FILL_X | LAYOUT_SIDE_TOP, :padding => 0)
+        @passive_checks_chk = FXCheckButton.new(egress_frame, "Run passive checks during scan (may increase duration)", nil, 0, JUSTIFY_LEFT | JUSTIFY_TOP | ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
         #@csrfToken.checkState = false
       end
 
@@ -153,33 +176,33 @@ module Watobo#:nodoc: all
       attr :active_policy
       attr :selectedModules
       attr :options
-      
-      def initialize(parent, prefs={} )
+
+      def initialize(parent, prefs = {})
         super(parent, "Quick Scan", DECOR_ALL, :width => 300, :height => 400)
         # @active_policy = 'Default'
         @selectedModules = []
-        
-        
+
+
         FXMAPFUNC(SEL_COMMAND, ID_ACCEPT, :onAccept)
 
-        base_frame = FXVerticalFrame.new(self, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
-        @switcher = FXSwitcher.new(base_frame, LAYOUT_FILL_X|LAYOUT_FILL_Y)
+        base_frame = FXVerticalFrame.new(self, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y, :padding => 0)
+        @switcher = FXSwitcher.new(base_frame, LAYOUT_FILL_X | LAYOUT_FILL_Y)
 
-         @quickScanOptionsFrame = QuickScanOptionsFrame.new(@switcher, prefs)
+        @quickScanOptionsFrame = QuickScanOptionsFrame.new(@switcher, prefs)
         #@quickScanOptionsFrame = FXVerticalFrame.new(self, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
 
-      #  @policyFrame = ChecksPolicyFrame.new(@switcher, project.active_checks, project.settings[:policy])
+        #  @policyFrame = ChecksPolicyFrame.new(@switcher, project.active_checks, project.settings[:policy])
         @policyFrame = ChecksPolicyFrame.new(@switcher)
-       #@policyFrame = FXVerticalFrame.new(self, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
+        #@policyFrame = FXVerticalFrame.new(self, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
 
         # BUTTONS
         buttons_frame = FXHorizontalFrame.new(base_frame, :opts => LAYOUT_FILL_X)
-        @startButton = FXButton.new(buttons_frame, "Start" ,
-        :target => self, :selector => FXDialogBox::ID_ACCEPT,
-        :opts => BUTTON_NORMAL|LAYOUT_RIGHT)
+        @startButton = FXButton.new(buttons_frame, "Start",
+                                    :target => self, :selector => FXDialogBox::ID_ACCEPT,
+                                    :opts => BUTTON_NORMAL | LAYOUT_RIGHT)
         @startButton.disable
 
-        @nextButton = FXButton.new(buttons_frame, "Next" ,  nil, nil, :opts => BUTTON_NORMAL|LAYOUT_RIGHT)
+        @nextButton = FXButton.new(buttons_frame, "Next", nil, nil, :opts => BUTTON_NORMAL | LAYOUT_RIGHT)
         @nextButton.enable
         @nextButton.connect(SEL_COMMAND) do |sender, sel, item|
           if @switcher.current < @switcher.numChildren - 1
@@ -189,17 +212,17 @@ module Watobo#:nodoc: all
           setButtons(@switcher.current)
         end
 
-        @backButton = FXButton.new(buttons_frame, "Back" ,  nil, nil, :opts => BUTTON_NORMAL|LAYOUT_RIGHT)
+        @backButton = FXButton.new(buttons_frame, "Back", nil, nil, :opts => BUTTON_NORMAL | LAYOUT_RIGHT)
         @backButton.disable
         @backButton.connect(SEL_COMMAND) do |sender, sel, item|
           if @switcher.current > 0
-            @switcher.current = @switcher.current-1
+            @switcher.current = @switcher.current - 1
 
           end
           setButtons(@switcher.current)
         end
 
-        @cancelButton = FXButton.new(buttons_frame, "Cancel" , :target => self, :selector => FXDialogBox::ID_CANCEL, :opts => BUTTON_NORMAL|LAYOUT_RIGHT)
+        @cancelButton = FXButton.new(buttons_frame, "Cancel", :target => self, :selector => FXDialogBox::ID_CANCEL, :opts => BUTTON_NORMAL | LAYOUT_RIGHT)
 
         #@filterCombo.appendItem("ohne Filter", nil)
 
@@ -208,7 +231,7 @@ module Watobo#:nodoc: all
       private
 
       def onAccept(sender, sel, event)
-      #  @selectedPolicy = @policyFrame.policy_name
+        #  @selectedPolicy = @policyFrame.policy_name
         @options = @quickScanOptionsFrame.options
         @selectedModules = @policyFrame.getSelectedModules()
         getApp().stopModal(self, 1)

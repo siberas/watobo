@@ -456,8 +456,17 @@ module Watobo #:nodoc: all
 
     private
 
+    def importSession
+      chats = Watobo::DataStore.chat_files.map { |f| Watobo::Utils.loadChatMarshal(f) }
+      puts "Got #{chats.length} Chats"
+      Watobo::Chats.set chats
+        #notify(:update_chats, chats)
+      findings = Watobo::DataStore.finding_files.map{|f| Watobo::Utils.loadFindingMarshal(f) }
+      puts "Got #{findings.length} Findings"
+      Watobo::Findings.set findings
+    end
 
-    def importSession()
+    def importSession_UNUSED()
       num_chats = Watobo::DataStore.num_chats
       num_findings = Watobo::DataStore.num_findings
       num_imports = num_chats + num_findings
