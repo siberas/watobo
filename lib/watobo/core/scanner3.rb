@@ -45,7 +45,7 @@ module Watobo #:nodoc: all
             Thread.current[:pos] = "wait for task"
             task = @tasks.deq
             begin
-              puts "RUNNING #{task[:module]}" if $DEBUG
+              puts "RUNNING #{task[:module]}" #if $DEBUG
               request, response = task[:check].call()
 
               next if response.nil?
@@ -96,7 +96,10 @@ module Watobo #:nodoc: all
               Thread.current[:pos] = "scan_finished"
               notify(:task_finished, task[:module])
             end
-            Thread.exit if relogin_count > 5
+            if relogin_count > 5
+              puts "Maximum Relogin Count reached ... giving up :("
+            Thread.exit
+            end
             relogin_count = 0
           end
         }
@@ -247,6 +250,7 @@ module Watobo #:nodoc: all
             @active_checks.uniq.each do |ac|
               ac.reset()
               if site_alive?(chat) then
+                puts "Generating Tasks for #{ac}"
                 ac.generateChecks(chat) { |check|
                   while @tasks.size > @max_tasks
                     sleep 1

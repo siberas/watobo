@@ -52,7 +52,7 @@ module Watobo#:nodoc: all
                   if test_response.content_type =~ /json/
                     j = JSON.parse test_response.body.to_s
                     username = j['jcr:createdBy']
-                    puts "\nCQ5 User: #{username}"
+                    # puts "\nCQ5 User: #{username}"
                     addFinding(  test_request, test_response,
                       :test_item => "#{test_request.url}",
                       :proof_pattern => "jcr:createdBy.*#{username}",

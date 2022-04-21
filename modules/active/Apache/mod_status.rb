@@ -56,82 +56,88 @@ module Watobo #:nodoc: all
           end
 
           def generateChecks(chat)
-            @test_paths = []
-            @known_dirs.each do |kd|
-              Watobo::Utils.merge_paths(chat.request.path, kd) do |mp|
-                @test_paths << mp
-              end
-            end
-
-            @test_paths.each do |status_path|
-              unless !!@checked_paths[status_path]
-                @checked_paths[status_path] = true
-
-                check_list = []
-                # IMPORTANT!!!
-                # use copyRequest(chat) for cloning the original request
-                test = chat.copyRequest
-                test.setDir(status_path)
-
-                evasions(test) do |request|
-                  check_list << request
-                end
-
-                check_list.each do |test|
-                  checker = proc {
-
-
-                    status, test_request, test_response = fileExists?(test, :default => true)
-
-                    if test_response.status =~ /20/ and test_response.join =~ /Apache Server Status for/i then
-
-                      addFinding(test_request, test_response,
-                                 :check_pattern => "#{status_path}",
-                                 :proof_pattern => "Apache Server Status for",
-                                 :test_item => status_path,
-                                 :chat => chat,
-                                 :title => "[Server] - Server-Status page",
-                                 :rating => VULN_RATING_LOW
-                      )
-
-                    elsif test_response.status =~ /403/ then
-
-                      addFinding(test_request, test_response,
-                                 :threat => "Mod-status is installed but access is denied",
-                                 :measure => "Disable the mod_status module if not needed",
-                                 :check_pattern => "#{status_path}",
-                                 :proof_pattern => "403 Forbidden",
-                                 :test_item => status_path,
-                                 :type => FINDING_TYPE_INFO,
-                                 :class => "Information",
-                                 :chat => chat,
-                                 :title => "[Server] - Server-Status page",
-                                 :rating => VULN_RATING_LOW
-                      )
-
-                    elsif test_response.status =~ /401/ then
-
-                      addFinding(test_request, test_response,
-                                 :threat => "Mod-status is installed but access is password protected",
-                                 :measure => "Disable the mod_status module if not needed",
-                                 :check_pattern => "#{status_path}",
-                                 :proof_pattern => "401 Unauthorized",
-                                 :test_item => status_path,
-                                 :type => FINDING_TYPE_HINT,
-                                 :class => "Information",
-                                 :chat => chat,
-                                 :title => "[Server] - Server-Status page",
-                                 :rating => VULN_RATING_LOW
-                      )
-
-                    end
-
-                    [test_request, test_response]
-                  }
-                  yield checker
+            begin
+              @test_paths = []
+              @known_dirs.each do |kd|
+                Watobo::Utils.merge_paths(chat.request.path, kd) do |mp|
+                  @test_paths << mp
                 end
               end
+
+              @test_paths.each do |status_path|
+                unless !!@checked_paths[status_path]
+                  @checked_paths[status_path] = true
+
+                  check_list = []
+                  # IMPORTANT!!!
+                  # use copyRequest(chat) for cloning the original request
+                  test = chat.copyRequest
+                  test.setDir(status_path)
+
+                  evasions(test) do |request|
+                    check_list << request
+                  end
+
+                  check_list.each do |test|
+                    checker = proc {
+
+
+                      status, test_request, test_response = fileExists?(test, :default => true)
+
+                      if test_response.status =~ /20/ and test_response.join =~ /Apache Server Status for/i then
+
+                        addFinding(test_request, test_response,
+                                   :check_pattern => "#{status_path}",
+                                   :proof_pattern => "Apache Server Status for",
+                                   :test_item => status_path,
+                                   :chat => chat,
+                                   :title => "[Server] - Server-Status page",
+                                   :rating => VULN_RATING_LOW
+                        )
+
+                      elsif test_response.status =~ /403/ then
+
+                        addFinding(test_request, test_response,
+                                   :threat => "Mod-status is installed but access is denied",
+                                   :measure => "Disable the mod_status module if not needed",
+                                   :check_pattern => "#{status_path}",
+                                   :proof_pattern => "403 Forbidden",
+                                   :test_item => status_path,
+                                   :type => FINDING_TYPE_INFO,
+                                   :class => "Information",
+                                   :chat => chat,
+                                   :title => "[Server] - Server-Status page",
+                                   :rating => VULN_RATING_LOW
+                        )
+
+                      elsif test_response.status =~ /401/ then
+
+                        addFinding(test_request, test_response,
+                                   :threat => "Mod-status is installed but access is password protected",
+                                   :measure => "Disable the mod_status module if not needed",
+                                   :check_pattern => "#{status_path}",
+                                   :proof_pattern => "401 Unauthorized",
+                                   :test_item => status_path,
+                                   :type => FINDING_TYPE_HINT,
+                                   :class => "Information",
+                                   :chat => chat,
+                                   :title => "[Server] - Server-Status page",
+                                   :rating => VULN_RATING_LOW
+                        )
+
+                      end
+
+                      [test_request, test_response]
+                    }
+                    yield checker
+                  end
+                end
+              end
             end
+          rescue => bang
+            puts "!!! #{self} !!!"
+            puts bang
+            puts bang.backtrace
           end
         end
       end

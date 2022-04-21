@@ -103,6 +103,7 @@ EOS
                 end
               end
             rescue => bang
+              puts "!!! #{self} !!!"
               puts bang
               puts bang.backtrace
             end

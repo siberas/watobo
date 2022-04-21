@@ -54,7 +54,7 @@ module Watobo #:nodoc: all
                     test = chat.copyRequest
                     test.setData new_doc.to_s
 
-                    puts pattern
+                    # puts pattern
                     # TODO: implement collab check
 
                     test_request, test_response = doRequest(test)

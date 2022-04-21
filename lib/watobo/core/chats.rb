@@ -33,6 +33,13 @@ module Watobo #:nodoc: all
       @event_dispatcher_listeners = Hash.new
     end
 
+    def self.load_marshaled(dir, ext: 'mrs')
+      @chats = []
+      Dir.glob("#{dir}/*.#{ext}") do |f|
+        @chats << Watobo::Utils.loadChatMarshal(f)
+      end
+    end
+
 
     # find_by_url
     def self.find_by_url(site, pattern, opts = {}, &block)
@@ -357,13 +364,15 @@ module Watobo #:nodoc: all
           return false if chat.tested?
         end
 
-        if filter[:expression]
-          expr_filter = Proc.new() { |chat| eval(filter[:expression]) }
-          begin
-            return false unless expr_filter.call(chat)
-          rescue => bang
-            puts bang
-            puts bang.backtrace
+        if filter[:expression] and !!filter[:expression_enabled]
+          unless filter[:expression].to_s.strip.empty?
+            expr_filter = Proc.new() { |chat| eval(filter[:expression]) }
+            begin
+              return false unless expr_filter.call(chat)
+            rescue => bang
+              puts bang
+              puts bang.backtrace
+            end
           end
         end
 

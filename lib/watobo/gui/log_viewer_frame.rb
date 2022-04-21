@@ -30,14 +30,21 @@ module Watobo #:nodoc: all
 
         @scan_chats = []
 
-        frame = FXHorizontalFrame.new(self, :opts => LAYOUT_FILL_X | FRAME_SUNKEN) #| FRAME_GROOVE)
+        splitter = FXSplitter.new(self, LAYOUT_FILL_X | LAYOUT_FILL_Y | SPLITTER_VERTICAL | SPLITTER_REVERSED | SPLITTER_TRACKING)
+        top = FXVerticalFrame.new(splitter, :opts => FRAME_SUNKEN | LAYOUT_FILL_X | LAYOUT_FILL_Y, padding: 0)
+
+        frame = FXHorizontalFrame.new(top, :opts => LAYOUT_FILL_X | FRAME_SUNKEN) #| FRAME_GROOVE)
         FXLabel.new(frame, "Scan-Logs")
 
         # @refresh_btn = FXButton.new(frame, "\tNew Project\tNew Project.", :icon => ICON_ADD_PROJECT, :padding => 0)
         @refresh_btn = FXButton.new(frame, "refresh", :opts => BUTTON_NORMAL | LAYOUT_RIGHT)
         @refresh_btn.connect(SEL_COMMAND) {reload}
 
-        @scanTable = FXTable.new(self, :opts => TABLE_COL_SIZABLE | TABLE_ROW_SIZABLE | LAYOUT_FILL_X | LAYOUT_FILL_Y | TABLE_READONLY | LAYOUT_SIDE_TOP, :padding => 2)
+        @scanTable = FXTable.new(top, :opts => TABLE_COL_SIZABLE | TABLE_ROW_SIZABLE | LAYOUT_FILL_X | LAYOUT_FILL_Y | TABLE_READONLY | LAYOUT_SIDE_TOP, :padding => 2)
+
+        @kmeans = KmeansClustererFrame.new(splitter, :opts => FRAME_SUNKEN | LAYOUT_FILL_X | LAYOUT_FILL_Y, padding: 0)
+        @kmeans.subscribe(:show_chats) {|chats|  notify(:show_chats, chats) }
+
 
         @scanTable.connect(SEL_COMMAND) do |sender, sel, item|
           begin
@@ -47,6 +54,7 @@ module Watobo #:nodoc: all
 
             getApp().beginWaitCursor()
             @scan_chats = Watobo::DataStore.load_scan(scan_name)
+            @kmeans.set_chats @scan_chats
 
             notify(:show_chats, @scan_chats)
           rescue => bang
@@ -57,6 +65,8 @@ module Watobo #:nodoc: all
           end
 
         end
+
+
         initScanTable
       end
 
