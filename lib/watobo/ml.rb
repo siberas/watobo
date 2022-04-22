@@ -1,1 +1,1 @@
-require 'watobo/ml/kmeans/chat_filter'
+require 'watobo/ml/kmeans/kmeans_chats'

@@ -4,7 +4,15 @@ module Watobo::Resources
   # https://github.com/zricethezav/gitleaks
 
   # TODO: also load private keys from local file
-  patterns =<<'EOF'
+
+  keywords = %w( api key username user uname pw password pass passwd email mail credentials credential login token secret )
+
+  generic = {}
+  generic['Generic'] = "(\\b|[ ._-])(#{keywords.join('|')})[ '\"]*(=|:)[ '\"]*([^'\" ]+)"
+
+  API_KEYS = generic
+
+      patterns = <<'EOF'
 {
       "Slack Token" : "(xox[pborsa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})",
       "RSA private key" : "-----BEGIN RSA PRIVATE KEY-----",
@@ -18,18 +26,12 @@ module Watobo::Resources
       "Facebook Access Token" : "EAACEdEose0cBA[0-9A-Za-z]+",
       "Facebook OAuth" : "[fF][aA][cC][eE][bB][oO][oO][kK].*['|\"][0-9a-f]{32}['|\"]",
       "GitHub" : "[gG][iI][tT][hH][uU][bB].*['|\"][0-9a-zA-Z]{35,40}['|\"]",
-      "Generic API Key" : "[aA][pP][iI]_?[kK][eE][yY].*['|\"][0-9a-zA-Z]{32,45}['|\"]",
-      "Generic Secret" : "[sS][eE][cC][rR][eE][tT].*['|\"][0-9a-zA-Z]{32,45}['|\"]",
       "Google API Key" : "AIza[0-9A-Za-z\\-_]{35}",
-      "Google Cloud Platform API Key" : "AIza[0-9A-Za-z\\-_]{35}",
       "Google Cloud Platform OAuth" : "[0-9]+-[0-9A-Za-z_]{32}\\.apps\\.googleusercontent\\.com",
-      "Google Drive API Key" : "AIza[0-9A-Za-z\\-_]{35}",
       "Google Drive OAuth" : "[0-9]+-[0-9A-Za-z_]{32}\\.apps\\.googleusercontent\\.com",
       "Google (GCP) Service-account" : "\"type\": \"service_account\"",
-      "Google Gmail API Key" : "AIza[0-9A-Za-z\\-_]{35}",
       "Google Gmail OAuth" : "[0-9]+-[0-9A-Za-z_]{32}\\.apps\\.googleusercontent\\.com",
       "Google OAuth Access Token" : "ya29\\.[0-9A-Za-z\\-_]+",
-      "Google YouTube API Key" : "AIza[0-9A-Za-z\\-_]{35}",
       "Google YouTube OAuth" : "[0-9]+-[0-9A-Za-z_]{32}\\.apps\\.googleusercontent\\.com",
       "Heroku API Key" : "[hH][eE][rR][oO][kK][uU].*[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}",
       "MailChimp API Key" : "[0-9a-f]{32}-us[0-9]{1,2}",
@@ -64,21 +66,17 @@ module Watobo::Resources
       "s3-buckets 4" : "//s3\\.amazonaws\\.com/[a-z0-9._-]+",
       "s3-buckets 5" : "//s3-[a-z0-9-]+\\.amazonaws\\.com/[a-z0-9._-]+",
       "picatic-api" : "sk_live_[0-9a-z]{32}",
-      "md5" : "[a-f0-9]{32}",
       "mailto" : "(?<=mailto:)[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9.-]+",
       "mailgun-api" : "key-[0-9a-zA-Z]{32}",
       "mailchamp-api" : "[0-9a-f]{32}-us[0-9]{1,2}",
       "linkedin-secret" : "(?i)linkedin(.{0,20})?['\"][0-9a-z]{16}['\"]",
       "linkedin-id" : "(?i)linkedin(.{0,20})?(?-i)['\"][0-9a-z]{12}['\"]",
-      "ipv6" : "(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))",
-      "ipv4" : "(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}",
+      "IPv6" : "(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))",
+      "IPv4" : "(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}",
       "heroku-api" : "[h|H][e|E][r|R][o|O][k|K][u|U].{0,30}[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}",
-      "google-youtube-key" : "AIza[0-9A-Za-z\\-_]{35}",
       "google-ouath-token" : "ya29.[0-9A-Za-z\\-_]+",
       "google-oauth" : "[0-9]+-[0-9A-Za-z_]{32}\\.apps\\.googleusercontent\\.com",
-      "google-drive-key" : "AIza[0-9A-Za-z\\-_]{35}",
       "google-cloud-key" : "(?i)(google|gcp|youtube|drive|yt)(.{0,20})?['\"][AIza[0-9a-z\\-_]{35}]['\"]",
-      "google-api-key" : "AIza[0-9A-Za-z\\-_]{35}",
       "github" : "(?i)github(.{0,20})?(?-i)['\"][0-9a-zA-Z]{35,40}",
       "facebook-secret-key" : "(?i)(facebook|fb)(.{0,20})?(?-i)['\"][0-9a-f]{32}",
       "facebook-oauth" : "[f|F][a|A][c|C][e|E][b|B][o|O][o|O][k|K].*['|\"][0-9a-f]{32}['|\"]",
@@ -96,6 +94,9 @@ module Watobo::Resources
       "artifactory-password" : "(?: |=|:|\"|^)AP[0-9ABCDEF][a-zA-Z0-9]{8,}"
   }
 EOF
-  API_KEYS = JSON.parse(patterns).freeze
+  API_KEYS.update JSON.parse(patterns)
+
+  API_KEYS.freeze
+    #puts JSON.pretty_generate API_KEYS
 
 end
