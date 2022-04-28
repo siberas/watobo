@@ -1,0 +1,53 @@
+=> [32m#<Watobo::Net::Http::Sender:0x00007f659f8d7690[0m
+ @ctx[32m=[0m[32m#<OpenSSL::SSL::SSLContext:0x00007f659f8d7640[0m @cert[32m=[0m[1;36mnil[0m, @key[32m=[0m[1;36mnil[0m, @verify_hostname[32m=[0m[1;36mfalse[0m, @verify_mode[32m=[0m[1;34m0[0m[32m>[0m,
+ @prefs[32m=[0m
+  {[33m:www_auth[0m=>{},
+   [33m:client_certificate[0m=>
+    {[33m:type[0m=>[33m:pem[0m,
+     [33m:certificate_file[0m=>[31m[1;31m"[0m[31m/mnt/work/kunden/FinanzInformatik/Projekte/2021/2021-04_BAPI-Foerdergeschaeft/Certificate/BAP_DIAMONDTEST_INT.pem[1;31m"[0m[31m[0m,
+     [33m:key_file[0m=>[31m[1;31m"[0m[31m/mnt/work/kunden/FinanzInformatik/Projekte/2021/2021-04_BAPI-Foerdergeschaeft/Certificate/BAP_DIAMONDTEST_INT.key.pem[1;31m"[0m[31m[0m,
+     [33m:password[0m=>[31m[1;31m"[0m[31mMWU1Mzc5MzA0[1;31m"[0m[31m[0m,
+     [33m:ssl_client_cert[0m=>
+      [32m#<OpenSSL::X509::Certificate[0m
+       subject=[32m#<OpenSSL::X509::Name[0m [1;34;4mCN[0m=[1;34;4mBAP_DIAMONDTEST_INT[0m,[1;34;4mOU[0m=[1;34;4mBAPI_TEST[0m,[1;34;4mOU[0m=[1;34;4mD100[0m,[1;34;4mOU[0m=[1;34;4mSSL[0m [1;34;4mClient[0m,[1;34;4mOU[0m=[1;34;4mSSL[0m,[1;34;4mO[0m=[1;34;4mFinanz[0m [1;34;4mInformatik[0m,[1;34;4mC[0m=[1;34;4mDE[0m[32m>[0m,
+       issuer=[32m#<OpenSSL::X509::Name[0m [1;34;4mCN[0m=[1;34;4mFinanz[0m [1;34;4mInformatik[0m [1;34;4mIssuing[0m [1;34;4mCA[0m [1;34m01[0m,[1;34;4mOU[0m=[1;34;4mPKI[0m,[1;34;4mO[0m=[1;34;4mFinanz[0m [1;34;4mInformatik[0m,[1;34;4mC[0m=[1;34;4mDE[0m[32m>[0m,
+       serial=[32m#<OpenSSL::BN[0m [1;34m233059[0m[32m>[0m,
+       not_before=[1;34m2020[0m-[1;34m02[0m-[1;34m18[0m [1;34m11[0m:[1;34m09[0m:[1;34m31[0m [1;34;4mUTC[0m,
+       not_after=[1;34m2023[0m-[1;34m02[0m-[1;34m14[0m [1;34m23[0m:[1;34m59[0m:[1;34m59[0m [1;34;4mUTC[0m[32m>[0m,
+     [33m:ssl_client_key[0m=>[32m#<OpenSSL::PKey::RSA:0x00007f65b56b7480 oid=rsaEncryption>[0m},
+   [33m:ssl_cipher[0m=>[1;36mnil[0m,
+   [33m:proxy[0m=>[1;36mnil[0m,
+   [33m:username[0m=>[1;36mnil[0m,
+   [33m:password[0m=>[1;36mnil[0m,
+   [33m:timeout[0m=>[1;34m5[0m,
+   [33m:write_timeout[0m=>[1;34m60[0m},
+ @proxy[32m=[0m[1;36mnil[0m,
+ @read_timeout[32m=[0m[1;34m5[0m,
+ @request[32m=[0m
+  [[31m[1;31m"[0m[31mPOST https://in01-api.etap.f-i-apim.de:443/diamond-fibapi-env/diamond/vtis/v1/checkEligibility HTTP/1.1[1;35m\r[0m[31m[1;35m\n[0m[31m[1;31m"[0m[31m[0m,
+   [31m[1;31m"[0m[31mContent-Type: application/json[1;35m\r[0m[31m[1;35m\n[0m[31m[1;31m"[0m[31m[0m,
+   [31m[1;31m"[0m[31mX-REQUEST-ID: 12345[1;35m\r[0m[31m[1;35m\n[0m[31m[1;31m"[0m[31m[0m,
+   [31m[1;31m"[0m[31mUser-Agent: PostmanRuntime/7.28.3[1;35m\r[0m[31m[1;35m\n[0m[31m[1;31m"[0m[31m[0m,
+   [31m[1;31m"[0m[31mAccept: */*[1;35m\r[0m[31m[1;35m\n[0m[31m[1;31m"[0m[31m[0m,
+   [31m[1;31m"[0m[31mCache-Control: no-cache[1;35m\r[0m[31m[1;35m\n[0m[31m[1;31m"[0m[31m[0m,
+   [31m[1;31m"[0m[31mPostman-Token: ad2e6027-3669-4ae6-87c2-32c0717e678c[1;35m\r[0m[31m[1;35m\n[0m[31m[1;31m"[0m[31m[0m,
+   [31m[1;31m"[0m[31mHost: in01-api.etap.f-i-apim.de:443[1;35m\r[0m[31m[1;35m\n[0m[31m[1;31m"[0m[31m[0m,
+   [31m[1;31m"[0m[31mContent-Length: 1765[1;35m\r[0m[31m[1;35m\n[0m[31m[1;31m"[0m[31m[0m,
+   [31m[1;31m"[0m[31mConnection: url://http_x_headers626aa5dc.collab.qimera.eu[1;35m\r[0m[31m[1;35m\n[0m[31m[1;31m"[0m[31m[0m,
+   [31m[1;31m"[0m[31m[1;35m\r[0m[31m[1;35m\n[0m[31m[1;31m"[0m[31m[0m,
+   [31m[1;31m"[0m[31m{[1;35m\n[0m[31m  [1;35m\"[0m[31mtokenRequestorID[1;35m\"[0m[31m: 40010030273,[1;35m\n[0m[31m  [1;35m\"[0m[31mtokenReferenceID[1;35m\"[0m[31m: [1;35m\"[0m[31mDNITHE461933743382092744[1;35m\"[0m[31m,[1;35m\n[0m[31m  [1;35m\"[0m[31mpanReferenceID[1;35m\"[0m[31m: [1;35m\"[0m[31mV-5819316570193442824488[1;35m\"[0m[31m,[1;35m\n[0m[31m  [1;35m\"[0m[31mpanSource[1;35m\"[0m[31m: [1;35m\"[0m[31mMOBILE_BANKING_APP[1;35m\"[0m[31m,[1;35m\n[0m[31m  [1;35m\"[0m[31mdeviceInfo[1;35m\"[0m[31m: {[1;35m\n[0m[31m    [1;35m\"[0m[31mdeviceID[1;35m\"[0m[31m: [1;35m\"[0m[31m042D25C3FB4A800181480363019469263EC92FE6A76ECFC6[1;35m\"[0m[31m,[1;35m\n[0m[31m    [1;35m\"[0m[31mdeviceLanguageCode[1;35m\"[0m[31m: [1;35m\"[0m[31mdeu[1;35m\"[0m[31m[1;35m\n[0m[31m  },[1;35m\n[0m[31m  [1;35m\"[0m[31mencryptedData[1;35m\"[0m[31m: [1;35m\"[0m[31meyJhbGciOiJQUzI1NiIsInR5cCI6IkpPU0UiLCJraWQiOiIwQjdGOTFFQyIsImN0eSI6IkpXRSJ9.ZXlKMGVYQWlPaUpLVDFORklpd2laVzVqSWpvaVFUSTFOa2REVFNJc0ltbGhkQ0k2SWpFMU56VXpOelExT0RJaUxDSmhiR2NpT2lKU1UwRXRUMEZGVUMweU5UWWlMQ0pyYVdRaU9pSkNUMEZhUzBoSVF6aFhNVVZVUWpFeVVUbFFNREUwT0cwd2JYQkJlRFk0Um04NFNXeHRVbk15ZUdwZmRVTmFNRmxGSW4wLnMxZHZIcnVYODhFM2l5YnJKUHROTTc1SGFRMjdJQzFja1BPdFB5V3lsYkFTcFVYSTVHd0tyWTNmZ0JjOUZFZERKYk9MS0ZuMzZGNzZIRndQWWlsSGZCN1dyRGE5MlMtYTFfS205U1otT283VjZsZEFSaE85V1k4amwwM1RLZUNJU1p6SUNsMGhoMjh0eGhoYTVtMDRVaG0waHl4S3oyYTk1RWVBWGg2STRHRDJrZ1BPSGREcjhZN0RQa2x3bjdkakF1U1lmelpZN0xBSF9BQThya0VZdVhZa3lNWlZVakRielpvU1JYc1dyRU1Vc3JNMlN5Z1otbVNERTBZdm5tTzZRLWZIdVFTZ1NzMUhsZ0xCVHV6Z3Ayd3phSFFTTC1JeHhuYXdkd2Q1VDlndzIzaHFrQVVNYkZvOVlMZHNEdW00a19tLURrT29LdXc4OGJ4eTRSb3BCdy5Wdlg0MHRNUU9DWlFaSWlmLnczWlBTdEFrQW1fT1FWRTR4NGpJUng2ZmJicUR1MDZZMlpfLWItV2lmTjhjTi1pNUVkTHA2U2V3MWJOTE1RR2FjY2RWc050Nk9oRFVSdnFURHpLUHY5TVRJQnJtdG1tdDFuT25VU21oLUV0ZHM2M3I1ZFpWM2ZyZ3R3bTYyWTdNeDZxZENVZFpuNE1OQk9rWDB3dlpyZTJQRDk5Q3prR3MzUGlfNmI4eWtRcFFLcE1ibUtJWWZEME9qN0dmbjBJcDg1YU8xWXpJRVFyd0ZHbUhpUDAxN0g4LmdtQ25QN1c3dGc1eGxST3JhNGNpZ3c.r4HEIAWbypZF6568i_bPnT0vJKlbRCKHLff2U9zpiFMfI0I4054KZnQmvm7XM8zlUuhIclX-xMFTUm3F3w0r2xpvARNC4jqpd3p0zYlhE6AIxY1WL4gBhSs5tYjRnR5q14tbb3xWoXWshzthwzpMUqJ_G5W5zExaCcWydXKPoVkd-mohtZocR9LRXu6pFX97uq9zZHVikd2bs0ZxbxCZ31X0EN6TktRmG5TUXxB1o4UyYyF6xiom6we7HVj5o1NlGTbaXLdl_PwrJg6zBKmRPDxa7Uw5STmlBMH0mzVB5XVhZ94spIxPAQopWpZdcyZ0tm-piJtVIfjqy1lgen7sbw[1;35m\"[0m[31m[1;35m\n[0m[31m}[1;31m"[0m[31m[0m],
+ @socket[32m=[0m[32m#<Net::BufferedIO io=#<OpenSSL::SSL::SSLSocket:0x00007f659f8d6e20>>[0m,
+ @ssl_context[32m=[0m
+  [32m#<OpenSSL::SSL::SSLContext:0x00007f659f8d6f10[0m
+   @cert[32m=[0m
+    [32m#<OpenSSL::X509::Certificate[0m
+     subject=[32m#<OpenSSL::X509::Name[0m [1;34;4mCN[0m=[1;34;4mBAP_DIAMONDTEST_INT[0m,[1;34;4mOU[0m=[1;34;4mBAPI_TEST[0m,[1;34;4mOU[0m=[1;34;4mD100[0m,[1;34;4mOU[0m=[1;34;4mSSL[0m [1;34;4mClient[0m,[1;34;4mOU[0m=[1;34;4mSSL[0m,[1;34;4mO[0m=[1;34;4mFinanz[0m [1;34;4mInformatik[0m,[1;34;4mC[0m=[1;34;4mDE[0m[32m>[0m,
+     issuer=[32m#<OpenSSL::X509::Name[0m [1;34;4mCN[0m=[1;34;4mFinanz[0m [1;34;4mInformatik[0m [1;34;4mIssuing[0m [1;34;4mCA[0m [1;34m01[0m,[1;34;4mOU[0m=[1;34;4mPKI[0m,[1;34;4mO[0m=[1;34;4mFinanz[0m [1;34;4mInformatik[0m,[1;34;4mC[0m=[1;34;4mDE[0m[32m>[0m,
+     serial=[32m#<OpenSSL::BN[0m [1;34m233059[0m[32m>[0m,
+     not_before=[1;34m2020[0m-[1;34m02[0m-[1;34m18[0m [1;34m11[0m:[1;34m09[0m:[1;34m31[0m [1;34;4mUTC[0m,
+     not_after=[1;34m2023[0m-[1;34m02[0m-[1;34m14[0m [1;34m23[0m:[1;34m59[0m:[1;34m59[0m [1;34;4mUTC[0m[32m>[0m,
+   @key[32m=[0m[32m#<OpenSSL::PKey::RSA:0x00007f65b56b7480 oid=rsaEncryption>[0m,
+   @session_new_cb[32m=[0m[32m#<Proc:0x00007f659f8d6e70 /dumpster/Projects/watobo/lib/watobo/net/http/sender.rb:238>[0m,
+   @verify_hostname[32m=[0m[1;36mfalse[0m,
+   @verify_mode[32m=[0m[1;34m0[0m[32m>[0m,
+ @write_timeout[32m=[0m[1;34m60[0m[32m>[0m

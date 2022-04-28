@@ -43,9 +43,11 @@ module Watobo #:nodoc: all
           relogin_count = 0
           loop do
             Thread.current[:pos] = "wait for task"
+
+            # pulls new task from queue, waits if no task is available
             task = @tasks.deq
             begin
-              puts "RUNNING #{task[:module]}" #if $DEBUG
+              puts "RUNNING #{task[:module]}" if $DEBUG
               request, response = task[:check].call()
 
               next if response.nil?
@@ -306,6 +308,7 @@ module Watobo #:nodoc: all
       @prefs = Watobo::Conf::Scanner.to_h
 
       @prefs.update prefs
+      @prefs[:timeout] = 5 unless !!@prefs[:timeout]
 
       #puts @prefs.to_yaml
 
@@ -469,13 +472,17 @@ module Watobo #:nodoc: all
     def site_alive?(chat)
       @sites_alive ||= Hash.new
       site = chat.request.site
-      return true if @sites_alive.has_key? site
+      if @sites_alive.has_key? site
+        return @sites_alive[site]
+      end
 
       if Watobo::HTTPSocket.siteAlive?(chat)
         @sites_alive[site] = true
-        return true
+      else
+        @sites_alive[site] = false
       end
-      return false
+
+      return @sites_alive[site]
     end
 
   end

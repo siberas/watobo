@@ -205,6 +205,7 @@ module Watobo #:nodoc: all
                   if $DEBUG
                     puts bang.backtrace
                     puts request
+                    binding.pry
 
                   end
                   c_sock.close

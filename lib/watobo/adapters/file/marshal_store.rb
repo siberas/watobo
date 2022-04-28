@@ -42,7 +42,7 @@ module Watobo #:nodoc: all
 
     def save_chat(file, chat)
       File.open(file, 'wb') {|f|
-        f.print Marshal::dump(chat.to_h)
+        f.print Marshal::dump(chat)
       }
     end
 

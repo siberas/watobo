@@ -1,6 +1,9 @@
 # @private 
 module Watobo #:nodoc: all
   class Response < Array
+
+    attr :meta, :data
+
     def self.is_html?
 
     end
@@ -10,7 +13,7 @@ module Watobo #:nodoc: all
     end
 
 
-    def self.create(response)
+    def self.create(response, meta={})
       raise ArgumentError, "Array Expected." unless response.is_a? Array
       response.extend Watobo::Mixin::Parser::Url
       response.extend Watobo::Mixin::Parser::Web10
@@ -39,9 +42,17 @@ module Watobo #:nodoc: all
       end
     end
 
+    # additional meta data for deeper analysis
+    # duration: <response time>
+    # was_chunked: true if original response was chunk encoded
+    # was_zipped: true if origianl response was gzipped
+    # error: ErrorClass if error occured, e.g. connection reset
+    def set_meta(meta)
+      @meta = meta
+    end
 
-    def data
-      @data
+    def update_meta(meta)
+      @meta.update meta
     end
 
     def copy
@@ -49,13 +60,14 @@ module Watobo #:nodoc: all
       Watobo::Request.new c
     end
 
-    def initialize(r)
+    def initialize(r, meta={})
       if r.respond_to? :concat
         #puts "Create REQUEST from ARRAY"
         self.concat r
       elsif r.is_a? String
         raise ArgumentError, "Need Array"
       end
+      @meta = meta
       self.extend Watobo::Mixin::Parser::Url
       self.extend Watobo::Mixin::Parser::Web10
       self.extend Watobo::Mixin::Shaper::Web10

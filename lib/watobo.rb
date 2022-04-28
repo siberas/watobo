@@ -71,6 +71,8 @@ require 'watobo/config'
 require 'watobo/defaults'
 require 'watobo/http'
 require 'watobo/evasions'
+require 'watobo/net'
+
 require 'watobo/core'
 require 'watobo/externals'
 require 'watobo/adapters'
@@ -79,6 +81,7 @@ require 'watobo/parser'
 require 'watobo/interceptor'
 require 'watobo/sockets'
 require 'watobo/scanner4'
+
 
 
 require 'watobo/transformers/multipart'

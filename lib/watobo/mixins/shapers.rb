@@ -396,6 +396,7 @@ module Watobo #:nodoc: all
                 return true
               end
 
+              # insert header if we reached end of headers
               if h.strip.empty? or i == self.length - 1
                 self.insert(i, new_header)
                 return true

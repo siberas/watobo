@@ -71,6 +71,7 @@ module Watobo#:nodoc: all
       h.update @settings
       h[:request] = @request.to_a
       h[:response] = @response.to_a
+      h[:meta] = @response.meta
       h
     end
 

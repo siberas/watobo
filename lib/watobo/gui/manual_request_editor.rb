@@ -48,10 +48,7 @@ module Watobo #:nodoc: all
         request = Watobo::Request.new(new_request)
         begin
           test_req, test_resp = self.doRequest(request, prefs)
-          #rq = Watobo::Request.new test_req
-          # rs = Watobo::Response.new test_resp
-          #rs.unchunk
-          #rs.unzip
+
           return test_req, test_resp
         rescue => bang
           puts bang
@@ -68,6 +65,7 @@ module Watobo #:nodoc: all
 
       include Watobo::Constants
       include Watobo::Gui::Icons
+      include Watobo::Subscriber
 
       # include Responder
       # ID_CTRL_S = ID_LAST
@@ -77,9 +75,9 @@ module Watobo #:nodoc: all
       SCANNER_FINISHED = 0x02
       SCANNER_CANCELED = 0x04
 
-      def subscribe(event, &callback)
-        (@event_dispatcher_listeners[event] ||= []) << callback
-      end
+      #      def subscribe(event, &callback)
+      #  (@event_dispatcher_listeners[event] ||= []) << callback
+      #end
 
       def openCSRFTokenDialog(sender, sel, item)
         csrf_dlg = CSRFTokenDialog.new(self, @chat)
@@ -91,17 +89,17 @@ module Watobo #:nodoc: all
         end
       end
 
-      def clearEvents(event)
-        @event_dispatcher_listener[event].clear
-      end
+      #def clearEvents(event)
+      #  @event_dispatcher_listener[event].clear
+      #end
 
-      def notify(event, *args)
-        if @event_dispatcher_listeners[event]
-          @event_dispatcher_listeners[event].each do |m|
-            m.call(*args) if m.respond_to? :call
-          end
-        end
-      end
+      #def notify(event, *args)
+      #  if @event_dispatcher_listeners[event]
+      #    @event_dispatcher_listeners[event].each do |m|
+      #      m.call(*args) if m.respond_to? :call
+      #    end
+      #  end
+      #end
 
       def onRequestReset(sender, sel, item)
         @req_builder.setRequest(@original_request)
@@ -307,7 +305,7 @@ module Watobo #:nodoc: all
           @chat_queue = Queue.new
 
           @request_sender = ManualRequestSender.new(self.object_id)
-          @request_sender.subscribe(:follow_redirect) {|loc| logger("follow redirect -> #{loc}")}
+          #@request_sender.subscribe(:follow_redirect) {|loc| logger("follow redirect -> #{loc}")}
           @responseFilter = FXDataTarget.new("")
 
           @chat = chat

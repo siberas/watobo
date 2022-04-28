@@ -1,17 +1,18 @@
 # @private 
 module Watobo #:nodoc: all
-  class ActiveCheck < Watobo::Session # Base Class for Passive Checks
+  # class ActiveCheck < Watobo::Session # Base Class for Passive Checks
+  class ActiveCheck < Watobo::Net::Http::Session # Base Class for Passive Checks
     include Watobo::CheckInfoMixin
 
     attr :info
     attr :numChecks
 
     #   @@running_checks = 0
-    @@max_checks = 5
-    @@check_count = 0
-    @@pool = []
-    @@pool_mutex = Mutex.new
-    @@pool_cv = ConditionVariable.new
+    #@@max_checks = 5
+    #@@check_count = 0
+    #@@pool = []
+    #@@pool_mutex = Mutex.new
+    #@@pool_cv = ConditionVariable.new
 
     @@status = :running # :running, :paused, :canceled
     @@lock = Mutex.new
@@ -153,34 +154,30 @@ module Watobo #:nodoc: all
       count
     end
 
-    def maxChecks=(m)
+    def maxChecks_UNUSED=(m)
       @@max_checks = m
     end
 
-    def maxChecks()
+    def maxChecks_UNUSED()
       @@max_checks
     end
 
     def enabled?
-      @enabled
-    end
-
-    def enabled=(status)
-      @enabled = status.is_a? TrueClass | FalseClass
+      @enable_mutex.synchronize do
+        r = @enabled ? true : false
+      end
+      r
     end
 
     def enable
-      @enabled = true
+      @enable_mutex.synchronize do
+        @enabled = true
+      end
     end
 
-    def checksRunning?
-      begin
-        #puts @inner_pool.size
-        return true if @inner_pool.size > 0
-        return false
-      rescue => bang
-        p bang
-        p bang.backtrace
+    def disable
+      @enable_mutex.synchronize do
+        @enable = false
       end
     end
 
@@ -195,28 +192,9 @@ module Watobo #:nodoc: all
       cid
     end
 
-    def disable
-      @enable = false
-    end
 
     def generateChecks(chat)
       raise "Missing method generateChecks()!!!"
-    end
-
-    def waitLogin_UNUSED(state)
-      @@login_in_progress = state
-      @inner_pool_cv.signal if state == false
-    end
-
-    def continue_UNUSED()
-      @@pool.each do |thr|
-        #  puts "Stopping #{thr}"
-        begin
-          thr.run if not thr.run?
-        rescue
-          puts "could not continue thread #{thr}"
-        end
-      end
     end
 
     def stop()
@@ -229,11 +207,11 @@ module Watobo #:nodoc: all
         t_request, t_response = doRequest(request, prefs)
         # first custom error patterns are checked
         status = t_response.status
-        if @settings.has_key? :custom_error_patterns
-          @settings[:custom_error_patterns].each do |pat|
-            return false, t_request, t_response if t_response.to_s =~ /#{pat}/
-          end
+        # if @settings.has_key? :custom_error_patterns
+        custom_error_patterns.each do |pat|
+          return false, t_request, t_response if t_response.to_s =~ /#{pat}/
         end
+        #end
         #if @settings.has_key? :custom_error_patterns
         #  @settings[:custom_error_patterns].each do |pat|
         #    t_response.headers.each do |hl|
@@ -255,7 +233,6 @@ module Watobo #:nodoc: all
         #return false, t_request, t_response if status =~ /^404/ # Not Found
         #return false, t_request, t_response if status =~ /^400/ # Bad Request
         return false, t_request, t_response if status =~ /^40/ # expect all 40ers as no valid response
-
 
 
         if status =~ /^50\d/
@@ -299,7 +276,7 @@ module Watobo #:nodoc: all
       @counters = Hash.new
 
       #TODO: change @settings to @session, if no bugs!
-      @settings = @session
+      # @settings = @session
       #    @settings = {
       #      :custom_error_patterns => [],
       #      :excluded_parms => []
@@ -312,12 +289,18 @@ module Watobo #:nodoc: all
       @progress = 0
       @check_threads = []
 
-      @inner_pool = []
-      @inner_pool_mutex = Mutex.new
-      @inner_pool_cv = ConditionVariable.new
+      # @inner_pool = []
+      #@inner_pool_mutex = Mutex.new
+      #@inner_pool_cv = ConditionVariable.new
 
-      @checks_cv = ConditionVariable.new
-      @checks_mutex = Mutex.new
+      #@checks_cv = ConditionVariable.new
+      #@checks_mutex = Mutex.new
+
+      @enable_mutex = Mutex.new
+
+      # in active checks we need dynamic/controllable timeouts, so that e.g. the scanner has
+      # controll over the time-out behaviour
+      @timeout_dyn = 60
 
 
     end

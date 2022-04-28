@@ -15,7 +15,7 @@ require 'fileutils'
 
 
 OPTS = Optimist::options do
-  version '(c) 2021 Filescanner'
+  version '(c) 2021 Sniper'
   banner <<-EOS
     Wrapper to use the FileScanner plugin directly from the command line.
   EOS

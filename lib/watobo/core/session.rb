@@ -1,7 +1,13 @@
 # @private 
 module Watobo #:nodoc: all
 
-  class Session
+  # hakish was of replacing old Session class
+  class Session < Watobo::Net::Http::Session; end
+
+
+  # hackish way to disable old Session class
+  # will be deleted in future, only alive for rewriting new Http::Session
+  class Session_UNUSED
 
     include Watobo::Constants
     include Watobo::Subscriber
@@ -302,11 +308,11 @@ module Watobo #:nodoc: all
         socket = nil
       rescue Timeout::Error
         #request = "WATOBO: TimeOut (#{host}:#{port})\n"
-        response = error_response "TimeOut (#{host}:#{port})"
+        response = error_response "TimeOut::Error (#{host}:#{port})"
         socket = nil
       rescue Errno::ETIMEDOUT
         puts "TimeOut (#{host}:#{port})"
-        response = error_response "TimeOut (#{host}:#{port})"
+        response = error_response "Errno::ETIMEDOUT (#{host}:#{port})"
         socket = nil
       rescue Errno::ENOTCONN
         puts "!!!ENOTCONN"
@@ -529,23 +535,25 @@ module Watobo #:nodoc: all
 
       @sid_cache = Watobo::SIDCache.acquire(session)
 
+      default_prefs = {
+          :logout_signatures => [],
+          :logout_content_types => Hash.new,
+          :update_valid_sids => false,
+          :update_sids => false,
+          :update_otts => false,
+          :update_session => true,
+          :update_contentlength => true,
+          :login_chats => [],
+          :www_auth => Hash.new,
+          :client_certificates => {},
+          :proxy_auth => Hash.new
+      }
 
       unless @@settings.has_key? session
-        @@settings[session] = {
-            :logout_signatures => [],
-            :logout_content_types => Hash.new,
-            :update_valid_sids => false,
-            :update_sids => false,
-            :update_otts => false,
-            :update_session => true,
-            :update_contentlength => true,
-            :login_chats => [],
-            :www_auth => Hash.new,
-            :client_certificates => {},
-            :proxy_auth => Hash.new
-        }
+        @@settings[session] = default_prefs
       end
-      @session = @@settings[session] # shortcut to settings
+      # @session = @@settings[session] # shortcut to settings
+      @session = default_prefs
 
       @session.update prefs.to_h
 
@@ -1155,14 +1163,14 @@ module Watobo #:nodoc: all
     def error_response(msg, comment = nil)
       er = []
       er << "HTTP/1.1 555 Watobo Error\r\n"
-      er << "WATOBO-MSG: #{Base64.strict_encode64(msg)}"
+      er << "WATOBO-MSG: #{Base64.strict_encode64(msg.to_s)}"
       er << "Date: #{Time.now.to_s}\r\n"
       er << "Content-Length: 0\r\n"
       er << "Content-Type: text/html\r\n"
       er << "Connection: close\r\n"
       er << "\r\n"
       unless comment.nil?
-        body = "<html><head><title>Watobo Error</title></head><body><H1>#{msg}</H1></br><H2>#{comment.gsub(/\r?\n/, "</br>")}</H2></body></html>"
+        body = "<html><head><title>Watobo Error</title></head><body><H1>#{msg.to_s}</H1></br><H2>#{comment.gsub(/\r?\n/, "</br>")}</H2></body></html>"
         er << body
       end
       er.extend Watobo::Mixin::Parser::Url
@@ -1296,11 +1304,11 @@ module Watobo #:nodoc: all
       }
     end
 
-    def applySessionSettings(prefs)
-      [:update_valid_sids, :update_session, :update_contentlength, :valid_sids, :sid_patterns, :logout_signatures].each do |v|
-        @@settings[v] = prefs[v] if prefs[v]
-      end
-    end
+    #   def applySessionSettings(prefs)
+    #  [:update_valid_sids, :update_session, :update_contentlength, :valid_sids, :sid_patterns, :logout_signatures].each do |v|
+    #    @@settings[v] = prefs[v] if prefs[v]
+    #  end
+    # end
 
   end
 end

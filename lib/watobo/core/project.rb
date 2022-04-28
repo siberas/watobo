@@ -449,7 +449,7 @@ module Watobo #:nodoc: all
 
       @sessionController = Watobo::Session.new(self)
 
-      @sessionController.addProxy(getCurrentProxy())
+        # @sessionController.addProxy(getCurrentProxy())
 
     end
 
