@@ -2,9 +2,27 @@
 module Watobo #:nodoc: all
   module Utils
 
+    def self.load_marshalled(file)
+      raw = IO.binread(file)
+      if file =~ /mrz$/i
+        gz = Zlib::GzipReader.new(StringIO.new(raw))
+        data = gz.read
+        mobj = Marshal::load(data)
+      elsif file =~ /mrs$/i
+        mobj = Marshal::load(raw)
+      else
+        raise "wrong file extension. only accepts .mrs or .mrz"
+      end
+      mobj
+    end
+
     def Utils.loadChatMarshal(file)
       begin
-        chat = Marshal::load(IO.binread(file))
+        chat = load_marshalled file
+
+        return nil if chat.nil?
+
+        # check if chat was marshalled as complete object
         if chat.respond_to? :request
           chat.file = File.expand_path(file)
           return chat
@@ -33,6 +51,29 @@ module Watobo #:nodoc: all
         #puts bang
         #puts bang.backtrace if $DEBUG
       end
+    end
+
+
+    def Utils.loadFindingMarshal(file)
+      puts "LoadFindingMarshal: #{file}" if $DEBUG
+      begin
+
+        finding = load_marshalled file
+
+        return nil if finding.nil?
+        return finding if finding.instance_of? Watobo::Finding
+
+        fdata = finding
+
+        finding = Watobo::Finding.new(fdata[:request], fdata[:response], fdata[:details])
+
+        return finding
+      rescue => bang
+        puts bang
+        puts "could not load finding #{file}"
+        return nil
+      end
+
     end
 
     def Utils.loadChatMarshal_UNUSED(file)
@@ -129,30 +170,6 @@ module Watobo #:nodoc: all
       end
     end
 
-
-    def Utils.loadFindingMarshal(file)
-      puts "LoadFindingMarshal: #{file}" if $DEBUG
-      if File.exist?(file) then
-        begin
-          fdata = nil
-
-          File.open(file, "rb") { |f|
-            fdata = Marshal::load(f.read)
-          }
-
-          finding = Watobo::Finding.new(fdata[:request], fdata[:response], fdata[:details])
-
-          return finding
-        rescue => bang
-          puts bang
-          puts "could not load finding #{file}"
-          return nil
-        end
-      else
-        #   puts "* file #{file} not found"
-        return nil
-      end
-    end
 
     def Utils.loadFindingYAML(file)
       puts "LoadFindingYAML: #{file}" if $DEBUG

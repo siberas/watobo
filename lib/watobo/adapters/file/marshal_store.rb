@@ -36,7 +36,7 @@ module Watobo #:nodoc: all
 
     def save_finding(fname, finding)
       File.open(fname, 'wb') {|f|
-        f.print Marshal::dump(finding.to_h)
+        f.print Marshal::dump(finding)
       }
     end
 
@@ -134,7 +134,7 @@ module Watobo #:nodoc: all
 
         unless File.exist?(file)
           File.open(file, 'wb') {|fh|
-            fh.print Marshal::dump(chat.to_h)
+            fh.print Marshal::dump(chat)
           }
         end
 
@@ -152,7 +152,7 @@ module Watobo #:nodoc: all
 
       unless File.exist?(chat_file)
         File.open(chat_file, "wb") {|fh|
-          fh.print Marshal::dump(chat.to_h)
+          fh.print Marshal::dump(chat)
         }
         chat.file = chat_file
         return true

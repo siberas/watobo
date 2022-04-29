@@ -1,26 +1,14 @@
 # @private 
 module Watobo#:nodoc: all
   module Findings
+    class << self
+      include Watobo::Subscriber
+    end
+
     @findings = {}
     @findings_lock = Mutex.new
     @event_dispatcher_listeners = Hash.new
-    def self.subscribe(event, &callback)
-      (@event_dispatcher_listeners[event] ||= []) << callback
-    end
 
-    def self.clearEvents(event)
-      @event_dispatcher_listeners[event] ||= []
-      @event_dispatcher_listeners[event].clear
-    end
-
-    def self.notify(event, *args)
-      if @event_dispatcher_listeners[event]
-        @event_dispatcher_listeners[event].each do |m|
-          m.call(*args) if m.respond_to? :call
-        end
-      end
-    end
-    
     def self.length
       @findings.length
     end
@@ -114,6 +102,20 @@ module Watobo#:nodoc: all
         end
       end
 
+    end
+
+    def self.type_str(type)
+      s = case type
+          when FINDING_TYPE_INFO
+            'info'
+          when FINDING_TYPE_HINT
+            'hint'
+          when FINDING_TYPE_VULN
+            'vulnerability'
+          else
+            'n/a'
+          end
+      s
     end
 
   end

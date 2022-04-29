@@ -5,9 +5,9 @@ module Watobo #:nodoc: all
   class Session < Watobo::Net::Http::Session; end
 
 
-  # hackish way to disable old Session class
+
   # will be deleted in future, only alive for rewriting new Http::Session
-  class Session_UNUSED
+  class SessionV1
 
     include Watobo::Constants
     include Watobo::Subscriber

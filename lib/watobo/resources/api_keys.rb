@@ -83,7 +83,6 @@ module Watobo::Resources
       "facebook-client-id" : "(?i)(facebook|fb)(.{0,20})?['\"][0-9]{13,17}",
       "cloudinary-basic-auth" : "cloudinary://[0-9]{15}:[0-9A-Za-z]+@[a-z]+",
       "base64" : "(eyJ|YTo|Tzo|PD[89]|aHR0cHM6L|aHR0cDo|rO0)[a-zA-Z0-9+/]+={0,2}",
-      "base32" : "(?:[A-Z2-7]{8})*(?:[A-Z2-7]{2}={6}|[A-Z2-7]{4}={4}|[A-Z2-7]{5}={3}|[A-Z2-7]{7}=)?",
       "aws-secret-key" : "(?i)aws(.{0,20})?(?-i)['\"][0-9a-zA-Z/+]{40}['\"]",
       "aws-mws-key" : "amzn\\.mws\\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
       "aws-client-id" : "(A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}",

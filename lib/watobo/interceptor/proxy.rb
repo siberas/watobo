@@ -170,7 +170,8 @@ module Watobo #:nodoc: all
 
           while (new_session = server.accept)
             #  new_session.sync = true
-            new_sender = Watobo::Session.new(@target)
+            new_sender = Watobo::SessionV1.new(@target)
+
             Thread.new(new_sender, new_session) { |sender, session|
               #puts "* got new request from client"
               c_sock = Watobo::HTTPSocket::ClientSocket.connect(session)
@@ -249,8 +250,8 @@ module Watobo #:nodoc: all
                 # no preview, check if interception request is turned on
                 if Watobo::Interceptor.rewrite_requests? then
                   Interceptor::RequestCarver.shape(request, flags)
-                  puts "FLAGS >>"
-                  puts flags
+                  # puts "FLAGS >>"
+                  # puts flags
                 end
 
                 if @target and Watobo::Interceptor.intercept_requests? then
@@ -283,6 +284,7 @@ module Watobo #:nodoc: all
 
                 begin
                   puts "+ [PROXY] sending request: \n#{request}\n\n#{prefs.to_json}" if $DEBUG
+
                   s_sock, req, resp = sender.sendHTTPRequest(request, prefs)
                   # :client_certificates => @client_certificates
                   #)
@@ -399,7 +401,13 @@ module Watobo #:nodoc: all
                   c_sock.write resp_data
 
                   chat = Chat.new(request.copy, resp.copy, :source => CHAT_SOURCE_INTERCEPT)
+
+                  # we have to add chat to the global Chats before we send it to the passive scanner,
+                  # because the chat.id is set during add
                   Watobo::Chats.add chat
+                  Watobo::PassiveScanner.add(chat)
+
+
 
                 rescue Errno::ECONNRESET
                   print "x"
@@ -796,6 +804,7 @@ module Watobo #:nodoc: all
           chat = Watobo::Chat.new(request, response, :source => CHAT_SOURCE_INTERCEPT)
           #notify(:new_interception, chat)
           Watobo::Chats.add chat
+          #Watobo::PassiveScanner.add(chat)
 
           pass_through(s_sock, c_sock, clen)
           #  puts "* Close Server Socket..."

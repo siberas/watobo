@@ -157,6 +157,10 @@ module Watobo #:nodoc: all
           uri = URI.parse r
           self << "GET #{uri.to_s} HTTP/1.1\r\n"
           self << "Host: #{uri.host}\r\n"
+          self << "User-Agent: WATOBO\r\n"
+          self << "Accept: */*\r\n"
+          #self << "Connection: close\r\n"
+          self << "\r\n"
         else
           r.extend Watobo::Mixins::RequestParser
           self.concat r.to_request

@@ -4,12 +4,10 @@ module Watobo #:nodoc: all
     class FindingsTree < FXTreeList
       include Watobo::Constants
       include Watobo::Gui::Icons
+      include Watobo::Subscriber
 
       attr_accessor :project
 
-      def subscribe(event, &callback)
-        (@event_dispatcher_listeners[event] ||= []) << callback
-      end
 
       def expandFullTree(item)
         @expandeds = []
@@ -576,13 +574,7 @@ module Watobo #:nodoc: all
 
       end
 
-      def notify(event, *args)
-        if @event_dispatcher_listeners[event]
-          @event_dispatcher_listeners[event].each do |m|
-            m.call(*args) if m.respond_to? :call
-          end
-        end
-      end
+
     end
     # namespace end
   end

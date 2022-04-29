@@ -3,6 +3,8 @@ module Watobo #:nodoc: all
 
   class Project
 
+    include Watobo::Subscriber
+
     attr :chats
     attr_accessor :findings
     attr :scan_settings
@@ -20,17 +22,6 @@ module Watobo #:nodoc: all
 
     attr :target_filter
 
-    def subscribe(event, &callback)
-      (@event_dispatcher_listeners[event] ||= []) << callback
-    end
-
-    def notify(event, *args)
-      if @event_dispatcher_listeners[event]
-        @event_dispatcher_listeners[event].each do |m|
-          m.call(*args) if m.respond_to? :call
-        end
-      end
-    end
 
     def sessionSettingsFile
       @session_file
@@ -411,7 +402,7 @@ module Watobo #:nodoc: all
       #setDefaults()
 
       # reset counters
-      Watobo::Chat.resetCounters
+      #Watobo::Chat.resetCounters
       Watobo::Finding.resetCounters
 
       # UPDATE SETTINGS

@@ -188,7 +188,7 @@ module Watobo #:nodoc: all
         alias_method :add_header, :addHeader
 
         def removeURI
-          if self.first =~ /(^[^[:space:]]{1,}) (https?:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}\/)/ then
+          if self.first =~ /(^[^[:space:]]{1,}) (https?:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}(\/)?)/ then
             uri = $2
             self.first.gsub!(/(^[^[:space:]]{1,}) (#{Regexp.quote(uri)})/, "\\1 /")
             # puts "* Removed URI: #{uri}"
@@ -199,6 +199,7 @@ module Watobo #:nodoc: all
           end
           #self.first.gsub!(/^(.*)(https?:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}\/)/,"\\1/")
         end
+        alias :remove_uri :removeURI
 
         def removeBody
           self.pop if self[-2].strip.empty?
@@ -237,6 +238,7 @@ module Watobo #:nodoc: all
           end
           #self.first.gsub!(/^(.*)(https?:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}\/)/,"\\1/")
         end
+        alias :restore_uri :restoreURI
 
         #
         # R E M O V E _ H E A D E R

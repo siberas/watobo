@@ -1,48 +1,41 @@
 # @private
 module Watobo #:nodoc: all
-  class Chats
-    @chats = []
-    @uniq_chats = {}
-    @chats_lock = Mutex.new
-    @event_dispatcher_listeners = Hash.new
+  class ChatsClazz
 
+    include Watobo::Subscriber
 
-    def self.subscribe(event, &callback)
-      (@event_dispatcher_listeners[event] ||= []) << callback
+    def initialize
+      @chats = []
+      @uniq_chats = {}
+      @chats_lock = Mutex.new
+      @event_dispatcher_listeners = Hash.new
     end
 
-    def self.clearEvents(event)
-      @event_dispatcher_listeners[event] ||= []
-      @event_dispatcher_listeners[event].clear
-    end
-
-    def self.notify(event, *args)
-      if @event_dispatcher_listeners[event]
-        @event_dispatcher_listeners[event].each do |m|
-          m.call(*args) if m.respond_to? :call
-        end
-      end
-    end
-
-    def self.clear_uniq
+    def clear_uniq
       @uniq_chats = {}
     end
 
-    def self.reset
+    def reset
       @chats = []
       @event_dispatcher_listeners = Hash.new
     end
 
-    def self.load_marshaled(dir, ext: 'mrs')
-      @chats = []
-      Dir.glob("#{dir}/*.#{ext}") do |f|
-        @chats << Watobo::Utils.loadChatMarshal(f)
+
+    def load_marshaled(dir, ext: 'mr*', &block)
+      @chats_lock.synchronize do
+        @chats = []
+        Dir.glob("#{dir}/*.#{ext}") do |f|
+          chat = Watobo::Utils.loadChatMarshal(f)
+          yield chat if block_given?
+          @chats << chat
+        end
       end
+      true
     end
 
 
     # find_by_url
-    def self.find_by_url(site, pattern, opts = {}, &block)
+    def find_by_url(site, pattern, opts = {}, &block)
       o = {
           :method => nil,
           :max_count => 0,
@@ -79,7 +72,7 @@ module Watobo #:nodoc: all
     end
 
     # selects all chats containing a request param <name>
-    def self.with_param(name, *location, &block)
+    def with_param(name, *location, &block)
       cwp = []
       @chats.each do |c|
         ps = c.request.parameters *location
@@ -96,7 +89,7 @@ module Watobo #:nodoc: all
 
     # select chats by request options
     #
-    def self.select(site, opts = {}, &block)
+    def select(site, opts = {}, &block)
       o = {
           :dir => "",
           #:file => nil,
@@ -132,7 +125,7 @@ module Watobo #:nodoc: all
 
     end
 
-    def self.sites(prefs = {}, &block)
+    def sites(prefs = {}, &block)
       list = Hash.new
 
       cprefs = {:in_scope => false,
@@ -163,7 +156,7 @@ module Watobo #:nodoc: all
 
     # @return [Array] list of directory names
     #
-    def self.dirs(site, list_opts = {}, &block)
+    def dirs(site, list_opts = {}, &block)
       opts = {:base_dir => "",
               :include_subdirs => true,
               :recursive => false
@@ -202,10 +195,10 @@ module Watobo #:nodoc: all
       dir_list.sort_by { |dir| dir.length }
     end
 
-    def self.get_by_id(chatid)
+    def get_by_id(chatid)
       @chats_lock.synchronize do
         @chats.each do |c|
-          if c.id.to_s == chatid.to_s then
+          if c.id.to_i == chatid.to_i then
             return c
           end
         end
@@ -213,7 +206,7 @@ module Watobo #:nodoc: all
       return nil
     end
 
-    def self.get_by_response(response)
+    def get_by_response(response)
       @chats_lock.synchronize do
         @chats.each do |c|
           if c.response.object_id == response.object_id
@@ -224,7 +217,7 @@ module Watobo #:nodoc: all
       return nil
     end
 
-    def self.get_by_request(request)
+    def get_by_request(request)
       @chats_lock.synchronize do
         @chats.each do |c|
           if c.request.object_id == request.object_id
@@ -235,7 +228,7 @@ module Watobo #:nodoc: all
       return nil
     end
 
-    def self.each(&block)
+    def each(&block)
       if block_given?
         @chats_lock.synchronize do
           @chats.map { |c| yield c }
@@ -243,11 +236,15 @@ module Watobo #:nodoc: all
       end
     end
 
-    def self.to_a
-      @chats
+    def to_a
+      a = []
+      @chats_lock.synchronize do
+        a = @chats.clone
+      end
+      a
     end
 
-    def self.length
+    def length
       l = 0
       @chats_lock.synchronize do
         l = @chats.length
@@ -255,36 +252,41 @@ module Watobo #:nodoc: all
       l
     end
 
-    def self.request_header_names(&block)
+    alias :size :length
+
+    def request_header_names(&block)
       headers = []
-      @chats.each do |chat|
-        chat.request.header_names do |header|
-          unless headers.include?(header)
-            headers << header
-            yield header if block_given?
+      @chats_lock.synchronize do
+        @chats.each do |chat|
+          chat.request.header_names do |header|
+            unless headers.include?(header)
+              headers << header
+              yield header if block_given?
+            end
           end
         end
       end
       headers
     end
 
-    def self.in_scope(&block)
+    def in_scope(&block)
       scan_prefs = Watobo::Conf::Scanner.to_h
       #puts scan_prefs.to_yaml
       unique_list = Hash.new
       cis = []
+      @chats_lock.synchronize do
+        @chats.each do |chat|
+          next if scan_prefs[:excluded_chats].include?(chat.id)
+          uch = chat.request.uniq_hash
 
-      @chats.each do |chat|
-        next if scan_prefs[:excluded_chats].include?(chat.id)
-        uch = chat.request.uniq_hash
+          next if uch.nil?
 
-        next if uch.nil?
-
-        next if unique_list.has_key?(uch) and scan_prefs[:smart_scan] == true
-        unique_list[uch] = nil
-        if Watobo::Scope.match_chat? chat
-          cis << chat
-          yield chat if block_given?
+          next if unique_list.has_key?(uch) and scan_prefs[:smart_scan] == true
+          unique_list[uch] = nil
+          if Watobo::Scope.match_chat? chat
+            cis << chat
+            yield chat if block_given?
+          end
         end
       end
       cis
@@ -293,7 +295,7 @@ module Watobo #:nodoc: all
     # only returns/yields chats wich match filter
     #
     #
-    def self.filtered(filter, &block)
+    def filtered(filter, &block)
       #puts filter.to_yaml
       @uniq_chats = {}
       filtered_chats = []
@@ -308,46 +310,47 @@ module Watobo #:nodoc: all
     end
 
 
-    def self.set(chats)
+    def set(chats)
       @chats_lock.synchronize do
         @chats = chats
+        @chats.compact!
       end
     end
 
-    def self.add(chat, prefs = {})
-      @chats_lock.synchronize do
-        begin
-          if chat.request.host then
+    def add(chat, prefs = {})
+      options = {
+          :run_passive_checks => true,
+          :notify => true
+      }
+      options.update prefs
+
+
+      begin
+        if chat.request.host then
+
+          @chats_lock.synchronize {
+            chat.set_id @chats.size + 1
             @chats << chat
+          }
 
-            options = {
-                :run_passive_checks => true,
-                :notify => true
-            }
-            options.update prefs
+          notify(:chat_added, chat) if options[:notify] == true
 
-            Watobo::PassiveScanner.add(chat) if options[:run_passive_checks] == true
-            # puts "[#{self}] add"
-
-            #@interface.addChat(self, chat) if @interface
-            notify(:new, chat) if options[:notify] == true
-
-            if chat.id != 0 then
-              Watobo::DataStore.add_chat(chat)
-            else
-              puts "!!! Could not add chat #{chat.id}"
-            end
+          if chat.id > 0 then
+            Watobo::DataStore.add_chat(chat)
+          else
+            puts "!!! Wrong chat.id! must be > 0 #{chat.id}"
           end
-
-            # p "!P!"
-        rescue => bang
-          puts bang
-          puts bang.backtrace if $DEBUG
         end
+
+          # p "!P!"
+      rescue => bang
+        puts bang
+        puts bang.backtrace if $DEBUG
       end
+
     end
 
-    def self.match?(chat, filter)
+    def match?(chat, filter)
       begin
         @uniq_chats ||= {}
         if filter[:unique]
@@ -435,4 +438,7 @@ module Watobo #:nodoc: all
       false
     end
   end
+
+  Chats = ChatsClazz.new
+
 end

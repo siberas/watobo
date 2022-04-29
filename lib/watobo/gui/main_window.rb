@@ -1905,7 +1905,7 @@ module Watobo #:nodoc: all
           end
         }
 
-        Watobo::Chats.subscribe(:new) { |c|
+        Watobo::Chats.subscribe(:chat_added) { |c|
           Watobo.save_thread do
             addChat(c)
           end
@@ -2109,6 +2109,7 @@ module Watobo #:nodoc: all
       end
 
       def purge_findings(findings)
+        binding.pry
         findings.each do |f|
           Watobo::Findings.delete(f)
         end

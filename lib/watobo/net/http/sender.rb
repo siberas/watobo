@@ -42,6 +42,10 @@ module Watobo
           Proxy.new ps
         end
 
+        def on_header(&block)
+          @on_header_cb = block
+        end
+
 
         def initialize(request, prefs = {})
           @socket = nil
@@ -63,6 +67,8 @@ module Watobo
           # set/overwrite proxy if set by environent WATOBO_PROXY
           @proxy = env_proxy if env_proxy?
 
+          @on_header_cb = nil
+
         end
 
         def exec
@@ -77,6 +83,8 @@ module Watobo
 
             header = read_header(socket)
 
+            do_header header
+
             response = read_body(socket, header)
             t_end = Process.clock_gettime(Process::CLOCK_REALTIME)
 
@@ -84,9 +92,9 @@ module Watobo
 
             response.unzip!
 
-          rescue Net::ReadTimeout
+          rescue ::Net::ReadTimeout => bang
             t_end = Process.clock_gettime(Process::CLOCK_REALTIME)
-
+            response = error_response bang unless response
           rescue => bang
             response = error_response bang
             error = bang
@@ -103,12 +111,18 @@ module Watobo
               error: error
           }
 
-          response.update_meta meta
+          response.update_meta meta if response
+
+
           return request, response
         end
 
         private
 
+        # callback
+        def do_header(header)
+          @on_header_cb.call(header) if @on_header_cb
+        end
 
         def connect_proxy
 
@@ -140,16 +154,17 @@ module Watobo
 
         def send(sock, request)
           # remove URI before sending request but cache it for restoring request
-          uri_cache = request.removeURI unless proxy?
+          uri_cache = request.remove_uri unless proxy?
           data = request.join
 
           unless request.has_body?
             data << "\r\n" unless data =~ /\r\n\r\n$/
           end
 
+          #puts "+ send:\n#{data}"
           sock.write data
 
-          request.restoreURI(uri_cache) unless proxy?
+          request.restore_uri(uri_cache) unless proxy?
 
           request
         end
@@ -157,12 +172,13 @@ module Watobo
 
         def read_header(sock)
           h = []
+          #puts '+ read header ...'
           # read first response line and add CRLF because .readline removed it
           h << sock.readline + "\r\n"
           while true
             line = sock.readuntil("\n", true) #.sub(/\s+\z/, '')
             h << line
-            break if line.empty?
+            break if line.strip.empty?
           end
           Watobo::Response.new(h)
         end
@@ -272,7 +288,6 @@ module Watobo
           er << "Date: #{Time.now.to_s}\r\n"
           er << "Content-Length: 0\r\n"
           er << "Content-Type: text/html\r\n"
-          er << "Connection: close\r\n"
           er << "\r\n"
           er << "<html><head><title>Watobo Error</title></head><body><H1>#{error.to_s}</H1></br><H2>#{error.backtrace.to_s.gsub(/\r?\n/, "</br>")}</H2></body></html>"
 
@@ -327,12 +342,22 @@ if $0 == __FILE__
   $: << inc_path
 
   require 'watobo'
+  # require 'net/http'
 
   prefs = {timeout: 10}
   req = Watobo::Request.new ARGV[0]
+  puts "Request:"
+  puts req.join
   sender = Watobo::Net::Http::Sender.new req, prefs
+  sender.on_header do |header|
+    puts "[callback] on_header >>\nHeader loaded:"
+    puts header.join
+    puts '<<<'
+  end
+
+  puts '+ send request ...'
   req, res = sender.exec
-  puts res
+  #puts res
   puts '-- META ---'
   puts res.meta.to_json
 

@@ -19,6 +19,12 @@ module Watobo#:nodoc: all
       @details[:id]
     end
 
+    # @return fid [String], which is a uniq hash based on uniqu finding parameters
+    # necessary to find similar findings and prevent double logging/storing of same findings
+    def fid()
+      @details[:fid]
+    end
+
     # return severity score 0 (none) - 10 (critical)
     def severity
       return 0.0 unless !!@details[:type]
@@ -39,17 +45,7 @@ module Watobo#:nodoc: all
     end
 
     def type_str
-      s = case @details[:type]
-          when FINDING_TYPE_INFO
-            'info'
-          when FINDING_TYPE_HINT
-            'hint'
-          when FINDING_TYPE_VULN
-            'vulnerability'
-          else
-            'n/a'
-          end
-      s
+      Watobo::Findings.type_str @details[:type]
     end
 
     def false_positive?
@@ -99,9 +95,6 @@ module Watobo#:nodoc: all
         @@numFindings += 1
 
       }
-    #  extendRequest()
-    #  extendResponse()
-
     end
 
   end

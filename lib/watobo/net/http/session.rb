@@ -8,6 +8,7 @@ module Watobo
         include Watobo::Subscriber
 
         attr :settings, :sid_cache, :ott_cache
+        attr_accessor :timeout
 
         DEFAULT_PREFS = {
             logout_signatures: [],
@@ -39,6 +40,8 @@ module Watobo
             @settings[pk] = prefs.has_key?(pk) ? prefs[pk] : DEFAULT_PREFS[pk]
           end
 
+          @timeout = @settings[:timeout]
+
           # update_instance_vars(@settings)
           define_getters(@settings)
 
@@ -51,17 +54,12 @@ module Watobo
           request = orig.copy
 
           cprefs = @settings.clone
+          # overwrite :timeout with controllable value
+          cprefs[:timeout] = timeout
           # get client certificate from ClientCertStore
           cprefs[:client_certificate] = Watobo::ClientCertStore.get request.site
           cprefs.update prefs
 
-
-          execute_request(request, cprefs)
-        end
-
-        # execute_request is just a split of doRequest, so that it's easier to overwrite doRequest inside
-        # ActiveCheck, which is necessary for making the ActiveChecks controllable by the scanner
-        def execute_request(request, cprefs)
           if request.method =~ /(post|put)/i
             request.fix_content_length
           else
@@ -109,6 +107,9 @@ module Watobo
 
         def define_getters(settings)
           settings.each_key do |name|
+            # skip timeout because it's a special variable
+            next if name.to_s.downcase == 'timeout'
+
             define_singleton_method(name) do
               return nil unless instance_variable_defined?("@settings")
               settings = instance_variable_get("@settings")
