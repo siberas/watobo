@@ -29,6 +29,12 @@ EOF
               :measure => measure
           )
 
+          # todo: better injection for other languages
+=begin
+>>> cmd = "exec('import os; out = os.popen(\"id\").read(); print(out)')"
+>>> eval(cmd)
+=end
+
           def initialize(project, prefs = {})
             super(project, prefs)
 

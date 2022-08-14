@@ -72,7 +72,7 @@ module Watobo #:nodoc: all
         ]
     }
 
-    unless Watobo::CA.ca_ready? || ENV['WATOBO_PROXY'] =~ /false/i then
+    if !Watobo::CA.ca_ready? && !ENV['WATOBO_PROXY'].to_s =~ /(false|off)/i then
       Dir.mkdir(@ca_config[:CA_dir])
       Dir.mkdir @ca_config[:private_dir]
       Dir.mkdir @ca_config[:fake_certs_dir]

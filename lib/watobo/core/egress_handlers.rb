@@ -56,7 +56,7 @@ module Watobo#:nodoc: all
       return nil if name.nil?
       return nil if name.strip.empty?
 
-      puts "+ create EgressHandler #{cprefs[:egress_handler]}" if $DEBUG
+      puts "+ create EgressHandler #{name}" if $DEBUG
 
       fkey = name.to_sym
       return nil unless @handlers.has_key? fkey

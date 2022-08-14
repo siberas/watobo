@@ -4,6 +4,7 @@ module Watobo
   module Net
     module Http
       class Sender < ::Net::Protocol
+        attr_accessor :sni_host
 
         include Net
 
@@ -15,6 +16,7 @@ module Watobo
             # user and pass for Basic Auth
             :username => nil,
             :password => nil,
+            :sni_host => nil,
             :timeout => 60,
             :write_timeout => 60
         }
@@ -34,6 +36,8 @@ module Watobo
         def env_proxy
           return nil unless ENV['WATOBO_PROXY']
           uri = URI.parse ENV['WATOBO_PROXY']
+          return nil unless uri.host
+          return nil unless uri.port
           ps = {
               name: 'env',
               host: uri.host,
@@ -46,18 +50,23 @@ module Watobo
           @on_header_cb = block
         end
 
+        def on_ssl_connect(&block)
+          @on_ssl_connect_cb = block
+        end
+
 
         def initialize(request, prefs = {})
           @socket = nil
           @ctx = OpenSSL::SSL::SSLContext.new()
           @ctx.key = nil
           @ctx.cert = nil
-          @request = request
+          @request = request.is_a?(String) ? Watobo::Request.new(request) : request
 
           @prefs = {}
           DEFAULT_PREFS.keys.each do |pk|
             @prefs[pk] = prefs.has_key?(pk) ? prefs[pk] : DEFAULT_PREFS[pk]
           end
+          @sni_host = prefs[:sni_host]
 
           @read_timeout = @prefs[:timeout]
           @write_timeout = @prefs[:write_timeout]
@@ -68,6 +77,7 @@ module Watobo
           @proxy = env_proxy if env_proxy?
 
           @on_header_cb = nil
+          @on_ssl_connect_cb = nil
 
         end
 
@@ -122,6 +132,10 @@ module Watobo
         # callback
         def do_header(header)
           @on_header_cb.call(header) if @on_header_cb
+        end
+
+        def do_ssl_connect(sock)
+          @on_ssl_connect_cb.call(sock) if @on_ssl_connect_cb
         end
 
         def connect_proxy
@@ -260,7 +274,7 @@ module Watobo
             s.sync_close = true
             # need hostname for SNI (Server Name Indication)
             # http://en.wikipedia.org/wiki/Server_Name_Indication
-            s.hostname = @request.host #if s.respond_to?(:hostname=) && ssl_host_address
+            s.hostname = @sni_host ? @sni_host : @request.host #if s.respond_to?(:hostname=) && ssl_host_address
 
             if @ssl_session and
                 Process.clock_gettime(Process::CLOCK_REALTIME) < @ssl_session.time.to_f + @ssl_session.timeout
@@ -273,6 +287,9 @@ module Watobo
               s.post_connection_check(@address)
             end
             # debug "SSL established, protocol: #{s.ssl_version}, cipher: #{s.cipher[0]}"
+
+            # call on_ssl_connect callback if present
+            do_ssl_connect s
           end
           @socket = ::Net::BufferedIO.new(s, read_timeout: @read_timeout,
                                           write_timeout: @write_timeout,
@@ -346,19 +363,45 @@ if $0 == __FILE__
 
   prefs = {timeout: 10}
   req = Watobo::Request.new ARGV[0]
+  if ARGV.length > 1
+    ARGV[1..-1].each do |arg|
+      puts arg
+      k,v = arg.split('=')
+      next if v.nil?
+      prefs[k.to_sym] = v
+    end
+  end
   puts "Request:"
   puts req.join
   sender = Watobo::Net::Http::Sender.new req, prefs
   sender.on_header do |header|
-    puts "[callback] on_header >>\nHeader loaded:"
+    puts "\n\n[callback] on_header >>\nHeader loaded:"
     puts header.join
     puts '<<<'
   end
+
+  sender.on_ssl_connect do |ssl|
+    puts "\n\n[callback] on_ssl_connect"
+    alt_names = []
+    ssl.peer_cert.extensions.each do |e|
+      ext = e.to_h
+      alt_names << ext['value'] if ext['oid'] =~ /subjectaltname/i
+
+    end
+    puts alt_names
+  end
+  puts
 
   puts '+ send request ...'
   req, res = sender.exec
   #puts res
   puts '-- META ---'
   puts res.meta.to_json
+
+  puts res.content_type
+ c = Nokogiri::HTML res.body.to_s
+  puts c.css('title')
+  #binding.pry
+
 
 end

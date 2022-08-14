@@ -44,6 +44,7 @@ module Watobo #:nodoc: all
     # array[1] contains the MD5 hash (hexdigest)
     def self.responseHash(request, response)
       begin
+        return nil if request.nil? || response.nil?
         if request.body and response.body then
           body = response.body.dup
 

@@ -37,7 +37,7 @@ module Watobo#:nodoc: all
   def self.init_passive_modules(filter='')
     # puts "get passive modules from path #{@settings[:module_path]}/passive"
     passive_modules = []
-
+    
     Dir["#{Watobo.passive_module_path}/*.rb"].each do |mod_file|
       begin
         mod = File.basename(mod_file)

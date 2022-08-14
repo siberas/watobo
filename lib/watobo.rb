@@ -85,42 +85,9 @@ require 'watobo/scanner4'
 
 
 require 'watobo/transformers/multipart'
+require 'watobo/environment'
 
 
-# WORKAROUND FOR LINUX :(
-#dont_know_why_REQUIRE_hangs = Mechanize.new
-
-# @private 
-module Watobo #:nodoc: all #:nodoc: all
-
-  VERSION = "1.1.0pre"
-
-  def self.base_directory
-    @base_directory ||= ""
-    @base_directory = File.expand_path(File.join(File.dirname(__FILE__), ".."))
-  end
-
-  def self.plugin_path
-    @plugin_directory ||= ""
-    @plugin_directory = File.join(base_directory, "plugins")
-  end
-
-  def self.active_module_path
-    @active_module_path = ""
-    @active_path = File.join(base_directory, "modules", "active")
-  end
-
-  def self.passive_module_path
-    @passive_module_path = ""
-    @passive_path = File.join(base_directory, "modules", "passive")
-  end
-
-  def self.version
-    Watobo::VERSION
-  end
-
-
-end
 
 Watobo.init_framework
 

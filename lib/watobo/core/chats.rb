@@ -134,6 +134,8 @@ module Watobo #:nodoc: all
       cprefs.update prefs
 
       Watobo::Chats.each do |chat|
+        next if chat.request.nil?
+
         next if list.has_key?(chat.request.site)
         site = chat.request.site
 

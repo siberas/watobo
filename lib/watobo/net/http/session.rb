@@ -10,6 +10,9 @@ module Watobo
         attr :settings, :sid_cache, :ott_cache
         attr_accessor :timeout
 
+        @@login_mutex = Mutex.new
+        @@login_cv = ConditionVariable.new
+
         DEFAULT_PREFS = {
             logout_signatures: [],
             logout_content_types: Hash.new,
@@ -50,10 +53,14 @@ module Watobo
 
         end
 
-        def doRequest(orig, prefs)
+        def runLogin(chat_list, prefs = {}, &block)
+          # TODO
+        end
+
+        def doRequest(orig, prefs = {})
           request = orig.copy
 
-          cprefs = @settings.clone
+          cprefs = @settings ? @settings.clone : {}
           # overwrite :timeout with controllable value
           cprefs[:timeout] = timeout
           # get client certificate from ClientCertStore

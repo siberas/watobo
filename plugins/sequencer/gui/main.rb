@@ -72,6 +72,7 @@ module Watobo #:nodoc: all
             @log = FXCheckButton.new(top_frame, "log", nil, 0, JUSTIFY_LEFT | JUSTIFY_TOP | ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
             @log.checkState = true
             @sender.logging = true
+
             @log.connect(SEL_COMMAND) do
               @sender.logging = @log.checked? ? true : false
             end
@@ -95,7 +96,9 @@ module Watobo #:nodoc: all
             end
 
             @list_frame.subscribe(:send_element) do |element|
-              @sender.do_request(element)
+              #@sender.do_request(element)
+              prefs = { logging: @log.checked? }
+              element.exec prefs
             end
 
             @list_frame.subscribe(:element_selected) { |element|

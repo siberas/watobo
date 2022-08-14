@@ -4,6 +4,7 @@ module Watobo
       class Element
 
         include Watobo::Mixins::RequestParser
+        include Watobo::Constants
 
 
         attr :name
@@ -53,10 +54,55 @@ module Watobo
           @egress_handler = nil
           @enabled = true
           @sequence = sequence
+          @sender = Watobo::Session.new
+
           %w( name request pre_script post_script enable egress_handler ).each do |e|
             instance_variable_set("@#{e}", prefs[e.to_sym])
           end
         end
+
+        def exec(nprefs={}, &block)
+          begin
+            request = to_request
+
+
+
+            prefs = { logging: false}
+            prefs.update nprefs
+
+            unless pre_script.nil? or pre_script.empty?
+              #f = eval(element.pre_script)
+              #f.call(request) if f.respond_to? :call
+              run_pre(request)
+            end
+
+            yield request if block_given?
+
+            if egress_handler.respond_to? :length
+              unless egress_handler.empty?
+                prefs[:egress_handler] = egress_handler
+              end
+            end
+
+            test_req, response = @sender.doRequest(request, prefs)
+
+            unless post_script.nil? or post_script.empty?
+              #f = eval(element.post_script)
+              #f.call(response) if f.respond_to? :call
+              run_post(request, response)
+            end
+
+            chat = Watobo::Chat.new(test_req, response, :source => CHAT_SOURCE_SEQUENCER, :run_passive_checks => false)
+
+            Watobo::Chats.add(chat) if prefs[:logging] == true
+          rescue => bang
+            puts bang
+            puts bang.backtrace if $DEBUG
+            binding.pry if $DEBUG
+          end
+          return nil
+        end
+
 
         def method_missing?(name, *args, &block)
           v = @sequence.vars[name.downcase]

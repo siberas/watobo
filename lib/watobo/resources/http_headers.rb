@@ -113,5 +113,5 @@ X-Wap-Profile
 X-XSRF-TOKEN
             )
 
-  puts "HTTP HEADERS: " + HTTP_HEADERS.length.to_s
+    # puts "HTTP HEADERS: " + HTTP_HEADERS.length.to_s
 end

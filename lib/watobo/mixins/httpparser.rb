@@ -63,6 +63,7 @@ module Watobo #:nodoc: all
         # returns a string containing all urlparms
         # e.g. "parm1=first&parm2=second"
         def urlparms
+          return '' if self.first.nil?
           begin
             off = self.first.index('?')
             return nil if off.nil?
@@ -74,7 +75,7 @@ module Watobo #:nodoc: all
             puts bang
             puts bang.backtrace if $DEBUG
           end
-          return nil
+          return ''
         end
 
         def method
@@ -266,6 +267,7 @@ module Watobo #:nodoc: all
 
         # get_parms returns an array of parm=value
         def get_parms
+          return [] if self.first.nil?
           begin
             off = self.first.index('?')
             return [] if off.nil?

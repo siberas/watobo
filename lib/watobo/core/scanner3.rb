@@ -100,7 +100,7 @@ module Watobo #:nodoc: all
             end
             if relogin_count > 5
               puts "Maximum Relogin Count reached ... giving up :("
-            Thread.exit
+              Thread.exit
             end
             relogin_count = 0
           end

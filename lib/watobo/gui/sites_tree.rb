@@ -187,6 +187,7 @@ module Watobo#:nodoc: all
       # end
       def addChatItem(chat)
 
+        return if chat.request.nil? || chat.response.nil?
         site = self.findItem(chat.request.site, nil, SEARCH_FORWARD|SEARCH_IGNORECASE)
 
         if not site then
