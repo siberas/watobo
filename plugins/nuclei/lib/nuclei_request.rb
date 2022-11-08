@@ -57,7 +57,7 @@ module Watobo #:nodoc: all
           @collection = []
           @payload = payload
 
-          binding.pry
+          # binding.pry
 
           @responses = []
 

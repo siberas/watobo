@@ -3,7 +3,7 @@
 
 module Watobo #:nodoc: all
   module CA
-    @cadir = ENV['WATOBO_CA'] ? File.join(ENV['WATOBO_CA']) : File.join(Watobo.working_directory, "CA")
+    @cadir = ENV['WATOBO_CA'] ? ENV['WATOBO_CA'] : File.join(Watobo.working_directory, "CA")
     @crl_dir = File.join(@cadir, "crl")
     @hostname = %x('hostname').strip
     @hostname = "watobo" if @hostname.empty?
@@ -72,8 +72,8 @@ module Watobo #:nodoc: all
         ]
     }
 
-    if !Watobo::CA.ca_ready? && !ENV['WATOBO_PROXY'].to_s =~ /(false|off)/i then
-      Dir.mkdir(@ca_config[:CA_dir])
+    if !Watobo::CA.ca_ready? && !ENV['WATOBO_PROXY']
+      FileUtils.mkdir_p(@ca_config[:CA_dir])
       Dir.mkdir @ca_config[:private_dir]
       Dir.mkdir @ca_config[:fake_certs_dir]
       Dir.mkdir @ca_config[:crl_dir]

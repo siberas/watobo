@@ -31,10 +31,10 @@ module Watobo #:nodoc: all
 
         if prefs[:run_login] == true
           unless login_chats = Watobo::Conf::Scanner.login_chat_ids.nil?
-            login_chats = Watobo::Conf::Scanner.login_chat_ids.uniq.map {|id| Watobo::Chats.get_by_id(id)}
+            login_chats = Watobo::Conf::Scanner.login_chat_ids.uniq.map { |id| Watobo::Chats.get_by_id(id) }
             #  puts "running #{login_chats.length} login requests"
             #  puts login_chats.first.class
-            runLogin(login_chats, prefs) do |request,response|
+            runLogin(login_chats, prefs) do |request, response|
               current_chat = Watobo::Chat.new(request, response, :source => CHAT_SOURCE_MANUAL, :run_passive_checks => false)
 
               Watobo::Chats.add(current_chat)
@@ -119,7 +119,7 @@ module Watobo #:nodoc: all
       end
 
       def onBtnQuickScan(sender, sel, item)
-        dlg_prefs = { :target_chat => @chat, :enable_one_time_tokens => @updateCSRF.checked? }
+        dlg_prefs = {:target_chat => @chat, :enable_one_time_tokens => @updateCSRF.checked?}
         egress_handler = @egress.checked? ? @egress_handlers.getItem(@egress_handlers.currentItem) : ''
         dlg_prefs[:egress_handler] = egress_handler
 
@@ -244,7 +244,7 @@ module Watobo #:nodoc: all
         @tabBook.current = 1
       end
 
-      def showHistory(dist=0, pos=nil)
+      def showHistory(dist = 0, pos = nil)
         if @history.length > 0
 
           current_pos = @history_pos_dt.value
@@ -252,10 +252,10 @@ module Watobo #:nodoc: all
           new_pos = 1 if new_pos <= 0
           new_pos = @history.length if new_pos > @history.length
 
-          @req_builder.setRequest(@history[new_pos-1].raw_request)
+          @req_builder.setRequest(@history[new_pos - 1].raw_request)
           @req_builder.highlight("(%%[^%]*%%)")
 
-          @response_viewer.setText(@history[new_pos-1].response)
+          @response_viewer.setText(@history[new_pos - 1].response)
 
           @history_pos_dt.value = new_pos
           @history_pos.handle(self, FXSEL(SEL_UPDATE, 0), nil)
@@ -288,7 +288,7 @@ module Watobo #:nodoc: all
           @egress.enable
           @egress_handlers.enable
           #@egress_btn.enable
-          Watobo::EgressHandlers.list {|h|
+          Watobo::EgressHandlers.list { |h|
             @egress_handlers.appendItem(h.to_s, nil)
           }
         end
@@ -353,18 +353,18 @@ module Watobo #:nodoc: all
           #framFXVerticalFrame.new(mr_splitter, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
 
           # top = FXHorizontalFrame.new(mr_splitter, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|LAYOUT_SIDE_BOTTOM)
-          top_frame = FXVerticalFrame.new(self, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y||LAYOUT_FIX_HEIGHT|LAYOUT_BOTTOM, :height => 500)
-          top_splitter = FXSplitter.new(top_frame, LAYOUT_FILL_X|SPLITTER_HORIZONTAL|LAYOUT_FILL_Y|SPLITTER_TRACKING)
+          top_frame = FXVerticalFrame.new(self, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y || LAYOUT_FIX_HEIGHT | LAYOUT_BOTTOM, :height => 500)
+          top_splitter = FXSplitter.new(top_frame, LAYOUT_FILL_X | SPLITTER_HORIZONTAL | LAYOUT_FILL_Y | SPLITTER_TRACKING)
 
-         # log_frame = FXVerticalFrame.new(mr_splitter, :opts => LAYOUT_FILL_X|LAYOUT_SIDE_BOTTOM, :height => 100)
+          # log_frame = FXVerticalFrame.new(mr_splitter, :opts => LAYOUT_FILL_X|LAYOUT_SIDE_BOTTOM, :height => 100)
 
           #LAYOUT_FILL_X in combination with LAYOUT_FIX_WIDTH
 
-          req_editor = FXVerticalFrame.new(top_splitter, :opts => LAYOUT_FILL_X|LAYOUT_FIX_WIDTH|LAYOUT_FILL_Y|FRAME_GROOVE, :width => 400, :height => 500)
+          req_editor = FXVerticalFrame.new(top_splitter, :opts => LAYOUT_FILL_X | LAYOUT_FIX_WIDTH | LAYOUT_FILL_Y | FRAME_GROOVE, :width => 400, :height => 500)
 
           req_edit_header = FXHorizontalFrame.new(req_editor, :opts => LAYOUT_FILL_X)
 
-          @req_builder = RequestBuilder.new(req_editor, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
+          @req_builder = RequestBuilder.new(req_editor, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y, :padding => 0)
           @req_builder.subscribe(:hotkey_ctrl_s) {
             simulatePressSendBtn()
             sendManualRequest()
@@ -374,23 +374,23 @@ module Watobo #:nodoc: all
             sendManualRequest()
           }
 
-          @req_builder.subscribe(:error) {|msg| logger(msg)}
+          @req_builder.subscribe(:error) { |msg| logger(msg) }
 
           @req_builder.setRequest(@original_request)
 
           history_navigation = FXHorizontalFrame.new(req_edit_header, :opts => FRAME_NONE)
           FXLabel.new(history_navigation, "History:", :opts => LAYOUT_CENTER_Y)
-          hback = FXButton.new(history_navigation, "<", nil, nil, 0, FRAME_RAISED|FRAME_THICK)
+          hback = FXButton.new(history_navigation, "<", nil, nil, 0, FRAME_RAISED | FRAME_THICK)
           @history_pos_dt = FXDataTarget.new(0)
-          @history_pos = FXTextField.new(history_navigation, 2, @history_pos_dt, FXDataTarget::ID_VALUE, :opts => LAYOUT_FILL_X|FRAME_GROOVE|FRAME_SUNKEN)
+          @history_pos = FXTextField.new(history_navigation, 2, @history_pos_dt, FXDataTarget::ID_VALUE, :opts => LAYOUT_FILL_X | FRAME_GROOVE | FRAME_SUNKEN)
           @history_pos.justify = JUSTIFY_RIGHT
           @history_pos.handle(self, FXSEL(SEL_UPDATE, 0), nil)
 
-          hback.connect(SEL_COMMAND) {showHistory(-1)}
-          hnext = FXButton.new(history_navigation, ">", nil, nil, 0, FRAME_RAISED|FRAME_THICK)
-          hnext.connect(SEL_COMMAND) {showHistory(1)}
+          hback.connect(SEL_COMMAND) { showHistory(-1) }
+          hnext = FXButton.new(history_navigation, ">", nil, nil, 0, FRAME_RAISED | FRAME_THICK)
+          hnext.connect(SEL_COMMAND) { showHistory(1) }
 
-          hd = FXButton.new(history_navigation, "hex", nil, nil, 0, FRAME_RAISED|FRAME_THICK)
+          hd = FXButton.new(history_navigation, "hex", nil, nil, 0, FRAME_RAISED | FRAME_THICK)
           hd.connect(SEL_COMMAND) { binding.pry }
 
           menu = FXMenuPane.new(self)
@@ -399,49 +399,48 @@ module Watobo #:nodoc: all
           FXMenuCommand.new(menu, "-> Multi").connect(SEL_COMMAND, method(:trans2Multi))
           #  FXMenuCommand.new(menu, "POST <=> GET").connect(SEL_COMMAND, method(:switchMethod))
 
-          req_reset_button = FXButton.new(req_edit_header, "Reset", nil, nil, 0, FRAME_RAISED|FRAME_THICK|LAYOUT_RIGHT|LAYOUT_FILL_Y)
+          req_reset_button = FXButton.new(req_edit_header, "Reset", nil, nil, 0, FRAME_RAISED | FRAME_THICK | LAYOUT_RIGHT | LAYOUT_FILL_Y)
           req_reset_button.connect(SEL_COMMAND, method(:onRequestReset))
 
           # Button to pop menu
-          FXMenuButton.new(req_edit_header, "&Transform", nil, menu, (MENUBUTTON_DOWN|FRAME_RAISED|FRAME_THICK|ICON_AFTER_TEXT|LAYOUT_RIGHT|LAYOUT_FILL_Y))
+          FXMenuButton.new(req_edit_header, "&Transform", nil, menu, (MENUBUTTON_DOWN | FRAME_RAISED | FRAME_THICK | ICON_AFTER_TEXT | LAYOUT_RIGHT | LAYOUT_FILL_Y))
 
-          frame = FXHorizontalFrame.new(req_editor, :opts => LAYOUT_FILL_X|LAYOUT_SIDE_BOTTOM, :padding => 0)
-          req_options = FXVerticalFrame.new(frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
+          frame = FXHorizontalFrame.new(req_editor, :opts => LAYOUT_FILL_X | LAYOUT_SIDE_BOTTOM, :padding => 0)
+          req_options = FXVerticalFrame.new(frame, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y)
           #eq_options = FXVerticalFrame.new(frame, :opts => LAYOUT_FILL_X|LAYOUT_SIDE_BOTTOM)
 
           #opt = FXGroupBox.new(req_options, "Request Options", LAYOUT_SIDE_TOP|FRAME_GROOVE|LAYOUT_FILL_X, 0, 0, 0, 0)
 
-          @settings_tab = FXTabBook.new(req_options, nil, 0, LAYOUT_FILL_X|LAYOUT_FILL_Y|LAYOUT_RIGHT)
+          @settings_tab = FXTabBook.new(req_options, nil, 0, LAYOUT_FILL_X | LAYOUT_FILL_Y | LAYOUT_RIGHT)
 
           resp_tab = FXTabItem.new(@settings_tab, "Request Options", nil)
-          opt= FXVerticalFrame.new(@settings_tab, :opts => FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_FILL_Y)
+          opt = FXVerticalFrame.new(@settings_tab, :opts => FRAME_THICK | FRAME_RAISED | LAYOUT_FILL_X | LAYOUT_FILL_Y)
 
-          @updateContentLength = FXCheckButton.new(opt, "Update Content-Length", nil, 0, ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
+          @updateContentLength = FXCheckButton.new(opt, "Update Content-Length", nil, 0, ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
           @updateContentLength.checkState = true
 
-          @followRedirect = FXCheckButton.new(opt, "Follow Redirects", nil, 0, JUSTIFY_LEFT|JUSTIFY_TOP|ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
+          @followRedirect = FXCheckButton.new(opt, "Follow Redirects", nil, 0, JUSTIFY_LEFT | JUSTIFY_TOP | ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
           @followRedirect.checkState = false
 
-          eframe = FXHorizontalFrame.new(opt, :opts => FRAME_NONE|LAYOUT_FILL_X, :padding => 0)
-          @egress = FXCheckButton.new(eframe, "Egress", nil, 0, JUSTIFY_LEFT|JUSTIFY_CENTER_Y|ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
+          eframe = FXHorizontalFrame.new(opt, :opts => FRAME_NONE | LAYOUT_FILL_X, :padding => 0)
+          @egress = FXCheckButton.new(eframe, "Egress", nil, 0, JUSTIFY_LEFT | JUSTIFY_CENTER_Y | ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
 
 
-
-          @egress_handlers = FXComboBox.new(eframe, 5, nil, 0, COMBOBOX_STATIC|FRAME_SUNKEN|FRAME_THICK|LAYOUT_SIDE_TOP)
+          @egress_handlers = FXComboBox.new(eframe, 5, nil, 0, COMBOBOX_STATIC | FRAME_SUNKEN | FRAME_THICK | LAYOUT_SIDE_TOP)
           #@filterCombo.width =200
 
           @egress_handlers.numVisible = 0
           @egress_handlers.numColumns = 23
           @egress_handlers.editable = false
-          @egress_handlers.connect(SEL_COMMAND) {|sender, sel, name|
+          @egress_handlers.connect(SEL_COMMAND) { |sender, sel, name|
             Watobo::EgressHandlers.last = name
           }
 
           # @egress_handlers.appendItem('none', nil)
-          @egress_add_btn = FXButton.new(eframe, "add", nil, nil, 0, FRAME_RAISED|FRAME_THICK)
-          @egress_add_btn.connect(SEL_COMMAND) {add_handler}
+          @egress_add_btn = FXButton.new(eframe, "add", nil, nil, 0, FRAME_RAISED | FRAME_THICK)
+          @egress_add_btn.connect(SEL_COMMAND) { add_handler }
           #@egress_handlers.connect(SEL_COMMAND, method(:onRequestChanged))
-          @egress_btn = FXButton.new(eframe, "reload", nil, nil, 0, FRAME_RAISED|FRAME_THICK)
+          @egress_btn = FXButton.new(eframe, "reload", nil, nil, 0, FRAME_RAISED | FRAME_THICK)
           @egress_btn.connect(SEL_COMMAND) {
             Watobo::EgressHandlers.reload
             update_egress
@@ -453,34 +452,40 @@ module Watobo #:nodoc: all
           #puts "Last Item Index: #{i} (#{Watobo::EgressHandlers.last})"
           @egress_handlers.setCurrentItem(i) if i >= 0
 
+          hframe = FXHorizontalFrame.new(opt, :opts => FRAME_NONE | LAYOUT_FILL_X, :padding => 0)
 
-          @logChat = FXCheckButton.new(opt, "Log Chat", nil, 0,
-                                       ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
+          @logChat = FXCheckButton.new(hframe, "Log Chat", nil, 0,
+                                       ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
           @logChat.checkState = false
+          @timeout_dt = FXDataTarget.new(60)
+          FXLabel.new(hframe, "Timeout(s):", nil, LAYOUT_TOP | JUSTIFY_RIGHT)
+          @pw_second_txt = FXTextField.new(hframe, 3,
+                                           :target => @timeout_dt, :selector => FXDataTarget::ID_VALUE,
+                                           :opts => TEXTFIELD_NORMAL | LAYOUT_SIDE_RIGHT)
 
           sess_tab = FXTabItem.new(@settings_tab, "Session Settings", nil)
-          session_frame = FXVerticalFrame.new(@settings_tab, :opts => FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_FILL_Y)
+          session_frame = FXVerticalFrame.new(@settings_tab, :opts => FRAME_THICK | FRAME_RAISED | LAYOUT_FILL_X | LAYOUT_FILL_Y)
 
-          sidframe = FXHorizontalFrame.new(session_frame, :opts => FRAME_NONE|LAYOUT_FILL_X|PACK_UNIFORM_HEIGHT, :padding => 0)
-          @updateSID = FXCheckButton.new(sidframe, "Update SID Cache ...", nil, 0, JUSTIFY_LEFT|JUSTIFY_CENTER_Y|ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
+          sidframe = FXHorizontalFrame.new(session_frame, :opts => FRAME_NONE | LAYOUT_FILL_X | PACK_UNIFORM_HEIGHT, :padding => 0)
+          @updateSID = FXCheckButton.new(sidframe, "Update SID Cache ...", nil, 0, JUSTIFY_LEFT | JUSTIFY_CENTER_Y | ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
           @updateSID.checkState = false
-          FXButton.new(sidframe, "Clear", nil, nil, 0, FRAME_RAISED|FRAME_THICK).connect(SEL_COMMAND) {
+          FXButton.new(sidframe, "Clear", nil, nil, 0, FRAME_RAISED | FRAME_THICK).connect(SEL_COMMAND) {
             Watobo::SIDCache.acquire(self.object_id).clear
           }
 
-          @updateSession = FXCheckButton.new(session_frame, "Update Session", nil, 0, JUSTIFY_LEFT|JUSTIFY_TOP|ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
+          @updateSession = FXCheckButton.new(session_frame, "Update Session", nil, 0, JUSTIFY_LEFT | JUSTIFY_TOP | ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
           @updateSession.checkState = true
           @updateSession.connect(SEL_COMMAND) do |sender, sel, item|
             @runLogin.enabled = @updateSession.checked?
           end
 
-          @runLogin = FXCheckButton.new(session_frame, "Run Login", nil, 0, JUSTIFY_LEFT|JUSTIFY_TOP|ICON_BEFORE_TEXT|LAYOUT_SIDE_TOP)
+          @runLogin = FXCheckButton.new(session_frame, "Run Login", nil, 0, JUSTIFY_LEFT | JUSTIFY_TOP | ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
           @runLogin.checkState = false
 
-          csrf_frame = FXHorizontalFrame.new(session_frame, :opts => LAYOUT_FILL_X|PACK_UNIFORM_HEIGHT, :padding => 0)
-          @updateCSRF = FXCheckButton.new(csrf_frame, "Update One-Time-Tokens ...", nil, 0, JUSTIFY_LEFT|ICON_BEFORE_TEXT)
+          csrf_frame = FXHorizontalFrame.new(session_frame, :opts => LAYOUT_FILL_X | PACK_UNIFORM_HEIGHT, :padding => 0)
+          @updateCSRF = FXCheckButton.new(csrf_frame, "Update One-Time-Tokens ...", nil, 0, JUSTIFY_LEFT | ICON_BEFORE_TEXT)
           @updateCSRF.checkState = false
-          @csrf_settings_btn = FXButton.new(csrf_frame, "Settings", nil, nil, 0, FRAME_RAISED|FRAME_THICK)
+          @csrf_settings_btn = FXButton.new(csrf_frame, "Settings", nil, nil, 0, FRAME_RAISED | FRAME_THICK)
           @csrf_settings_btn.connect(SEL_COMMAND, method(:openCSRFTokenDialog))
 
           #@updateCSRF.connect(SEL_COMMAND) do |sender, sel, item|
@@ -493,19 +498,19 @@ module Watobo #:nodoc: all
 
           ##################################################
 
-          button_frame = FXVerticalFrame.new(frame, :opts => LAYOUT_FILL_Y|LAYOUT_FIX_WIDTH|LAYOUT_RIGHT, :width => 100)
-          send_frame = FXVerticalFrame.new(button_frame, :opts => LAYOUT_FILL_Y|LAYOUT_FILL_X, :padding => 2)
+          button_frame = FXVerticalFrame.new(frame, :opts => LAYOUT_FILL_Y | LAYOUT_FIX_WIDTH | LAYOUT_RIGHT, :width => 100)
+          send_frame = FXVerticalFrame.new(button_frame, :opts => LAYOUT_FILL_Y | LAYOUT_FILL_X, :padding => 2)
           send_frame.backColor = FXColor::Red
           #btn_send = FXButton.new(frame, "\nSEND", ICON_SEND_REQUEST, nil, 0, :opts => ICON_ABOVE_TEXT|FRAME_RAISED|FRAME_THICK|LAYOUT_FILL_Y|LAYOUT_FIX_WIDTH|LAYOUT_RIGHT, :width => 100)
-          @btn_send = FXButton.new(send_frame, "\nSEND", ICON_SEND_REQUEST, nil, 0, :opts => ICON_ABOVE_TEXT|FRAME_RAISED|FRAME_THICK|LAYOUT_FILL_Y|LAYOUT_FILL_X|LAYOUT_RIGHT)
-          btn_prev = FXButton.new(button_frame, "preview >>", nil, nil, 0, :opts => LAYOUT_FILL_X|FRAME_RAISED|FRAME_THICK|LAYOUT_RIGHT)
+          @btn_send = FXButton.new(send_frame, "\nSEND", ICON_SEND_REQUEST, nil, 0, :opts => ICON_ABOVE_TEXT | FRAME_RAISED | FRAME_THICK | LAYOUT_FILL_Y | LAYOUT_FILL_X | LAYOUT_RIGHT)
+          btn_prev = FXButton.new(button_frame, "preview >>", nil, nil, 0, :opts => LAYOUT_FILL_X | FRAME_RAISED | FRAME_THICK | LAYOUT_RIGHT)
           btn_prev.connect(SEL_COMMAND, method(:onPreviewClick))
 
-          frame = FXHorizontalFrame.new(req_editor, :opts => LAYOUT_FILL_X|FRAME_GROOVE)
+          frame = FXHorizontalFrame.new(req_editor, :opts => LAYOUT_FILL_X | FRAME_GROOVE)
 
-          @btn_quickscan = FXButton.new(frame, "QuickScan", nil, nil, 0, FRAME_RAISED|FRAME_THICK)
+          @btn_quickscan = FXButton.new(frame, "QuickScan", nil, nil, 0, FRAME_RAISED | FRAME_THICK)
           @btn_quickscan.connect(SEL_COMMAND, method(:onBtnQuickScan))
-          @pbar = FXProgressBar.new(frame, nil, 0, LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_SUNKEN|FRAME_THICK|PROGRESSBAR_HORIZONTAL)
+          @pbar = FXProgressBar.new(frame, nil, 0, LAYOUT_FILL_X | LAYOUT_FILL_Y | FRAME_SUNKEN | FRAME_THICK | PROGRESSBAR_HORIZONTAL)
           @pbar.progress = 0
           @pbar.total = 0
           @pbar.barColor = 'grey' #FXRGB(255,0,0)
@@ -513,27 +518,27 @@ module Watobo #:nodoc: all
           # TODO: Implement font sizing
           #@req_builder.font = FXFont.new(app, "courier" , 14, :encoding=>FONTENCODING_ISO_8859_1)
 
-          result_viewer = FXVerticalFrame.new(top_splitter, LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_GROOVE|LAYOUT_FIX_WIDTH, :width => 400)
+          result_viewer = FXVerticalFrame.new(top_splitter, LAYOUT_FILL_X | LAYOUT_FILL_Y | FRAME_GROOVE | LAYOUT_FIX_WIDTH, :width => 400)
 
           # log_viewer = FXVerticalFrame.new(bottom_frame, :opts => LAYOUT_FILL_X|FRAME_GROOVE|LAYOUT_BOTTOM)
 
-          @tabBook = FXTabBook.new(result_viewer, nil, 0, LAYOUT_FILL_X|LAYOUT_FILL_Y|LAYOUT_RIGHT)
+          @tabBook = FXTabBook.new(result_viewer, nil, 0, LAYOUT_FILL_X | LAYOUT_FILL_Y | LAYOUT_RIGHT)
 
           resp_tab = FXTabItem.new(@tabBook, "Response", nil)
-          frame = FXVerticalFrame.new(@tabBook, :opts => FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
-          @response_viewer = Watobo::Gui::ResponseViewer.new(frame, LAYOUT_FILL_X|LAYOUT_FILL_Y)
+          frame = FXVerticalFrame.new(@tabBook, :opts => FRAME_THICK | FRAME_RAISED | LAYOUT_FILL_X | LAYOUT_FILL_Y, :padding => 0)
+          @response_viewer = Watobo::Gui::ResponseViewer.new(frame, LAYOUT_FILL_X | LAYOUT_FILL_Y)
           #@response_viewer.ma
           @response_viewer.max_len = 0
 
           options = FXHorizontalFrame.new(frame, :opts => LAYOUT_FILL_X)
-          frame = FXHorizontalFrame.new(options, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_SUNKEN)
+          frame = FXHorizontalFrame.new(options, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y | FRAME_SUNKEN)
           frame.backColor = FXColor::White
-          label = FXLabel.new(frame, "MD5: ", :opts => LAYOUT_FILL_Y|JUSTIFY_CENTER_Y)
+          label = FXLabel.new(frame, "MD5: ", :opts => LAYOUT_FILL_Y | JUSTIFY_CENTER_Y)
           label.backColor = FXColor::White
-          @responseMD5 = FXLabel.new(frame, "-N/A-", :opts => LAYOUT_FILL_Y|JUSTIFY_CENTER_Y)
+          @responseMD5 = FXLabel.new(frame, "-N/A-", :opts => LAYOUT_FILL_Y | JUSTIFY_CENTER_Y)
           @responseMD5.backColor = FXColor::White
 
-          browser_button = FXButton.new(options, "Browser-View", ICON_BROWSER_MEDIUM, nil, 0, :opts => BUTTON_NORMAL|LAYOUT_RIGHT)
+          browser_button = FXButton.new(options, "Browser-View", ICON_BROWSER_MEDIUM, nil, 0, :opts => BUTTON_NORMAL | LAYOUT_RIGHT)
           browser_button.connect(SEL_COMMAND) {
             begin
               unless @current_chat.nil?
@@ -547,17 +552,17 @@ module Watobo #:nodoc: all
           }
 
           req_tab = FXTabItem.new(@tabBook, "Request", nil)
-          @request_viewer = Watobo::Gui::RequestViewer.new(@tabBook, FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_FILL_Y)
+          @request_viewer = Watobo::Gui::RequestViewer.new(@tabBook, FRAME_THICK | FRAME_RAISED | LAYOUT_FILL_X | LAYOUT_FILL_Y)
 
 
           FXTabItem.new(@tabBook, "Differ", nil)
 
-          @diff_frame = DiffFrame.new(@tabBook, :opts => FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_FILL_Y)
+          @diff_frame = DiffFrame.new(@tabBook, :opts => FRAME_THICK | FRAME_RAISED | LAYOUT_FILL_X | LAYOUT_FILL_Y)
 
           FXTabItem.new(@tabBook, "Logs", nil)
 
-          log_text_frame = FXVerticalFrame.new(@tabBook, LAYOUT_FILL_X|LAYOUT_FILL_Y|FRAME_SUNKEN|FRAME_THICK)
-          @log_viewer = LogViewer.new(log_text_frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
+          log_text_frame = FXVerticalFrame.new(@tabBook, LAYOUT_FILL_X | LAYOUT_FILL_Y | FRAME_SUNKEN | FRAME_THICK)
+          @log_viewer = LogViewer.new(log_text_frame, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y)
           #--------------------------------------------------------------------------------
 
           @btn_send.connect(SEL_COMMAND, method(:onBtnSendClick))
@@ -622,14 +627,15 @@ module Watobo #:nodoc: all
                          :update_sids => @updateSID.checked?,
                          :follow_redirect => @followRedirect.checked?,
                          :egress_handler => egress_handler,
-                         :no_connection_close => true
+                         :no_connection_close => true,
+                         :timeout => @timeout_dt.value
 
         }
 
         prefs.update current_prefs
         logger("send request")
 
-        @request_thread = Thread.new(new_request, prefs) {|nr, p|
+        @request_thread = Thread.new(new_request, prefs) { |nr, p|
           begin
 
             request, response = @request_sender.sendRequest(nr, p)
@@ -702,7 +708,7 @@ module Watobo #:nodoc: all
         @req_builder.setRequest(request)
       end
 
-      def trans2Multi(sender,sel, item)
+      def trans2Multi(sender, sel, item)
         request = @req_builder.parseRequest
         return nil if request.nil?
         mp = Watobo::Transformers.to_multipart(request)

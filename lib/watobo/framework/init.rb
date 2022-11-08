@@ -94,7 +94,7 @@ module Watobo #:nodoc: all
 
   def self.init_working_directory()
     puts "* init_working_directory"
-    puts working_directory
+
 
     watobo_folder = ".watobo"
     watobo_folder = Conf::General.watobo_folder if Conf::General.respond_to? :watobo_folder
@@ -118,6 +118,7 @@ module Watobo #:nodoc: all
           exit
         end
       end
+      puts working_directory
     end
 
     # create directories inside workspace

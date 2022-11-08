@@ -191,7 +191,7 @@ module Watobo #:nodoc: all
         end
 
         def request_paths(chat, &block)
-          binding.pry
+          #binding.pry
           unless !!@prefs[:test_sub_dirs]
             yield chat.request.path if block_given?
             return chat.request.path
@@ -199,7 +199,7 @@ module Watobo #:nodoc: all
           paths = []
           path = chat.request.path
           while !path.empty? and path != '.'
-            puts path
+            # puts path
             yield path if block_given?
             paths << path
             path = File.dirname(path)

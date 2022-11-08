@@ -742,9 +742,9 @@ module Watobo #:nodoc: all
               line = "#{hl}"
               cl = line.force_encoding('ASCII-8BIT')
               return header_list if cl.strip.empty?
-              if cl =~ /#{filter}/
-                yield line if block_given?
-                header_list.push line
+              if cl =~ /#{filter}/i
+                yield line.strip if block_given?
+                header_list.push line.strip
               end
             end
             return header_list

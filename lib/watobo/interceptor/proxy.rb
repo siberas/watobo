@@ -286,6 +286,7 @@ module Watobo #:nodoc: all
                   puts "+ [PROXY] sending request: \n#{request}\n\n#{prefs.to_json}" if $DEBUG
 
                   s_sock, req, resp = sender.sendHTTPRequest(request, prefs)
+
                   # :client_certificates => @client_certificates
                   #)
                   if s_sock.nil? then

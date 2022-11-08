@@ -79,11 +79,15 @@ module Watobo #:nodoc: all
           requests = []
           return [] unless @template['requests']
           @template['requests'].each do |r|
-            # puts "+ request >>"
-            if !!r['raw']
-              @requests << NucleiRawRequest.new(r)
-            else
-              @requests << NucleiBaseRequest.new(r)
+            begin
+              # puts "+ request >>"
+              if !!r['raw']
+                @requests << NucleiRawRequest.new(r)
+              else
+                @requests << NucleiBaseRequest.new(r)
+              end
+            rescue => bang
+              puts bang
             end
           end
           requests

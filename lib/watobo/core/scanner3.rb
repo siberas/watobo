@@ -308,7 +308,7 @@ module Watobo #:nodoc: all
       @prefs = Watobo::Conf::Scanner.to_h
 
       @prefs.update prefs
-      @prefs[:timeout] = 5 unless !!@prefs[:timeout]
+      @prefs[:timeout] = 60 unless !!@prefs[:timeout]
 
       #puts @prefs.to_yaml
 

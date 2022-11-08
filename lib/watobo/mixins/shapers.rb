@@ -11,7 +11,9 @@ module Watobo #:nodoc: all
 
         def replace_post_parm(parm, value)
           parm_quoted = Regexp.quote(parm)
-          self.last.gsub!(/([?&]{1}|^)#{parm_quoted}=([^&]*)(&{0,1})/i, "\\1#{parm}=#{value}\\3")
+          self.last.gsub!(/([?&]{1}|^)#{parm_quoted}=([^&]*)(&{0,1})/i, "
+
+\\1#{parm}=#{value}\\3")
         end
 
         def replace_get_parm(parm, value)
@@ -172,7 +174,7 @@ module Watobo #:nodoc: all
         def addHeader(header, value = nil)
           self_copy = []
           self_copy << self.first
-          self_copy.concat(self.headers)
+          self_copy.concat(self.headers.map{|h| h =~ /\r\n$/ ? h : "#{h}\r\n"})
           hv = value.nil? ? "#{header}\r\n" : "#{header}: #{value}\r\n"
           self_copy.push hv
 
@@ -467,14 +469,17 @@ module Watobo #:nodoc: all
         end
 
         def unchunk
+
           return Response.new(self) unless self.has_body?
 
           if self.transfer_encoding == TE_CHUNKED
             self.removeHeader("Transfer-Encoding")
             self.addHeader("Content-Length", "0")
             new_r = []
-            new_r << self.first
-            new_r.concat self.headers
+            eoh = self.index("\r\n")
+            eoh.times do |i|
+              new_r << self[i]
+            end
 
             new_r.push "\r\n"
 

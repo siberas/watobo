@@ -27,7 +27,6 @@ module Watobo
             client_certificate: {},
             proxy: nil,
             follow_redirects: false,
-            update_contentlength: true,
             egress_handler: nil,
             timeout: 60
 
@@ -54,7 +53,36 @@ module Watobo
         end
 
         def runLogin(chat_list, prefs = {}, &block)
-          # TODO
+          @@login_mutex.synchronize do
+            begin
+              @@login_in_progress = true
+              login_prefs = Hash.new
+              login_prefs.update prefs
+              dummy = {:ignore_logout => true, :update_sids => true, :update_session => true, :update_contentlength => true}
+              login_prefs.update dummy
+              puts "! Start Login ..." #if $DEBUG
+              unless chat_list.empty?
+                #  puts login_prefs.to_yaml
+                chat_list.each do |chat|
+                  puts chat.request.url
+                  puts "! LoginRequest: #{chat.id}" if $DEBUG
+                  test_req = chat.copyRequest
+                  request, response = doRequest(test_req, login_prefs)
+                  yield [request, response] if block_given?
+                end
+              else
+                puts "! no login script configured !"
+              end
+            rescue => bang
+              puts "!ERROR in runLogin"
+              puts bang.backtrace if $DEBUG
+              binding.pry
+            ensure
+              @@login_in_progress = false
+              @@login_cv.signal
+
+            end
+          end
         end
 
         def doRequest(orig, prefs = {})
@@ -67,21 +95,32 @@ module Watobo
           cprefs[:client_certificate] = Watobo::ClientCertStore.get request.site
           cprefs.update prefs
 
+          if $VERBOSE
+            puts JSON.pretty_generate(cprefs)
+          end
+
+          # update session from sid_cache
+          @sid_cache.update_request(request) if cprefs[:update_session] == true
+
           if request.method =~ /(post|put)/i
             request.fix_content_length
           else
             request.removeHeader('Content-Length')
           end
 
+
           #
           # Engress Handler
           h = Watobo::EgressHandlers.create cprefs[:egress_handler]
           h.execute request unless h.nil?
 
+          #
+          # Send request over the wire
           sender = Watobo::Net::Http::Sender.new request, cprefs
           request, response = sender.exec
 
           # TODO: Update-Sid, Check-Logout
+          @sid_cache.update_sids(request.site, response.headers) if cprefs[:update_sids] == true
 
           [request, response]
         end

@@ -5,7 +5,7 @@ module Watobo #:nodoc: all #:nodoc: all
   # base directory aka installation path
   def self.base_directory
     @base_directory ||= ""
-    @base_directory = File.expand_path(File.join(File.dirname(__FILE__), "..",".."))
+    @base_directory = File.expand_path(File.join(File.dirname(__FILE__), "..", ".."))
   end
 
   def self.plugin_path
@@ -14,20 +14,22 @@ module Watobo #:nodoc: all #:nodoc: all
   end
 
   # initialize and return the path where the active modules resides
-  def self.active_module_path
-    return @active_module_path if @active_module_path
+  def self.active_module_paths
+    return @active_module_paths if @active_module_paths
     default_path = File.join(base_directory, "modules", "active")
-    @active_module_path = nil
+    @active_module_paths = [ default_path ]
 
     if ENV['WATOBO_MODULES']
-      if File.exist? ENV['WATOBO_MODULES']
-        @active_module_path = ENV['WATOBO_MODULES']
-      else
-        puts "Given module path does not exist! Using default #{default_path}"
+      ENV['WATOBO_MODULES'].split(':').each do |path|
+        if File.exist? path
+          @active_module_paths << path
+        else
+          puts "Module path #{path} does not exist!"
+        end
       end
     end
 
-    @active_module_path = default_path unless @active_module_path
+    @active_module_paths
   end
 
   def self.passive_module_path
