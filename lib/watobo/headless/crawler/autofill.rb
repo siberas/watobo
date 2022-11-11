@@ -29,6 +29,9 @@ module Watobo
         # <input type="url">
         # <input type="week">
         def fill_input(element)
+          # we only fill displayed elements
+          return unless element.displayed?
+
           type = element.attribute('type')
 
           placeholder = element.attribute('placeholder')
@@ -41,29 +44,45 @@ module Watobo
             value = "http://www.google.com/four_four"
           end
 
+          # TODO: make filling more specific and customizable
           unless value
             value = case type
                     when /checkbox/
-                      'checkbox'
+                      element.click
+                      nil
                     when /text/
                       "lorem ipsum"
                     when /url/
                       "http://www.google.com/four_four"
+                    when /email/
+                      "peter.pan@fantasy.com"
                     when /file/
                       tmpfile = '/tmp/xxx'
                       id = element.attribute('id')
 
                       if id
-                      File.open(tmpfile, 'w') { |fh| fh.puts "gaga" }
-                      driver.execute_script("const i = document.getElementById('#{id}'); alert(i.outerHTML); const dataTransfer = new DataTransfer(); file = new File(['#{tmpfile}'], 'hello', {type: 'text/plain'}); dataTransfer.items.add(file); i.files = dataTransfer.files");
+                        File.open(tmpfile, 'w') { |fh| fh.puts "gaga" }
+                        driver.execute_script(create_file_upload_script(id, tmpfile));
                       end
 
                       nil
                     end
           end
-          puts "Fill <input type='#{type}'> : #{value}"
 
           set_value(element, value) if value
+        end
+
+        def create_file_upload_script(id, tmpfile)
+          script = <<EOF
+const i = document.getElementById('__ID__');
+const dataTransfer = new DataTransfer();
+file = new File(['__TMPFILE__'], 'hello', {type: 'text/plain'})
+dataTransfer.items.add(file);
+i.files = dataTransfer.files
+EOF
+          script.gsub!(/__ID__/, id)
+          script.gsub!(/__TMPFILE__/, id)
+          script
         end
 
         def fill_textarea(element)
