@@ -1,7 +1,7 @@
 # @private 
 module Watobo #:nodoc: all
   module Utils
-    def Utils.text2request(text)
+    def self.text2request(text)
       result = []
       return result if text.strip.empty?
       # UTF-8 CleanUp

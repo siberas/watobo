@@ -163,6 +163,7 @@ module Watobo #:nodoc: all
     end
 
     def enabled?
+      r = nil
       @enable_mutex.synchronize do
         r = @enabled ? true : false
       end

@@ -14,6 +14,17 @@ module Watobo #:nodoc: all
       @checks
     end
 
+    def self.select(pattern, &block)
+      sel = []
+      @checks.each do |c|
+        if c.check_group + ' : ' + c.check_name =~ /#{pattern}/i
+          sel << c
+          yield c if block_given?
+        end
+      end
+      sel
+    end
+
     def self.length
       @checks.length
     end
