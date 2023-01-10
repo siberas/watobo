@@ -3,6 +3,10 @@ if $0 == __FILE__
   inc_path = File.expand_path(File.join(File.dirname(__FILE__), "..", "lib")) # this is the same as rubygems would do
   $: << inc_path
 end
+
+ENV['BUNDLE_GEMFILE'] ||= File.expand_path('../Gemfile', __dir__)
+require 'bundler/setup'
+
 require 'optimist'
 
 OPTS = Optimist::options do
@@ -22,9 +26,12 @@ EOS
   opt :max_visits, "maximum number of total pages visited", :type => :integer, :default => 200
 end
 
+Optimist.die :url, "Need URL" unless OPTS[:url]
 require 'watobo/headless'
 
 require 'pry'
+require 'uri'
+
 
 prefs = {
     proxy: OPTS[:proxy],

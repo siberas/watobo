@@ -1,4 +1,3 @@
-require 'selenium-webdriver'
 require_relative 'crawler/ctrl'
 require_relative 'crawler/collection'
 require_relative 'crawler/autofill'
