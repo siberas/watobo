@@ -4,6 +4,24 @@ module Watobo
       class Driver
         attr :driver, :runner
 
+        def process_form(form)
+          # only reload if url of script is different to current
+          # not sure if it will work nicely but it will be faster
+          driver.navigate.to form.src if form.src != driver.current_url
+          begin
+            filler = Spider::Autofill.new(driver)
+            filler.fill!
+          rescue => bang
+            binding.pry if $DEBUG
+          end
+
+          f = driver.find_element(:css, "form[action='#{form.attributes.action}']")
+          f.submit
+
+
+
+        end
+
         def collect(resource)
           # print '.' if $VERBOSE
           collection = []
@@ -17,7 +35,6 @@ module Watobo
             # not sure if it will work nicely but it will be faster
             @driver.navigate.to resource.src if resource.src != driver.current_url
 
-
             # puts "Executing #{resource.script}"
             begin
                filler = Spider::Autofill.new(driver)
@@ -26,14 +43,19 @@ module Watobo
               binding.pry if $DEBUG
              end
 
+            #puts resource.script
 
             @driver.execute_script( resource.script )
 
           end
 
+          process_form(resource) if resource.is_a? Form
+
           collection.concat Spider::HrefCollection.new(@driver)
 
           collection.concat Spider::TriggerCollection.new(@driver)
+
+          collection.concat Spider::FormCollection.new(@driver)
 
           collection
         end
@@ -71,7 +93,12 @@ module Watobo
         def initialize(in_queue, out_queue, opts = {})
           @in_queue = in_queue
           @out_queue = out_queue
-          prefs = {proxy: nil, headless: true}.update opts
+          prefs = {
+            proxy: nil,
+            headless: true,
+            chrome_bundle_path: '/usr/share/chrome-driver'
+          }.update opts
+
           proxy = prefs[:proxy]
           headless = !!prefs[:headless]
           # configure the driver to run in headless mode
@@ -79,6 +106,7 @@ module Watobo
 
           @options.add_argument('--headless') if headless
           @options.add_argument('--allow-file-access-from-files')
+          @options.add_argument('--ignore-certificate-errors')
 
           if proxy
             @options.add_argument('--proxy-server=%s' % proxy)
@@ -88,9 +116,16 @@ module Watobo
           # @driver = Selenium::WebDriver::Chrome(chrome_options=@options,
           #                          executable_path='/usr/share/chrome-linux/')
 
-          Selenium::WebDriver::Chrome::Service.driver_path = prefs[:driver_path] if prefs[:driver_path]
+          Selenium::WebDriver::Chrome::Service.driver_path = File.join(prefs[:chrome_bundle_path],'chromedriver') #prefs[:driver_path] if prefs[:driver_path]
+          #Selenium::WebDriver::Chrome.executable_path = File.join(prefs[:driver_path],'chrome')
+          Selenium::WebDriver::Chrome.path = File.join(prefs[:chrome_bundle_path],'chrome')
 
           @driver = Selenium::WebDriver.for :chrome, options: @options
+
+          at_exit do
+            @driver.quit
+          end
+
 
         end
       end

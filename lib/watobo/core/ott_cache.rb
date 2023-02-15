@@ -25,13 +25,13 @@ module Watobo#:nodoc: all
         Watobo::Conf::OttCache.patterns.each do |p|
           yield p if block_given?
         end
+        # return copy of patterns
         YAML.load(YAML.dump(Watobo::Conf::OttCache.patterns))
    
     end
     
       
     def update_tokens(response)
-        
         begin
           #   site = request.site
           @tokens_lock.synchronize do
@@ -43,7 +43,7 @@ module Watobo#:nodoc: all
                   token_key = Regexp.quote($1.upcase)
                   token_value = $2
                   #print "U"
-                    puts "GOT NEW TOKEN (#{token_key}): #{token_value}" if $DEBUG
+                    puts "GOT NEW ONE-TIME-TOKEN (#{token_key}): #{token_value}" if $DEBUG
                   #   @session[:valid_csrf_tokens][site] = Hash.new if @session[:valid_csrf_tokens][site].nil?
                   #   @session[:valid_csrf_tokens][site][token_key] = token_value
                   @tokens[token_key] = token_value

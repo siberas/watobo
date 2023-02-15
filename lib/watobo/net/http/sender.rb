@@ -9,25 +9,25 @@ module Watobo
         include Net
 
         DEFAULT_PREFS = {
-            :www_auth => Hash.new,
-            :client_certificate => {},
-            :ssl_cipher => nil,
-            :proxy => nil,
-            # user and pass for Basic Auth
-            :username => nil,
-            :password => nil,
-            :sni_host => nil,
-            :timeout => 60,
-            :write_timeout => 60
+          :www_auth => Hash.new,
+          :client_certificate => {},
+          :ssl_cipher => nil,
+          :proxy => nil,
+          # user and pass for Basic Auth
+          :username => nil,
+          :password => nil,
+          :sni_host => nil,
+          :timeout => 60,
+          :write_timeout => 60
         }
 
         def proxy?
           !@proxy.nil?
         end
 
-        def is_ssl?
-          @request.is_ssl?
-        end
+        # def is_ssl?
+        #  @request.is_ssl?
+        # end
 
         def env_proxy?
           !ENV['WATOBO_PROXY'].nil?
@@ -39,9 +39,9 @@ module Watobo
           return nil unless uri.host
           return nil unless uri.port
           ps = {
-              name: 'env',
-              host: uri.host,
-              port: uri.port
+            name: 'env',
+            host: uri.host,
+            port: uri.port
           }
           Proxy.new ps
         end
@@ -54,13 +54,13 @@ module Watobo
           @on_ssl_connect_cb = block
         end
 
-
-        def initialize(request, prefs = {})
+        # def initialize(request, prefs = {})
+        def initialize(prefs = {})
           @socket = nil
           @ctx = OpenSSL::SSL::SSLContext.new()
           @ctx.key = nil
           @ctx.cert = nil
-          @request = request.is_a?(String) ? Watobo::Request.new(request) : request
+          #@request = request.is_a?(String) ? Watobo::Request.new(request) : request
 
           @prefs = {}
           DEFAULT_PREFS.keys.each do |pk|
@@ -81,17 +81,19 @@ module Watobo
 
         end
 
-        def exec
-          request = nil
-          #response = nil
+        def exec(request)
+          # request = nil
+          # response = nil
           t_start = Process.clock_gettime(Process::CLOCK_REALTIME)
           t_end = nil
           error = nil
           begin
-            socket = connect
-            request = send(socket, @request)
-
+            # socket = connect
+            # request = send_request(socket, request)
+            socket = send_request(request)
             header = read_header(socket)
+
+            return [request, nil] unless header
 
             do_header header
 
@@ -113,16 +115,15 @@ module Watobo
               binding.pry
             end
           end
-          #puts response
+          # puts response
           meta = {
-              t_start: t_start,
-              t_end: t_end,
-              duration: (t_end ? (t_end - t_start) : nil),
-              error: error
+            t_start: t_start,
+            t_end: t_end,
+            duration: (t_end ? (t_end - t_start) : nil),
+            error: error
           }
 
           response.update_meta meta if response
-
 
           return request, response
         end
@@ -139,8 +140,6 @@ module Watobo
         end
 
         def connect_proxy
-
-
           host = @request.host
           port = @request.port
 
@@ -154,7 +153,7 @@ module Watobo
                                       debug_output: @debug_output)
           buf = "CONNECT #{host}:#{port} HTTP/#{HTTPVersion}\r\n"
           buf << "Host: #{host}:#{port}\r\n"
-          #if proxy_user
+          # if proxy_user
           #           credential = ["#{proxy_user}:#{proxy_pass}"].pack('m0')
           #           buf << "Proxy-Authorization: Basic #{credential}\r\n"
           #         end
@@ -165,8 +164,8 @@ module Watobo
 
         end
 
-
-        def send(sock, request)
+        def send_request(request)
+          socket = connect(request)
           # remove URI before sending request but cache it for restoring request
           uri_cache = request.remove_uri unless proxy?
           data = request.join
@@ -175,28 +174,32 @@ module Watobo
             data << "\r\n" unless data =~ /\r\n\r\n$/
           end
 
-          #puts "+ send:\n#{data}"
-          sock.write data
+          # puts "+ send:\n#{data}"
+          socket.write data
 
           request.restore_uri(uri_cache) unless proxy?
 
-          request
+          # request
+          socket
         end
-
 
         def read_header(sock)
           h = []
-          #puts '+ read header ...'
+          # puts '+ read header ...'
           # read first response line and add CRLF because .readline removed it
-          h << sock.readline + "\r\n"
-          while true
-            line = sock.readuntil("\n", true) #.sub(/\s+\z/, '')
-            h << line
-            break if line.strip.empty?
+          begin
+            h << sock.readline + "\r\n"
+            while true
+              line = sock.readuntil("\n", true) #.sub(/\s+\z/, '')
+              h << line
+              break if line.strip.empty?
+            end
+            return Watobo::Response.new(h)
+          rescue => bang
+            # TODO: Log
           end
-          Watobo::Response.new(h)
+          nil
         end
-
 
         def read_body(sock, response)
           clen = response.content_length
@@ -207,15 +210,19 @@ module Watobo
               response.set_body body
               response.removeHeader("Transfer-Encoding")
               response.set_header("Content-Length", "#{body.length}")
+              return response
             elsif clen > 0
-              body = ''
-              sock.read clen, body
+              body = sock.read(clen)
+            else
+              puts "!!!! start read_all !!!"
+              puts sock.class.to_s
+              body = sock.read_all
+              puts "!!!! FINISHED read_all !!!"
+            end
+            unless body.empty?
               response.set_body body
               response.set_header("Content-Length", "#{body.length}")
-            elsif clen < 0
-
             end
-
           rescue EOFError
             # ignore
           rescue => e
@@ -225,13 +232,13 @@ module Watobo
           response
         end
 
-        def connect
+        def connect(request)
           if proxy?
             conn_host = @proxy.host
             conn_port = @proxy.port
           else
-            conn_host = @request.host
-            conn_port = @request.port
+            conn_host = request.host
+            conn_port = request.port
           end
 
           conn_ip = IPSocket.getaddress(conn_host)
@@ -239,19 +246,19 @@ module Watobo
           s = Socket.tcp conn_ip, conn_port, nil, nil, connect_timeout: @open_timeout
           s.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
 
-          if is_ssl?
+          if request.is_ssl?
 
             if proxy?
               plain_sock = ::Net::BufferedIO.new(s, read_timeout: @read_timeout,
                                                  write_timeout: @write_timeout,
                                                  continue_timeout: @continue_timeout,
                                                  debug_output: @debug_output)
-              buf = "CONNECT #{@request.host}:#{@request.port} HTTP/#{1.1}\r\n"
-              buf << "Host: #{@request.host}:#{@request.port}\r\n"
-              #if proxy_user
+              buf = "CONNECT #{request.host}:#{request.port} HTTP/#{1.1}\r\n"
+              buf << "Host: #{request.host}:#{request.port}\r\n"
+              # if proxy_user
               #  credential = ["#{proxy_user}:#{proxy_pass}"].pack('m0')
               #  buf << "Proxy-Authorization: Basic #{credential}\r\n"
-              #end
+              # end
               buf << "\r\n"
               plain_sock.write(buf)
 
@@ -263,8 +270,8 @@ module Watobo
 
             unless @ssl_context.session_cache_mode.nil? # a dummy method on JRuby
               @ssl_context.session_cache_mode =
-                  OpenSSL::SSL::SSLContext::SESSION_CACHE_CLIENT |
-                      OpenSSL::SSL::SSLContext::SESSION_CACHE_NO_INTERNAL_STORE
+                OpenSSL::SSL::SSLContext::SESSION_CACHE_CLIENT |
+                  OpenSSL::SSL::SSLContext::SESSION_CACHE_NO_INTERNAL_STORE
             end
             if @ssl_context.respond_to?(:session_new_cb) # not implemented under JRuby
               @ssl_context.session_new_cb = proc { |sock, sess| @ssl_session = sess }
@@ -274,10 +281,10 @@ module Watobo
             s.sync_close = true
             # need hostname for SNI (Server Name Indication)
             # http://en.wikipedia.org/wiki/Server_Name_Indication
-            s.hostname = @sni_host ? @sni_host : @request.host #if s.respond_to?(:hostname=) && ssl_host_address
+            s.hostname = @sni_host ? @sni_host : @request.host # if s.respond_to?(:hostname=) && ssl_host_address
 
             if @ssl_session and
-                Process.clock_gettime(Process::CLOCK_REALTIME) < @ssl_session.time.to_f + @ssl_session.timeout
+              Process.clock_gettime(Process::CLOCK_REALTIME) < @ssl_session.time.to_f + @ssl_session.timeout
               s.session = @ssl_session
             end
 
@@ -330,7 +337,7 @@ module Watobo
           data = ''
           while true
             line = sock.readline
-            #next if line.strip.empty?
+            # next if line.strip.empty?
             hexlen = line.slice(/[0-9a-fA-F]+/) or raise "wrong chunk size line: #{line}"
             len = hexlen.hex
             break if len == 0
@@ -361,19 +368,20 @@ if $0 == __FILE__
   require 'watobo'
   # require 'net/http'
 
-  prefs = {timeout: 10}
+  prefs = { timeout: 10 }
   req = Watobo::Request.new ARGV[0]
   if ARGV.length > 1
     ARGV[1..-1].each do |arg|
       puts arg
-      k,v = arg.split('=')
+      k, v = arg.split('=')
       next if v.nil?
       prefs[k.to_sym] = v
     end
   end
   puts "Request:"
   puts req.join
-  sender = Watobo::Net::Http::Sender.new req, prefs
+  # sender = Watobo::Net::Http::Sender.new req, prefs
+  sender = Watobo::Net::Http::Sender.new prefs
   sender.on_header do |header|
     puts "\n\n[callback] on_header >>\nHeader loaded:"
     puts header.join
@@ -393,15 +401,14 @@ if $0 == __FILE__
   puts
 
   puts '+ send request ...'
-  req, res = sender.exec
-  #puts res
+  req, res = sender.exec req
+  # puts res
   puts '-- META ---'
   puts res.meta.to_json
 
   puts res.content_type
- c = Nokogiri::HTML res.body.to_s
+  c = Nokogiri::HTML res.body.to_s
   puts c.css('title')
-  #binding.pry
-
+  # binding.pry
 
 end

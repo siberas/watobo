@@ -108,6 +108,7 @@ module Watobo
             request.removeHeader('Content-Length')
           end
 
+          update_tokens(request)
 
           #
           # Engress Handler
@@ -116,13 +117,64 @@ module Watobo
 
           #
           # Send request over the wire
-          sender = Watobo::Net::Http::Sender.new request, cprefs
-          request, response = sender.exec
+          sender = Watobo::Net::Http::Sender.new cprefs
+          request, response = sender.exec request
 
+          puts "!!!!!!!!!!!!!!!!! GOT ANSWER !!!!!!!!!!!!!"
           # TODO: Update-Sid, Check-Logout
           @sid_cache.update_sids(request.site, response.headers) if cprefs[:update_sids] == true
 
           [request, response]
+        end
+
+
+        def update_tokens(request)
+
+          unless Watobo::OTTCache.requests(request).empty? or @settings[:update_otts] == false
+            Watobo::OTTCache.requests(request).each do |req|
+
+              binding.pry
+              copy = Watobo::Request.new YAML.load(YAML.dump(req))
+
+              #updateCSRFToken(csrf_cache, copy)
+              ott_cache.update_request(copy)
+
+              socket, ott_request, ott_response = sendHTTPRequest(copy, opts)
+              next if socket.nil?
+              #  puts "= Response Headers:"
+              #  puts csrf_response
+              #  puts "==="
+              #update_sids(csrf_request.host, csrf_response.headers)
+              @sid_cache.update_sids(csrf_request.site, csrf_response.headers) if @settings[:update_sids] == true
+              next if socket.nil?
+              #  p "*"
+              #    csrf_response = readHTTPHeader(socket)
+              #binding.pry
+              #unless opts.has_key?(:skip_body) and opts[:skip_body] == true
+                readHTTPBody(socket, ott_response, ott_request, opts)
+              #end
+
+              # response = Response.new(csrf_response)
+
+
+              next unless ott_response.has_body?
+
+              ott_response.unchunk!
+              ott_response.unzip!
+
+              @sid_cache.update_sids(ott_request.site, [ott_response.body]) if @settings[:update_sids] == true
+
+              # updateCSRFCache(csrf_cache, csrf_request, [csrf_response.body]) if csrf_response.content_type =~ /text\//
+              ott_cache.update_tokens([ott_response.body]) if ott_response.content_type =~ /text\//
+
+              # socket.close
+              closeSocket(socket)
+            end
+            #p @session[:csrf_requests].length
+            #updateCSRFToken(csrf_cache, request)
+            ott_cache.update_request(request)
+          end
+
         end
 
         def loggedOut?(response)

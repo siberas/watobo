@@ -56,6 +56,10 @@ module Watobo
                       "http://www.google.com/four_four"
                     when /email/
                       "peter.pan@fantasy.com"
+                    when /password/
+                      "password"
+                    when /search/
+                      "search"
                     when /file/
                       tmpfile = '/tmp/xxx'
                       id = element.attribute('id')
@@ -66,6 +70,8 @@ module Watobo
                       end
 
                       nil
+                    else
+                      type
                     end
           end
 

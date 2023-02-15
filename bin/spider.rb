@@ -20,8 +20,9 @@ EOS
   opt :proxy, "Proxy (host:port)", :type => :string
   opt :headless, "headless mode"
   opt :screenshot, "headless mode"
-  opt :driver_path, "set chrome driver_path", :type => :string
-  opt :num_browsers, "number of browser instances", :type => :integer, :default => 1
+  opt :chrome_bundle_path, "set chrome driver_path", :type => :string, :default =>'/usr/share/chrome-linux'
+  # TODO: num_browser raise crashes if > 1
+  #  opt :num_browsers, "number of browser instances", :type => :integer, :default => 1
   opt :max_duration, "maximum duration in seconds", :type => :integer, :default => 3600
   opt :max_visits, "maximum number of total pages visited", :type => :integer, :default => 200
 end
@@ -43,7 +44,7 @@ prefs = {
 }
 
 
-spider = Watobo::Headless::Spider.new prefs
+spider = Watobo::Headless::Spider.new OPTS
 
 spider.run OPTS[:url]
 

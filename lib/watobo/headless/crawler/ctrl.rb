@@ -32,11 +32,24 @@ module Watobo
         @in_queue.enq trigger
       end
 
+      def process_form(form)
+        @form_keys ||= {}
+        return unless valid?(form)
+        tk = form.fingerprint
+        return if @form_keys[tk]
+
+        #puts "* found new trigger: #{trigger.src} >> #{trigger.tag_name} : #{trigger.script}"
+        @form_keys[tk] = true
+        @in_queue.enq form
+      end
+
       def valid?(input)
         if input.is_a? Href
           return valid_href?(input)
         elsif input.is_a? Trigger
           return valid_trigger?(input)
+        elsif input.is_a? Form
+          return valid_form?(input)
         end
         false
       end
@@ -44,6 +57,11 @@ module Watobo
       def valid_trigger?(input)
         # TODO: implent some filter capabilities
         return true
+      end
+
+      def valid_form?(form)
+        # TODO: form validation, e.g. same host
+        true
       end
 
       def valid_href?(input)
@@ -60,6 +78,8 @@ module Watobo
           process_href(resource)
         elsif resource.is_a? Trigger
           process_trigger(resource)
+        elsif resource.is_a? Form
+          process_form(resource)
         elsif resource.is_a? Stat
           @stats << resource
         end
@@ -81,7 +101,7 @@ module Watobo
         opts = @opts.update(prefs)
         @in_queue = Queue.new
         @out_queue = Queue.new
-        @max_drivers = !!opts[:num_browsers] ? opts[:num_browsers] : 1
+        @max_drivers = opts[:num_browsers] || 1
         @drivers = []
 
         uri = URI.parse url

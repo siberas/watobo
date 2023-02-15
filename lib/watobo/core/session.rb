@@ -350,6 +350,7 @@ module Watobo #:nodoc: all
         #  puts "[doRequest] #{@session.to_yaml}"
         # puts "#[#{self.class}]" + @session[:csrf_requests].first.object_id.to_s
         # unless @session[:csrf_requests].empty? or @session[:csrf_patterns].empty?
+        binding.pry
         unless Watobo::OTTCache.requests(request).empty? or @session[:update_otts] == false
           Watobo::OTTCache.requests(request).each do |req|
 
@@ -367,6 +368,7 @@ module Watobo #:nodoc: all
             next if socket.nil?
             #  p "*"
             #    csrf_response = readHTTPHeader(socket)
+             binding.pry
             unless opts.has_key?(:skip_body) and opts[:skip_body] == true
               readHTTPBody(socket, csrf_response, csrf_request, opts)
             end
