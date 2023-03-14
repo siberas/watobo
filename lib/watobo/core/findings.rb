@@ -65,7 +65,7 @@ module Watobo#:nodoc: all
     def self.each(&block)
       if block_given?
         @findings_lock.synchronize do
-          @findings.map{|f| yield f }
+          @findings.values.map{|f| yield f }
         end
       end
     end

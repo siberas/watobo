@@ -12,7 +12,6 @@ module Watobo #:nodoc: all
     GENERATION_STARTED = 0x0100
     GENERATION_FINISHED = 0x0200
 
-
     class Worker
       include Watobo::Constants
       include Watobo::Subscriber
@@ -81,7 +80,6 @@ module Watobo #:nodoc: all
               chat = Chat.new(request, response, :id => 0, :chat_source => prefs[:chat_source])
               notify(:new_chat, chat)
 
-
               if prefs.has_key?(:run_passive_checks)
                 Watobo::PassiveScanner.add(chat) if prefs[:run_passive_checks] == true
               end
@@ -94,7 +92,7 @@ module Watobo #:nodoc: all
               puts bang
               puts bang.backtrace if $DEBUG
             ensure
-              #puts "FINISHED #{task[:module]}"
+              # puts "FINISHED #{task[:module]}"
               Thread.current[:pos] = "scan_finished"
               notify(:task_finished, task[:module])
             end
@@ -151,6 +149,7 @@ module Watobo #:nodoc: all
       end
 
     end
+
     #
     #  E N D   O F   W O R K E R
 
@@ -229,8 +228,12 @@ module Watobo #:nodoc: all
       @login_count = 0
       @max_login_count = 20
 
-
       @prefs.update check_prefs
+
+      patterns = get_not_found_pattern(@prefs)
+      @prefs[:custom_error_patterns].concat patterns
+      @prefs[:custom_error_patterns].uniq!
+
       msg = "\n[Scanner] Starting Scan ..."
 
       notify(:logger, LOG_INFO, msg)
@@ -258,9 +261,9 @@ module Watobo #:nodoc: all
                     sleep 1
                   end
                   # TODO: make sleep configurable via "scanner settings"
-                  #sleep 0.3
-                  task = {:module => ac,
-                          :check => check
+                  # sleep 0.3
+                  task = { :module => ac,
+                           :check => check
                   }
                   @tasks.push task
                 }
@@ -277,6 +280,95 @@ module Watobo #:nodoc: all
 
       ctrl_thread
 
+    end
+
+    # automatically detects custom file-not-found pattern
+    def extract_not_found_pattern(request, response, notfound_tag)
+      nfpatterns = []
+      # notfound = request.file
+
+      status = response.status
+      # skip if status is 4xx, because this will be recognized by fileExists?
+      return nfpatterns if status =~ /^4/
+
+      # check for a redirect
+      if status =~ /^30/
+        location = response.headers("Location:").first
+        if !notfound_tag || notfound_tag.empty?
+          nfpatterns << Regexp.quote(location)
+        else
+          p = Regexp.quote(location.gsub(/#{notfound_tag}.*/, '').strip)
+          nfpatterns << p
+        end
+        #return nfpatterns
+      end
+
+      return nfpatterns unless response.has_body?
+      # get plain words of body
+      text = Nokogiri::HTML(response.body.to_s).text rescue response.body.to_s
+
+      words = text.split
+      if words.length < 3
+        words = response.body.to_s.split
+      end
+
+      # check if words contains parts of the request
+
+      nfi = words.index { |w| w =~ /#{notfound_tag}/i }
+      if nfi
+        if nfi > 0
+          wstart = words[nfi - 1]
+          wend = words[nfi + 1]
+        else
+          wstart = words[1]
+          wend = words[3]
+        end
+        pattern = Regexp.quote(wstart) + '.*' + Regexp.quote(wend)
+        nfpatterns << pattern
+        return nfpatterns
+      end
+
+      # seems notfound pattern is not in words,
+      # so take 3 words of the middle section
+      if words.length >= 3
+        mindex = words.length / 2
+        wstart = words[mindex - 1]
+        wend = words[mindex + 1]
+        pattern = Regexp.quote(wstart) + '.*' + Regexp.quote(wend)
+        nfpatterns << pattern
+        return nfpatterns
+      end
+
+      nfpatterns
+    end
+
+    def auto_collect_404(prefs)
+      sender = Watobo::Session.new(self.object_id, prefs)
+
+      nfpatterns = {}
+
+      @chat_list.each do |chat|
+        notfound_tag = '404notfound' + SecureRandom.hex(3)
+        request = chat.copyRequest
+
+        next if nfpatterns[request.short]
+        nfpatterns[request.short] ||= []
+
+        request.replaceFileExt(notfound_tag)
+
+        test_req, test_resp = sender.doRequest(request)
+
+        if $VERBOSE
+          puts "REQUEST >>>"
+          puts test_req
+          puts "RESPONSE <<<"
+          puts test_resp
+          puts '---'
+        end
+
+        nfpatterns[request.short].concat get_not_found_pattern(test_req, test_resp, notfound_tag)
+
+      end
     end
 
     # possible prefs
@@ -310,7 +402,7 @@ module Watobo #:nodoc: all
       @prefs.update prefs
       @prefs[:timeout] = 60 unless !!@prefs[:timeout]
 
-      #puts @prefs.to_yaml
+      # puts @prefs.to_yaml
 
       unique_checks = {}
       active_checks.each do |x|
@@ -337,9 +429,8 @@ module Watobo #:nodoc: all
 
         check.resetCounters()
 
-
         @chat_list.each_with_index do |chat, index|
-          #print "."
+          # print "."
           check.updateCounters(chat, @prefs)
           puts "* [#{index + 1}] CheckCounter for Chat-ID #{chat.id}: #{check.check_name} - #{check.numChecks}"
         end
@@ -348,8 +439,8 @@ module Watobo #:nodoc: all
         # cn = check.info[:check_name]
         # puts "+ add check: #{cn}"
         # notify(:logger, LOG_INFO, "add check #{cn}")
-        @task_counter[check.check_name] = {:total => check.numChecks,
-                                           :progress => 0
+        @task_counter[check.check_name] = { :total => check.numChecks,
+                                            :progress => 0
         }
       end
       @status = SCANNER_READY
@@ -368,7 +459,7 @@ module Watobo #:nodoc: all
             begin
               puts "[#{self}] seems scan is finished. stopping workers now ..."
               @workers.map { |w|
-                #puts "[]#{self}] stopping worker #{w}"
+                # puts "[]#{self}] stopping worker #{w}"
                 w.stop
               }
 
@@ -385,7 +476,7 @@ module Watobo #:nodoc: all
 
           if @logged_out.size == (@workers.length - @tasks.num_waiting) or @tasks.num_waiting == @workers.size
             @logged_out.clear
-            #puts "!LOGOUT DETECTED!\n#{@logged_out.size} - #{@workers.length} - #{@tasks.num_waiting}\n\n"
+            # puts "!LOGOUT DETECTED!\n#{@logged_out.size} - #{@workers.length} - #{@tasks.num_waiting}\n\n"
             begin
               puts "Run login ..."
               login
@@ -458,7 +549,7 @@ module Watobo #:nodoc: all
     end
 
     def login
-      #puts "do relogin"
+      # puts "do relogin"
       unless Watobo::Conf::Scanner.login_chat_ids.nil?
         login_chats = Watobo::Conf::Scanner.login_chat_ids.uniq.map { |id| Watobo::Chats.get_by_id(id) }
         #  puts "running #{login_chats.length} login requests"

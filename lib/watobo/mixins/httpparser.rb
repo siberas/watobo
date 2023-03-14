@@ -4,35 +4,41 @@
 #
 # http://www.mysite.com:80/my/path/show.php?p=aaa&debug=true
 #
-# proto = "http"
-# host = "www.mysite.com"
-# site = "www.mysite.com:80"
-# dir = "my/path"
-# file = "show.php"
-# file_ext = "show.php?p=aaa&debug=true"
-# path = "my/path/show.php"
-# query = "p=aaa&debug=true"
-# fext = "php"
-# path_ext = "my/path/show.php?p=aaa&debug=true"
+# .proto = "http"
+# .host = "www.mysite.com"
+# .site = "www.mysite.com:80"
+# .dir = "/my/path"
+# .file = "show.php"
+# .file_ext = "show.php?p=aaa&debug=true"
+# .path = "/my/path/show.php"
+# .query = "p=aaa&debug=true"
+# .fext = "php"
+# .path_ext => "/my/path/show.php?p=aaa&debug=true"
+# .short => "http://www.siberas.de:888/xxx/my.php"
 
-# @private 
+# @private
 module Watobo #:nodoc: all
   module Mixin
     module Parser
 
-      module Parameters
-        def each(prefs, &block)
+      #  module Parameters
+      #  def each(prefs, &block)
 
-
-        end
-      end
+      # end
+      # end
 
       module Url
         include Watobo::Constants
 
+        def short
+          uri = URI.parse(url_string)
+          return File.join(uri.origin, uri.path) if uri.origin
+          nil
+        end
+
         def file
           #@file ||= nil
-          #return @file unless @file.nil?
+          # return @file unless @file.nil?
           if self.first =~ /^[^[:space:]]{1,} [a-zA-Z]+:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}[^\?]*\/(.*) HTTP.*/
             tmp = $1
             end_of_file_index = tmp.index(/\?/)
@@ -52,7 +58,7 @@ module Watobo #:nodoc: all
 
         def file_ext
           #@file_ext ||= nil
-          #return @file_ext unless @file_ext.nil?
+          # return @file_ext unless @file_ext.nil?
           if self.first =~ /^[^[:space:]]{1,} [a-zA-Z]+:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}[^\?]*\/(.*) HTTP.*/
             @file_ext = $1
           else
@@ -98,28 +104,28 @@ module Watobo #:nodoc: all
           return false
         end
 
-        #The path may consist of a sequence of path segments separated by a
-        #single slash "/" character.  Within a path segment, the characters
+        # The path may consist of a sequence of path segments separated by a
+        # single slash "/" character.  Within a path segment, the characters
         #"/", ";", "=", and "?" are reserved.  Each path segment may include a
-        #sequence of parameters, indicated by the semicolon ";" character.
-        #The parameters are not significant to the parsing of relative
-        #references.
+        # sequence of parameters, indicated by the semicolon ";" character.
+        # The parameters are not significant to the parsing of relative
+        # references.
 
         #
         # http://www.mysite.com:80/my/path/show.php?p=aaa&debug=true
-        # path = "my/path/show.php"
+        # path = "/my/path/show.php"
         def path
           if self.first =~ /^[^[:space:]]{1,} [a-zA-Z]+:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}\/([^\?]*).* HTTP/i then
-            return $1
+            return "/#{$1}"
           else
-            return ""
+            return "/"
           end
         end
 
         # path_ext = "my/path/show.php?p=aaa&debug=true"
         def path_ext
           if self.first =~ /^[^[:space:]]{1,} [a-zA-Z]+:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}\/(.*) HTTP\//i then
-            return $1
+            return "/#{$1}"
           else
             return ""
           end
@@ -127,7 +133,7 @@ module Watobo #:nodoc: all
 
         def dir
           if self.first =~ /^[^[:space:]]{1,} [a-zA-Z]+:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}\/([^\?]*)\/.* HTTP/i then
-            return $1
+            return "/#{$1}"
           else
             return ""
           end
@@ -140,7 +146,7 @@ module Watobo #:nodoc: all
               uri = $1
             end
             off = uri.index('?')
-            #parts.shift
+            # parts.shift
             # puts "HTTPParser.query: #{parts.join('?')}"
             return "" if off.nil?
             return uri[off + 1..-1]
@@ -195,7 +201,7 @@ module Watobo #:nodoc: all
 
         def url_string
           url = ''
-          #return @url unless @url.nil?
+          # return @url unless @url.nil?
           if self.first =~ /^[^[:space:]]{1,} ([a-zA-Z]+:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}.*) HTTP\//i then
             url = $1
           end
@@ -206,7 +212,7 @@ module Watobo #:nodoc: all
 
         def site
           #@site ||= nil
-          #return @site unless @site.nil?
+          # return @site unless @site.nil?
           if self.first =~ /^[^[:space:]]{1,} ([a-zA-Z]+):\/\/([\-0-9a-zA-Z.]*)([:0-9]{0,6})/i then
             host = $2
             port_extension = $3
@@ -225,8 +231,8 @@ module Watobo #:nodoc: all
 
         def host
           #@host ||= nil
-          #return @host unless @host.nil?
-          #if self.first =~ /^[^[:space:]]{1,} https?:\/\/([\-0-9a-zA-Z.]*)[:0-9]{0,6}/i then
+          # return @host unless @host.nil?
+          # if self.first =~ /^[^[:space:]]{1,} https?:\/\/([\-0-9a-zA-Z.]*)[:0-9]{0,6}/i then
           if self.first =~ /^[^[:space:]]{1,} [a-zA-Z]+:\/\/([\-0-9a-zA-Z.]*)[:0-9]{0,6}/i then
             @host = $1
           else
@@ -240,13 +246,17 @@ module Watobo #:nodoc: all
         # returns:
         # [ "/this", "/this/is", "/this/is/my" ]
         def subDirs
-          sub_dirs = self.dir.split(/\//)
-          dir = ""
-          sub_dirs.map! do |d|
-            dir += "/" + d;
+          subs = self.dir.split(/\//)
+
+          combinations = []
+          subs.each_with_index do |_, index|
+            next if index == 0
+            combinations << subs[0..index].join('/')
           end
-          return sub_dirs
+
+          combinations
         end
+        alias :subdirs :subDirs
 
         def port
           return nil if self.first.nil?
@@ -281,15 +291,15 @@ module Watobo #:nodoc: all
             puts bang.backtrace if $DEBUG
           end
           return []
-          #parmlist=[]
-          #if self.first =~ /^[^[:space:]]{1,} (https?:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}).*\/.*(\?.*=.*) HTTP/i then
+          # parmlist=[]
+          # if self.first =~ /^[^[:space:]]{1,} (https?:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}).*\/.*(\?.*=.*) HTTP/i then
           #  dummy = $2.gsub!(/\?+/,"?").split('?')
           # remove left part of ? from url
           #  dummy.shift
 
           #  parmlist=dummy.join.split(/\&/)
-          #end
-          #return parmlist
+          # end
+          # return parmlist
 
         end
 
@@ -409,7 +419,6 @@ module Watobo #:nodoc: all
 
         end
 
-
         def header_value(header_name)
           header_values = []
           self.headers.each do |header|
@@ -433,7 +442,7 @@ module Watobo #:nodoc: all
           self.each do |line|
             begin
               break if line.strip.empty?
-              #cl = line.encode('ASCII', :invalid => :replace, :undef => :replace)
+              # cl = line.encode('ASCII', :invalid => :replace, :undef => :replace)
               cl = line.force_encoding('ASCII-8BIT')
               if cl =~ /^Content-Type:([^;]*);?/i then
                 ct = $1
@@ -443,7 +452,7 @@ module Watobo #:nodoc: all
               puts "! could not parse content_type !"
               puts bang
               puts cl
-#            puts cl.gsub(/[^[:print:]]/, '.')
+              #            puts cl.gsub(/[^[:print:]]/, '.')
 
             end
           end
@@ -649,7 +658,7 @@ module Watobo #:nodoc: all
 
           begin
             # not sure if this is a good idea???
-            #return  b.encode(cs, :invalid => :replace, :undef => :replace, :replace => '').unpack("C*").pack("C*")
+            # return  b.encode(cs, :invalid => :replace, :undef => :replace, :replace => '').unpack("C*").pack("C*")
           rescue => bang
             if $DEBUG
               puts bang
@@ -761,7 +770,6 @@ module Watobo #:nodoc: all
         end
 
       end
-
 
     end
   end

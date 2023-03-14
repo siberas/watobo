@@ -214,10 +214,10 @@ module Watobo
             elsif clen > 0
               body = sock.read(clen)
             else
-              puts "!!!! start read_all !!!"
-              puts sock.class.to_s
+              #  puts "!!!! start read_all !!!"
+              #puts sock.class.to_s
               body = sock.read_all
-              puts "!!!! FINISHED read_all !!!"
+              #puts "!!!! FINISHED read_all !!!"
             end
             unless body.empty?
               response.set_body body

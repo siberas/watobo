@@ -55,6 +55,7 @@ module Watobo #:nodoc: all
 
   private
 
+  #
   def self.init_workspace_path
     # gs = @settings[:general]
     if Conf::General.respond_to? :working_directory

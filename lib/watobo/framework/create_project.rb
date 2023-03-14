@@ -47,22 +47,22 @@ module Watobo#:nodoc: all
 
     #project_settings[:session_store] = ds
 
-    puts "* INIT PASSIVE MODULES"
+    #puts "* INIT PASSIVE MODULES"
     Watobo::PassiveModules.init
-    puts
-    puts "Total: " + Watobo::PassiveModules.length.to_s
+    #puts
+    #puts "Total: " + Watobo::PassiveModules.length.to_s
    # project_settings[:passive_checks] = init_passive_modules
     #puts "Total: " + project_settings[:passive_checks].length.to_s
     #puts
-    puts "* INIT ACTIVE MODULES"
+    #puts "* INIT ACTIVE MODULES"
     #project_settings[:active_checks] = init_active_modules
     Watobo::ActiveModules.init
     #  project_settings[:active_checks].each do |ac|
     #    puts ac.class
     #  end
-    puts
-    puts "Total: " + Watobo::ActiveModules.length.to_s
-    puts
+    #puts
+    #puts "Total: " + Watobo::ActiveModules.length.to_s
+    #puts
 
     project = Project.new(project_settings)
     #@running_projects << project

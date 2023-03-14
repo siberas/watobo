@@ -17,6 +17,8 @@ WATOBO_BINDING=127.0.0.1:8081 - sets the binding definition of the interceptor
 WATOBO_PROXY=[true|false]     - enables or disables the interceptor
 
 WATOBO_HOME=/tmp/watobo       - directory where all conversations and settings are stored ( except initial settings )
+
+WATOBO_CA=/path/to/ca         - directory where ca files are located, use same directory to speed up start-up
 ---
   EOS
   opt :binding, "binding of interceptor (proxy), e.g. 127.0.0.1:8081", :type => :string, :default => ''

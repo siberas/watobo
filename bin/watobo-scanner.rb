@@ -42,7 +42,7 @@ EOS
 
 end
 
-Optimist.die :url, "Need target URL" if !OPTS[:url] and !OPTS[:modules] and !OPTS[:write_config]
+Optimist.die :url, "Need target URL" if !OPTS[:url] and !OPTS[:list_modules] and !OPTS[:write_config]
 
 # set envirionment WATOBO_HOME to "forward" to watobo
 ENV['WATOBO_HOME'] = OPTS[:work_dir]
@@ -107,7 +107,7 @@ if OPTS[:write_config]
   exit
 end
 
-if OPTS[:modules]
+if OPTS[:list_modules]
   table = Terminal::Table.new :headings => ['Class','Name']
   Watobo::ActiveModules.to_a.sort_by { |a | a.check_group  }.each do |m|
     table << [ m.check_group , m.check_name ]

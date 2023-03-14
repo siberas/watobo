@@ -120,7 +120,7 @@ module Watobo
           sender = Watobo::Net::Http::Sender.new cprefs
           request, response = sender.exec request
 
-          puts "!!!!!!!!!!!!!!!!! GOT ANSWER !!!!!!!!!!!!!"
+          #puts "!!!!!!!!!!!!!!!!! GOT ANSWER !!!!!!!!!!!!!"
           # TODO: Update-Sid, Check-Logout
           @sid_cache.update_sids(request.site, response.headers) if cprefs[:update_sids] == true
 
@@ -133,7 +133,7 @@ module Watobo
           unless Watobo::OTTCache.requests(request).empty? or @settings[:update_otts] == false
             Watobo::OTTCache.requests(request).each do |req|
 
-              binding.pry
+              #binding.pry
               copy = Watobo::Request.new YAML.load(YAML.dump(req))
 
               #updateCSRFToken(csrf_cache, copy)

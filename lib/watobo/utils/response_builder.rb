@@ -14,7 +14,7 @@ module Watobo#:nodoc: all
           unless eoh.nil?
           raw_header = text[0..eoh-1]
           raw_body = text[eoh+hb_sep.length..-1]
-          puts ">> RawBody: #{raw_body}"
+
           else
             raw_header = text
             raw_body = nil

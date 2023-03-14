@@ -529,9 +529,6 @@ module Watobo #:nodoc: all
 
       @event_dispatcher_listeners = Hash.new
       #     @session = {}
-
-      session = nil
-
       session = (session_id.is_a? Integer) ? session_id : session_id.object_id
       session = Digest::MD5.hexdigest(Time.now.to_f.to_s) if session_id.nil?
 

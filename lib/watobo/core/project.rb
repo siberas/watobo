@@ -449,11 +449,11 @@ module Watobo #:nodoc: all
 
     def importSession
       chats = Watobo::DataStore.chat_files.map { |f| Watobo::Utils.loadChatMarshal(f) }
-      puts "Got #{chats.length} Chats"
+      #puts "Got #{chats.length} Chats"
       Watobo::Chats.set chats
         #notify(:update_chats, chats)
       findings = Watobo::DataStore.finding_files.map{|f| Watobo::Utils.loadFindingMarshal(f) }
-      puts "Got #{findings.length} Findings"
+      #puts "Got #{findings.length} Findings"
       Watobo::Findings.set findings
     end
 

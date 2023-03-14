@@ -10,7 +10,7 @@ describe Watobo::Net::Http::Session do
     # let(:test_session){ instance_double(Watobo::Net::Http::Session)}
     let(:session) { Watobo::Net::Http::Session.new('rspec')}
     let(:sender){ Watobo::Net::Http::Sender.new( update_otts: true )}
-    let(:ott_cache)
+    let(:ott_cache){}
     let(:response_with_token){ s =<<EOF
 HTTP/1.1 200 OK
 Host: 100.100.1.20
@@ -46,7 +46,7 @@ EOF
 
       req, resp = session.doRequest(request)
 
-      binding.pry
+      #      binding.pry
 
     end
   end
