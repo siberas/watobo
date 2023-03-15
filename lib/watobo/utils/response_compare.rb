@@ -3,6 +3,8 @@ module Watobo #:nodoc: all
   module Utils
     # returns true if responses are equal
     def self.compare_responses(one, two)
+      return true if one == two
+      return false if one.nil? || two.nil?
       # compare return code
       #puts "[status] #{one.status} - #{two.status}"
       return false if one.status != two.status

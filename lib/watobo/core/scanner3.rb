@@ -230,7 +230,12 @@ module Watobo #:nodoc: all
 
       @prefs.update check_prefs
 
-      patterns = get_not_found_pattern(@prefs)
+      checker = Watobo::Scanner::HostupCheck.new @prefs
+      @origins_alive = checker.get_alive_sites(@chat_list)
+
+      valid_chats = @chat_list.select { |chat| @origins_alive.include?(chat.request.origin) }
+
+      patterns = auto_collect_404(valid_chats, @prefs)
       @prefs[:custom_error_patterns].concat patterns
       @prefs[:custom_error_patterns].uniq!
 
@@ -250,24 +255,24 @@ module Watobo #:nodoc: all
       Thread.new {
         begin
           set_status GENERATION_STARTED
-          @chat_list.uniq.each do |chat|
+          valid_chats.each do |chat|
             # puts chat.request.url.to_s
             @active_checks.uniq.each do |ac|
               ac.reset()
-              if site_alive?(chat) then
-                puts "Generating Tasks for #{ac}"
-                ac.generateChecks(chat) { |check|
-                  while @tasks.size > @max_tasks
-                    sleep 1
-                  end
-                  # TODO: make sleep configurable via "scanner settings"
-                  # sleep 0.3
-                  task = { :module => ac,
-                           :check => check
-                  }
-                  @tasks.push task
+              # if site_alive?(chat) then
+              puts "Generating Tasks for #{ac}"
+              ac.generateChecks(chat) { |check|
+                while @tasks.size > @max_tasks
+                  sleep 1
+                end
+                # TODO: make sleep configurable via "scanner settings"
+                # sleep 0.3
+                task = { :module => ac,
+                         :check => check
                 }
-              end
+                @tasks.push task
+              }
+              # end
             end
           end
         rescue => bang
@@ -283,7 +288,7 @@ module Watobo #:nodoc: all
     end
 
     # automatically detects custom file-not-found pattern
-    def extract_not_found_pattern(request, response, notfound_tag)
+    def extract_not_found_pattern(request, response)
       nfpatterns = []
       # notfound = request.file
 
@@ -291,16 +296,25 @@ module Watobo #:nodoc: all
       # skip if status is 4xx, because this will be recognized by fileExists?
       return nfpatterns if status =~ /^4/
 
+      request_tags = []
+      path = request.path
+      offset = 0
+      while (i = path.index('/', offset))
+        request_tags << path[i + 1..-1]
+        offset = (i + 1)
+      end
+      puts request_tags
+
       # check for a redirect
       if status =~ /^30/
         location = response.headers("Location:").first
-        if !notfound_tag || notfound_tag.empty?
-          nfpatterns << Regexp.quote(location)
-        else
-          p = Regexp.quote(location.gsub(/#{notfound_tag}.*/, '').strip)
-          nfpatterns << p
+        request_tags.each do |tag|
+          location.gsub!(/#{tag}.*/, '')
         end
-        #return nfpatterns
+        p = Regexp.quote(location)
+        nfpatterns << p
+
+        return nfpatterns
       end
 
       return nfpatterns unless response.has_body?
@@ -314,45 +328,39 @@ module Watobo #:nodoc: all
 
       # check if words contains parts of the request
 
-      nfi = words.index { |w| w =~ /#{notfound_tag}/i }
-      if nfi
-        if nfi > 0
-          wstart = words[nfi - 1]
-          wend = words[nfi + 1]
-        else
-          wstart = words[1]
-          wend = words[3]
+      request_tags.each do |tag|
+        nfi = words.index { |w| w =~ /#{tag}/i }
+        if nfi
+          if nfi > 0
+            wstart = words[nfi - 1]
+            wend = words[nfi + 1]
+          else
+            wstart = words[1]
+            wend = words[3]
+          end
+          pattern = Regexp.quote(wstart) + '.*' + Regexp.quote(wend)
+          nfpatterns << pattern
+          # return nfpatterns
         end
-        pattern = Regexp.quote(wstart) + '.*' + Regexp.quote(wend)
-        nfpatterns << pattern
-        return nfpatterns
       end
 
       # seems notfound pattern is not in words,
-      # so take 3 words of the middle section
-      if words.length >= 3
-        mindex = words.length / 2
-        wstart = words[mindex - 1]
-        wend = words[mindex + 1]
-        pattern = Regexp.quote(wstart) + '.*' + Regexp.quote(wend)
-        nfpatterns << pattern
-        return nfpatterns
-      end
+      # so we just take the Utils.responseHash as pattern
+      nfpatterns << Watobo::Utils.responseHash(request, response)
 
       nfpatterns
     end
 
-    def auto_collect_404(prefs)
+    def auto_collect_404(chats, prefs)
       sender = Watobo::Session.new(self.object_id, prefs)
 
       nfpatterns = {}
 
-      @chat_list.each do |chat|
+      chats.each do |chat|
         notfound_tag = '404notfound' + SecureRandom.hex(3)
         request = chat.copyRequest
 
-        next if nfpatterns[request.short]
-        nfpatterns[request.short] ||= []
+        req_key = request.short
 
         request.replaceFileExt(notfound_tag)
 
@@ -365,8 +373,8 @@ module Watobo #:nodoc: all
           puts test_resp
           puts '---'
         end
-
-        nfpatterns[request.short].concat get_not_found_pattern(test_req, test_resp, notfound_tag)
+        nfpatterns[req_key] ||= []
+        nfpatterns[req_key].concat extract_not_found_pattern(test_req, test_resp)
 
       end
     end
@@ -563,17 +571,12 @@ module Watobo #:nodoc: all
     def site_alive?(chat)
       @sites_alive ||= Hash.new
       site = chat.request.site
-      if @sites_alive.has_key? site
-        return @sites_alive[site]
-      end
 
-      if Watobo::HTTPSocket.siteAlive?(chat)
-        @sites_alive[site] = true
-      else
-        @sites_alive[site] = false
-      end
+      return @sites_alive[site] if !!@sites_alive[site]
 
-      return @sites_alive[site]
+      @sites_alive[site] = Watobo::HTTPSocket.siteAlive?(chat)
+
+      @sites_alive[site]
     end
 
   end

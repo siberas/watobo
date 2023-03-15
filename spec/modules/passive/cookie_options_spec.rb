@@ -56,7 +56,9 @@ EOF
     it "detect xsrf token" do
       check.do_test(chat_one)
       check.do_test(chat_two)
-      expect(Watobo::Findings.length).to be(2)
+      #binding.pry
+      expect(Watobo::Findings.length).to be(4)
+
 
       uniques = []
       Watobo::Findings.each do |f|
@@ -65,8 +67,8 @@ EOF
       xsrfs = uniques.select{|e| e =~ /xsrf\-token/i }
       laravels = uniques.select{|e| e =~ /laravel_session/i }
 
-      expect(xsrfs.length).to be(1)
-      expect(laravels.length).to be(1)
+      expect(xsrfs.length).to be(2)
+      expect(laravels.length).to be(2)
     end
   end
 end

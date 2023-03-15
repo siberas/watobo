@@ -12,13 +12,14 @@ module Watobo
           :www_auth => Hash.new,
           :client_certificate => {},
           :ssl_cipher => nil,
-          :proxy => nil,
+          :proxy => nil, # { host: 1.2.3.4, port: 8080, name: 'some name'}
           # user and pass for Basic Auth
           :username => nil,
           :password => nil,
           :sni_host => nil,
           :timeout => 60,
-          :write_timeout => 60
+          :write_timeout => 60,
+          :open_timeout => 10
         }
 
         def proxy?
@@ -70,6 +71,7 @@ module Watobo
 
           @read_timeout = @prefs[:timeout]
           @write_timeout = @prefs[:write_timeout]
+          @open_timeout = @prefs[:open_timeout]
 
           @proxy = !!@prefs[:proxy] ? Proxy.new(@prefs[:proxy]) : nil
 
@@ -140,8 +142,8 @@ module Watobo
         end
 
         def connect_proxy
-          host = @request.host
-          port = @request.port
+          host = @proxy.host
+          port = @proxy.port
 
           proxy_ip = IPSocket.getaddress(host)
 
@@ -281,7 +283,7 @@ module Watobo
             s.sync_close = true
             # need hostname for SNI (Server Name Indication)
             # http://en.wikipedia.org/wiki/Server_Name_Indication
-            s.hostname = @sni_host ? @sni_host : @request.host # if s.respond_to?(:hostname=) && ssl_host_address
+            s.hostname = @sni_host ? @sni_host : request.host # if s.respond_to?(:hostname=) && ssl_host_address
 
             if @ssl_session and
               Process.clock_gettime(Process::CLOCK_REALTIME) < @ssl_session.time.to_f + @ssl_session.timeout

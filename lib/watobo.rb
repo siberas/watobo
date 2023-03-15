@@ -80,7 +80,8 @@ require 'watobo/framework'
 require 'watobo/parser'
 require 'watobo/interceptor'
 require 'watobo/sockets'
-require 'watobo/scanner4'
+#require 'watobo/scanner4'
+require 'watobo/scanner'
 
 
 

@@ -26,9 +26,9 @@ module Watobo#:nodoc: all
       end
 
       def initialize(prefs)
-        raise ArgumentError, "Proxy needs host, port and name" unless prefs.has_key? :host
-        raise ArgumentError, "Proxy needs host, port and name" unless prefs.has_key? :port
-        raise ArgumentError, "Proxy needs host, port and name" unless prefs.has_key? :name
+        raise ArgumentError, "Proxy needs host(missing), port and name" unless prefs.has_key? :host
+        raise ArgumentError, "Proxy needs host, port(missing) and name" unless prefs.has_key? :port
+        raise ArgumentError, "Proxy needs host, port and name(missing)" unless prefs.has_key? :name
         
         defaults = {
           :auth_type => AUTH_TYPE_NONE, 

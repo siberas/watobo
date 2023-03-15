@@ -8,7 +8,6 @@ module Watobo #:nodoc: all
 
       attr_accessor :project
 
-
       def expandFullTree(item)
         @expandeds = []
         self.expandTree(item)
@@ -30,11 +29,10 @@ module Watobo #:nodoc: all
         false
       end
 
-
       def reload()
         self.clearItems
         @findings.clear
-        Watobo::Findings.each do |fid, finding|
+        Watobo::Findings.each do |finding|
           addFinding(finding)
         end
         expand_findings
@@ -92,17 +90,24 @@ module Watobo #:nodoc: all
       def hideDomain(domain_filter)
         #@interface.default_settings[:domain_filters].push domain_filter
         #@interface.updateTreeLists
-        #notify(:new_domain_filter, domain_filter)
+        # notify(:new_domain_filter, domain_filter)
       end
 
       def addFinding(finding)
         #  p "* add finding to tree"
         #  puts finding.details[:title]
-        @findings[finding.details[:fid]] = finding
-        if @show_scope_only == true
-          addFindingItem(finding) if Watobo::Scope.match_site?(finding.request.site)
-        else
-          addFindingItem(finding)
+        return if finding.nil?
+        begin
+          @findings[finding.details[:fid]] = finding
+          if @show_scope_only == true
+            addFindingItem(finding) if Watobo::Scope.match_site?(finding.request.site)
+          else
+            addFindingItem(finding)
+          end
+        rescue => bang
+          puts bang
+          puts bang.backtrace
+          binding.pry if $DEBUG
         end
 
       end
@@ -124,7 +129,7 @@ module Watobo #:nodoc: all
               self.setItemData(item, :finding_type)
               item = self.appendItem(site, "Info", @icon_info, @icon_info)
               self.setItemData(item, :finding_type)
-              #site = @findings_tree.moveItem(project.first,project,site)
+              # site = @findings_tree.moveItem(project.first,project,site)
               self.setItemData(site, :item_type_site)
 
             end
@@ -169,7 +174,7 @@ module Watobo #:nodoc: all
                   class_item = c
                 end
               end
-              #class_item = self.findItem(finding.details[:class], sub_tree, SEARCH_FORWARD|SEARCH_IGNORECASE|SEARCH_NOWRAP|SEARCH_PREFIX)
+              # class_item = self.findItem(finding.details[:class], sub_tree, SEARCH_FORWARD|SEARCH_IGNORECASE|SEARCH_NOWRAP|SEARCH_PREFIX)
 
               if not class_item or class_item.parent != sub_tree
                 class_item = self.appendItem(sub_tree, finding.details[:class], icon, icon)
@@ -276,7 +281,7 @@ module Watobo #:nodoc: all
             begin
               puts item.data.class
               if item.data.is_a? Watobo::Finding
-                #TODO: show vulnerability details
+                # TODO: show vulnerability details
                 # @interface.showFindingInfo(item.data)
                 notify(:finding_click, item.data)
               else
@@ -297,7 +302,6 @@ module Watobo #:nodoc: all
 
                 data = self.getItemData(item)
 
-
                 unless self.itemLeaf?(item)
                   FXMenuCommand.new(menu_pane, "expand tree").connect(SEL_COMMAND) {
                     expandFullTree(item)
@@ -313,7 +317,7 @@ module Watobo #:nodoc: all
 
               target.check = @show_scope_only
 
-              target.connect(SEL_COMMAND) {|ts, sl, it|
+              target.connect(SEL_COMMAND) { |ts, sl, it|
                 @show_scope_only = ts.checked?
                 begin
                   getApp().beginWaitCursor()
@@ -327,11 +331,10 @@ module Watobo #:nodoc: all
 
               target.check = @hide_false_positives
 
-              target.connect(SEL_COMMAND) {|ts, sl, it|
+              target.connect(SEL_COMMAND) { |ts, sl, it|
                 @hide_false_positives = ts.checked?
                 reload
               }
-
 
               unless item.nil?
 
@@ -339,11 +342,10 @@ module Watobo #:nodoc: all
 
                 FXMenuSeparator.new(menu_pane) unless data == :finding_type
 
-
                 if data == :item_type_site then
                   # FXMenuSeparator.new(menu_pane)
                   FXMenuCommand.new(menu_pane, "add site to scope").connect(SEL_COMMAND) {
-                    #notify(:add_site_to_scope, item.to_s)
+                    # notify(:add_site_to_scope, item.to_s)
                     Watobo::Scope.add item.to_s
                     reload
                   }
@@ -356,7 +358,6 @@ module Watobo #:nodoc: all
                   end
 
                   fp_submenu = FXMenuPane.new(self) do |sub|
-
 
                     target = FXMenuCommand.new(sub, "Set False Positive")
                     target.connect(SEL_COMMAND) {
@@ -387,7 +388,6 @@ module Watobo #:nodoc: all
                         class_item = self.findItem(fclass, cat_item, SEARCH_FORWARD | SEARCH_IGNORECASE)
                       end
 
-
                       unless class_item.nil?
                         puts "Expanding #{class_item} (#{class_item.object_id})-> #{cat_item} -> #{site_item}"
                         self.expandTree(class_item)
@@ -416,7 +416,6 @@ module Watobo #:nodoc: all
                         class_item = self.findItem(fclass, cat_item, SEARCH_FORWARD | SEARCH_IGNORECASE)
                       end
 
-
                       unless class_item.nil?
                         puts "Expanding #{class_item} (#{class_item.object_id})-> #{cat_item} -> #{site_item}"
                         self.expandTree(class_item)
@@ -442,7 +441,7 @@ module Watobo #:nodoc: all
                   }
 
                 elsif data == :finding_class
-                  #puts "FINDING_CLASS"
+                  # puts "FINDING_CLASS"
                   # COPY SUBMENU
                   findings = []
                   item.each do |c|
@@ -574,8 +573,8 @@ module Watobo #:nodoc: all
 
       end
 
-
     end
+
     # namespace end
   end
 end

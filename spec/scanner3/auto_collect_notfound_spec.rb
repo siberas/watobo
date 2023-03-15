@@ -39,7 +39,7 @@ EOF
     it "match redirect location" do
       notfound_tag = '404notfound' + SecureRandom.hex(3)
       request.replaceFileExt(notfound_tag)
-      patterns = scanner.extract_not_found_pattern(request, redirect_response, notfound_tag)
+      patterns = scanner.extract_not_found_pattern(request, redirect_response)
       expect(patterns.first).to eq("Location:\\ https://redirect\\.to\\.here")
     end
 
@@ -48,7 +48,7 @@ EOF
       response_ok_simple << "\r\n"
       response_ok_simple << "this is some random data around #{tag} which should be detected"
       request.replaceFileExt(tag)
-      patterns = scanner.extract_not_found_pattern(request, response_ok_simple, tag)
+      patterns = scanner.extract_not_found_pattern(request, response_ok_simple)
       expect(patterns.first).to eq("around.*which")
     end
   end

@@ -12,8 +12,7 @@ module Watobo #:nodoc: all
 
     end
 
-
-    def self.create(response, meta={})
+    def self.create(response, meta = {})
       raise ArgumentError, "Array Expected." unless response.is_a? Array
       response.extend Watobo::Mixin::Parser::Url
       response.extend Watobo::Mixin::Parser::Web10
@@ -22,14 +21,22 @@ module Watobo #:nodoc: all
     end
 
     def to_s
+      return nil unless has_body?
+      required_charset = charset
+      charset = (required_charset && ['ASCII', 'UTF-8'].include?(required_charset.upcase)) ? required_charset.upcase : 'UTF-8'
+      s = body.dup
+      s.encode!(charset, :invalid => :replace, :undef => :replace, :replace => '')
+      s
+    end
+
+    def to_s_OLD
       # crash
-      #data = self.join
+      # data = self.join
       #
       # empty content
       # data = self.map{|e| e.force_encoding('UTF-8')}.join
       begin
         data = self.map { |e| e.force_encoding('ASCII-8BIT') }.join
-
 
         unless has_body?
           data << "\r\n" unless data =~ /\r\n\r\n$/
@@ -60,9 +67,9 @@ module Watobo #:nodoc: all
       Watobo::Request.new c
     end
 
-    def initialize(r, meta={})
+    def initialize(r, meta = {})
       if r.respond_to? :concat
-        #puts "Create REQUEST from ARRAY"
+        # puts "Create REQUEST from ARRAY"
         self.concat r
       elsif r.is_a? String
         raise ArgumentError, "Need Array"

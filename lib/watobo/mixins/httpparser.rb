@@ -14,7 +14,9 @@
 # .query = "p=aaa&debug=true"
 # .fext = "php"
 # .path_ext => "/my/path/show.php?p=aaa&debug=true"
-# .short => "http://www.siberas.de:888/xxx/my.php"
+# .short => "http://www.mysite.com:80/my/path/show.php"
+# .origin => "http://www.mysite.com:80"
+# .subdirs => ['/my','/my/path']
 
 # @private
 module Watobo #:nodoc: all
@@ -35,6 +37,13 @@ module Watobo #:nodoc: all
           return File.join(uri.origin, uri.path) if uri.origin
           nil
         end
+
+        def origin
+          uri = URI.parse(url_string)
+          uri.origin
+        end
+
+
 
         def file
           #@file ||= nil
@@ -544,7 +553,7 @@ module Watobo #:nodoc: all
         alias :transfer_encoding :transferEncoding
 
         def contentMD5
-          b = self.body.nil? ? "" : self.body
+          b = has_body? ? body : ""
           hash = Digest::MD5.hexdigest(b)
           return hash
         end
@@ -579,7 +588,7 @@ module Watobo #:nodoc: all
         end
 
         def has_body?
-          self.body.nil? ? false : true
+          self.raw_body.nil? ? false : true
         end
 
         def __connection_close?
@@ -604,14 +613,24 @@ module Watobo #:nodoc: all
           return false
         end
 
-        def body
+        def raw_body
           begin
             return nil if self.nil? or self.length < 3
-            return "#{self.last.force_encoding('BINARY')}" if self[-2].strip.empty?
+            # return "#{self.last.force_encoding('BINARY')}" if self[-2].strip.empty?
+            return "#{self.last}" if self[-2].strip.empty?
           rescue
             return nil
           end
           nil
+        end
+
+        def body
+          return nil unless raw_body
+          required_charset = charset
+          charset = (required_charset && ['ASCII', 'UTF-8'].include?(required_charset.upcase)) ? required_charset.upcase : 'UTF-8'
+          s = raw_body
+          s.encode!(charset, :invalid => :replace, :undef => :replace, :replace => '')
+          s
         end
 
         def is_text?
@@ -649,7 +668,7 @@ module Watobo #:nodoc: all
           return false
         end
 
-        def body_encoded
+        def body_encoded_OLD_UNUSED
           b = self.body
           return nil if b.nil?
 
@@ -667,6 +686,8 @@ module Watobo #:nodoc: all
           end
           return b.unpack("C*").pack("C*")
         end
+
+        alias :body_encoded :body
 
         def status_code
           if self.first =~ /^HTTP\/... (\d+) /
