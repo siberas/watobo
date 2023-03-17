@@ -21,10 +21,15 @@ module Watobo #:nodoc: all
     end
 
 
-    def load_marshaled(dir, ext: 'mr*', &block)
+    def load_marshaled(dir, options={}, &block)
+      opts = {
+        ext: 'mr*',
+        clear: true
+      }
+      opts.update options
       @chats_lock.synchronize do
-        @chats = []
-        Dir.glob("#{dir}/*.#{ext}") do |f|
+        @chats = [] if opts[:clear]
+        Dir.glob("#{dir}/*.#{opts[:ext]}") do |f|
           chat = Watobo::Utils.loadChatMarshal(f)
           yield chat if block_given?
           @chats << chat

@@ -73,9 +73,8 @@ module Watobo #:nodoc: all
           id_string = (Time.now.to_i + rand(10000)).to_s
         end
         #
-        unless new_details.has_key? :fid
-          new_details[:fid] = Digest::MD5.hexdigest(id_string)
-        end
+
+       new_details[:fid] = Digest::MD5.hexdigest(id_string)
 
         puts new_details[:fid] if $DEBUG
 

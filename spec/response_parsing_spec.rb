@@ -20,6 +20,9 @@ Set-Cookie2: X-GONZO=!lSwuCMdu19OFFjZmaYk2lqNqyW1Div9DTKMXqprlPvxB/oXZFhD5nru7to
 EOF
 
 chunked_body = <<EOF
+
+0A
+BBBBBBBBBB
 0A
 AAAAAAAAAA
 0
@@ -62,7 +65,8 @@ describe Watobo::Response do
       response.unchunk!
 
       clen = response.headers('Content-Length').first.split(':')[1].strip.to_i
-      expect(clen).to eq(10)
+      expect(clen).to be(20)
+      expect(response.raw_body.length).to be(20)
     end
 
 

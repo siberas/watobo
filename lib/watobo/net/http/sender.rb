@@ -206,6 +206,7 @@ module Watobo
         def read_body(sock, response)
           clen = response.content_length
 
+          #binding.pry
           begin
             if response.is_chunked?
               body = read_chunked(sock)
@@ -216,7 +217,7 @@ module Watobo
             elsif clen > 0
               body = sock.read(clen)
             else
-              #  puts "!!!! start read_all !!!"
+              #puts "!!!! start read_all !!!"
               #puts sock.class.to_s
               body = sock.read_all
               #puts "!!!! FINISHED read_all !!!"

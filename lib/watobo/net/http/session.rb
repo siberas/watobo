@@ -52,6 +52,15 @@ module Watobo
 
         end
 
+
+        def on_header(&block)
+          @on_header_cb = block
+        end
+
+        def do_header(header)
+          @on_header_cb.call(header) if @on_header_cb
+        end
+
         def runLogin(chat_list, prefs = {}, &block)
           @@login_mutex.synchronize do
             begin

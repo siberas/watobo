@@ -2109,7 +2109,7 @@ module Watobo #:nodoc: all
       end
 
       def purge_findings(findings)
-        binding.pry
+
         findings.each do |f|
           Watobo::Findings.delete(f)
         end

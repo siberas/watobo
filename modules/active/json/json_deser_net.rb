@@ -76,7 +76,7 @@ EOF
                       test_request, test_response = doRequest(test)
                       #puts test_response.status
 
-                      if test_response.has_body?
+                      if test_response && test_response.has_body?
                         body = test_response.body.to_s
 
 

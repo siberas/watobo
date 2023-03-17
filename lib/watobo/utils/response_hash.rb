@@ -68,15 +68,15 @@ module Watobo #:nodoc: all
 
           # remove all parm/value pairs
           request.get_parm_names.each do |p|
-            cleaned_response.gsub!(/\b#{ascii_regex(p)}\b/, '') if p.len > min_len
+            cleaned_response.gsub!(/\b#{ascii_regex(p)}\b/, '') if p.length > min_len
             val = request.get_parm_value(p)
-            cleaned_response.gsub!(/\b#{ascii_regex(val)}\b/, '') if val.len > min_len
+            cleaned_response.gsub!(/\b#{ascii_regex(val)}\b/, '') if val.length > min_len
           end
 
           request.post_parm_names.each do |p|
-            cleaned_response.gsub!(/\b#{Regexp.quote(p)}\b/, '') if p.len > min_len
+            cleaned_response.gsub!(/\b#{Regexp.quote(p)}\b/, '') if p.length > min_len
             val = request.post_parm_value(p)
-            cleaned_response.gsub!(/\b#{Regexp.quote(val)}\b/, '') if val.len > min_len
+            cleaned_response.gsub!(/\b#{Regexp.quote(val)}\b/, '') if val.length > min_len
           end
           # remove date format 01.02.2009
           cleaned_response.gsub!(/\d{1,2}\.\d{1,2}.\d{2,4}/, "")

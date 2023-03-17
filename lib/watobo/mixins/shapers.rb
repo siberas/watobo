@@ -301,45 +301,9 @@ module Watobo #:nodoc: all
 
         end
 
-        def removeHeader_OLD(header)
-          #  p "REMOVE HEADER: #{header}"
-          begin
-            self_copy = []
-            eoh = false
-            self.each do |line|
-              puts self if line.nil?
-              if not eoh == true then
-                if not line =~ /#{header}/i
-                  self_copy.push line unless line.nil?
-                end
-              else
-                self_copy.push line unless line.nil?
-              end
-
-              if line and line.strip.empty? then
-                eoh = true
-              end
-            end
-            self.replace(self_copy)
-
-          rescue => bang
-            puts bang
-            puts bang.backtrace if $DEBUG
-            puts self
-            puts "====="
-          end
-        end
-
-        # def replace_header(header, value)
-
-        #end
-
-        #def fix_session(pattern, value)
-
-        #end
-
         def fix_content_length
-          blen = self.has_body? ? self.body.force_encoding("ASCII-8BIT").length : 0
+          #blen = self.has_body? ? self.body.force_encoding("ASCII-8BIT").length : 0
+          blen = self.has_body? ? self.raw_body.length : 0
           set_header("Content-Length", blen)
         end
 
@@ -460,17 +424,7 @@ module Watobo #:nodoc: all
 
         def unchunk!
           return false unless self.has_body?
-
-          unchunked = self.unchunk
-
-          self.replace(unchunked)
-          self.fix_content_length
-
-        end
-
-        def unchunk
-
-          return Response.new(self) unless self.has_body?
+          return false if transfer_encoding == TE_NONE
 
           if self.transfer_encoding == TE_CHUNKED
             self.removeHeader("Transfer-Encoding")
@@ -503,51 +457,31 @@ module Watobo #:nodoc: all
                 off = chunk_end
               end
             end
-            new_r.push new_body
+            set_body new_body
+            fix_content_length
 
-            return Watobo::Response.new new_r
+            return true
 
           end
-          return Response.new(self)
+          false
         end
 
         def unzip!
           if self.content_encoding == TE_GZIP or self.transfer_encoding == TE_GZIP
             if self.has_body?
-              unziped = self.unzip_body
-
-              self[-1] = unziped
+              gziped = raw_body
+              gz = Zlib::GzipReader.new(StringIO.new(gziped))
+              data = gz.read
+              gz.close
+              required_charset = charset
+              charset = (required_charset && ['ASCII', 'UTF-8'].include?(required_charset.upcase)) ? required_charset.upcase : 'ASCII-8BIT'
+              data.encode!(charset, :invalid => :replace, :undef => :replace, :replace => '')
+              puts "Unzipped: #{gziped.length} -> #{data.length}"
+              set_body data
               self.removeHeader("Transfer-Encoding") if self.transfer_encoding == TE_GZIP
               self.removeHeader("Content-Encoding") if self.content_encoding == TE_GZIP
               self.fix_content_length
             end
-          end
-
-        end
-
-        def unzip
-          if self.content_encoding == TE_GZIP or self.transfer_encoding == TE_GZIP
-            if self.has_body?
-              unzipped = Response.new(self)
-              unzipped.unzip!
-              return unzipped
-            end
-          end
-
-          return Response.new(self)
-        end
-
-        def unzip_body
-          begin
-            if self.has_body?
-              gziped = self.last
-              gz = Zlib::GzipReader.new(StringIO.new(gziped))
-              data = gz.read
-              return data
-            end
-
-          rescue => bang
-            puts bang
           end
 
         end

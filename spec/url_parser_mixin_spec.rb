@@ -19,6 +19,7 @@ EOF
   context "URL Mixin" do
 
     let(:request) { Watobo::Utils.text2request(get_request_sample) }
+    let(:request_with_extension) { Watobo::Request.new('http://1.2.3.4/another/path/.zip')}
 
     it ".short" do
       expect(request.short).to eq('https://no.existing.host/my/path/to/here.php')
@@ -52,6 +53,7 @@ EOF
 
     it '.file' do
       expect(request.file).to eq('here.php')
+      binding.pry
     end
 
     it '.file_ext' do

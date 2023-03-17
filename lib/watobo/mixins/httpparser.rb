@@ -44,6 +44,20 @@ module Watobo #:nodoc: all
         end
 
 
+        def fext
+          #uri = URI.parse(url_string)
+          # we don't use File.extname because it cannot handle extensions if file name is empty
+          # > u.path
+          # => "/api/users/.zip"
+          # [7] pry(main)> File.extname(u.path)
+          #=> ""
+          # File.extname(uri.path).sub('.', '') || ''
+          f = file.dup
+          di = f.rindex('.')
+          return '' unless di
+          return '' if f.length - di > 4
+          f[di+1..-1]
+        end
 
         def file
           #@file ||= nil
@@ -629,7 +643,7 @@ module Watobo #:nodoc: all
           required_charset = charset
           charset = (required_charset && ['ASCII', 'UTF-8'].include?(required_charset.upcase)) ? required_charset.upcase : 'UTF-8'
           s = raw_body
-          s.encode!(charset, :invalid => :replace, :undef => :replace, :replace => '')
+          s.encode!(charset, :invalid => :replace, :undef => :replace, :replace => '.')
           s
         end
 

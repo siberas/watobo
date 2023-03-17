@@ -16,7 +16,7 @@ module Watobo #:nodoc: all
       return false unless finding.respond_to? :request
       return false unless finding.respond_to? :response
 
-      finding_file = File.join("#{@findings_path}", "#{finding.id}-finding.mrs")
+      finding_file = File.join("#{@findings_path}", "#{finding.fid}-finding.mrs")
       unless File.exist?(finding_file)
         save_finding(finding_file, finding)
         return true
@@ -25,7 +25,7 @@ module Watobo #:nodoc: all
     end
 
     def delete_finding(finding)
-      finding_file = File.join("#{@findings_path}", "#{finding.id}-finding")
+      finding_file = File.join("#{@findings_path}", "#{finding.fid}-finding")
       File.delete finding_file if File.exist? finding_file
       file = finding_file + ".yml"
       File.delete file if File.exist? file
@@ -47,11 +47,12 @@ module Watobo #:nodoc: all
     end
 
     def update_finding(finding)
-      finding_file = File.join("#{@findings_path}", "#{finding.id}-finding.mrs")
+      finding_file = File.join("#{@findings_path}", "#{finding.fid}-finding.mrs")
 
-      if File.exist?(finding_file) then
+      # we don't check if file already exists
+      # if File.exist?(finding_file) then
         save_finding(finding_file, finding)
-      end
+      # end
 
     end
 

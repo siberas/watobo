@@ -21,15 +21,6 @@ module Watobo #:nodoc: all
     end
 
     def to_s
-      return nil unless has_body?
-      required_charset = charset
-      charset = (required_charset && ['ASCII', 'UTF-8'].include?(required_charset.upcase)) ? required_charset.upcase : 'UTF-8'
-      s = body.dup
-      s.encode!(charset, :invalid => :replace, :undef => :replace, :replace => '')
-      s
-    end
-
-    def to_s_OLD
       # crash
       # data = self.join
       #

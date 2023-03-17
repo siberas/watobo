@@ -170,7 +170,7 @@ module Watobo #:nodoc: all
 
           while (new_session = server.accept)
             #  new_session.sync = true
-            new_sender = Watobo::SessionV1.new(@target)
+            new_sender = Watobo::Session.new(@target)
 
             Thread.new(new_sender, new_session) { |sender, session|
               #puts "* got new request from client"
@@ -285,11 +285,12 @@ module Watobo #:nodoc: all
                 begin
                   puts "+ [PROXY] sending request: \n#{request}\n\n#{prefs.to_json}" if $DEBUG
 
-                  s_sock, req, resp = sender.sendHTTPRequest(request, prefs)
-
+                  # s_sock, req, resp = sender.sendHTTPRequest(request, prefs)
+                  req, resp = sender.doRequest(request, prefs)
                   # :client_certificates => @client_certificates
                   #)
-                  if s_sock.nil? then
+                  # if s_sock.nil? then
+                  if resp.nil?
                     puts "s_sock is nil! bye, bye, ..."
                     puts request if $DEBUG
                     c_sock.write resp.join unless resp.nil?
@@ -307,13 +308,13 @@ module Watobo #:nodoc: all
 
                 # check if response should be passed through
                 #Thread.current.exit if isPassThrough?(req, resp, s_sock, c_sock)
-                if isPassThrough?(req, resp, s_sock, c_sock)
-                  puts "[Interceptor] PassThrough >> #{req.url}"
-                  Watobo::HTTPSocket.close s_sock
-                  c_sock.close
-                  Thread.exit
-                end
-
+                #if isPassThrough?(req, resp, s_sock, c_sock)
+                #  puts "[Interceptor] PassThrough >> #{req.url}"
+                #  Watobo::HTTPSocket.close s_sock
+                #  c_sock.close
+                #  Thread.exit
+                #end
+=begin
                 begin
                   missing_credentials = false
                   rs = resp.status
@@ -359,16 +360,16 @@ module Watobo #:nodoc: all
                   puts bang.backtrace if $DEBUG
                   #  puts "* Error sending request"
                 end
-
+=end
                 begin
                   # Watobo::Response.create resp
                   #resp = Watobo::Response.new resp
                   # puts "* unchunk response ..."
                   resp.unchunk!
                   # puts "* unzip response ..."
-                  resp.unzip!
+                  #resp.unzip!
 
-                  if Watobo::Interceptor.rewrite_responses? then
+                  if Watobo::Interceptor.rewrite_responses?
                     Interceptor::ResponseCarver.shape(resp, flags)
                   end
 
@@ -388,6 +389,7 @@ module Watobo #:nodoc: all
                   # puts ">>C<< - Close: #{request.connection_close?}"
                   # request.headers("Connection"){ |h| puts h }
 
+                  missing_credentials = false
                   if missing_credentials
                     resp.set_header("Connection", "close")
                   elsif request.connection_close? or resp.content_length < 0 or max_loop > 4
@@ -398,9 +400,10 @@ module Watobo #:nodoc: all
                     resp.set_header("Keep-Alive", "max=4, timeout=120")
                   end
 
-                  resp_data = resp.join
-                  c_sock.write resp_data
-
+                  #binding.pry
+                  #resp_data = resp.join
+                  c_sock.write resp.to_s
+                  #binding.pry
                   chat = Chat.new(request.copy, resp.copy, :source => CHAT_SOURCE_INTERCEPT)
 
                   # we have to add chat to the global Chats before we send it to the passive scanner,

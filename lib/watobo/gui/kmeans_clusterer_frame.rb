@@ -181,7 +181,7 @@ module Watobo #:nodoc: all
       def start_update_timer(interval = 500)
 
         @timer = FXApp.instance.addTimeout(interval, :repeat => true) {
-          print '*'
+          #print '*'
           progress = {}
           @progress_lock.synchronize do
             progress = @progress.clone

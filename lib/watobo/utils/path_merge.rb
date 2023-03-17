@@ -7,6 +7,9 @@ module Watobo
       target_dirs = target.split('/')
       # if base does not start with '/' iterations will not work because first element of base is not empty
       # so we might have to manually add this
+      # if base is '/' we have an empty array after split (first element is nil!)
+      # so we manually have to insert an empty string
+      base_dirs.unshift('') unless base_dirs.first
       base_dirs.unshift('') unless base_dirs.first.strip.empty?
 
       base_dirs.length.times do |bi|
