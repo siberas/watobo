@@ -4,11 +4,29 @@ module Watobo #:nodoc: all
     class Sequencer
       include Watobo::Settings
 
+      @@sequences = {}
+      @@sequence = nil
+
+      def self.current
+        @@sequence
+      end
+
+      def self.get_sequence(name)
+      @@sequences[name.downcase.to_sym]
+      end
+
+      def self.add_sequence(sequence)
+        @@sequences[sequence.name.downcase.to_sym] = sequence
+        @@sequence = sequence
+      end
+
       class Gui < Watobo::PluginGui
 
         window_title "Sequencer"
         # icon_file "sequence32x32.png"
         icon_file "sequence_32x32.png"
+
+        attr :sequence
 
         def start
           @results = []
@@ -147,6 +165,7 @@ module Watobo #:nodoc: all
             @sequence = Watobo::Sequence.create filename
             @sequence_name_dt.value = @sequence.name
             @list_frame.update_elements @sequence
+            Watobo::Plugin::Sequencer.add_sequence @sequence
           end
         end
 

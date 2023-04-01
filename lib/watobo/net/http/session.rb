@@ -14,24 +14,23 @@ module Watobo
         @@login_cv = ConditionVariable.new
 
         DEFAULT_PREFS = {
-            logout_signatures: [],
-            logout_content_types: Hash.new,
-            update_valid_sids: false,
-            update_sids: false,
-            update_otts: false,
-            update_session: true,
-            update_contentlength: true,
-            custom_error_patterns: [],
-            login_chats: [],
-            www_auth: Hash.new,
-            client_certificate: {},
-            proxy: nil,
-            follow_redirects: false,
-            egress_handler: nil,
-            timeout: 60
+          logout_signatures: [],
+          logout_content_types: Hash.new,
+          update_valid_sids: false,
+          update_sids: false,
+          update_otts: false,
+          update_session: true,
+          update_contentlength: true,
+          custom_error_patterns: [],
+          login_chats: [],
+          www_auth: Hash.new,
+          client_certificate: {},
+          proxy: nil,
+          follow_redirects: false,
+          egress_handler: nil,
+          timeout: 60
 
         }
-
 
         def initialize(session = nil, prefs = {})
           @ott_cache = nil # Watobo::OTTCache.acquire(request)
@@ -49,9 +48,7 @@ module Watobo
 
           puts JSON.pretty_generate @settings if $DEBUG
 
-
         end
-
 
         def on_header(&block)
           @on_header_cb = block
@@ -67,9 +64,9 @@ module Watobo
               @@login_in_progress = true
               login_prefs = Hash.new
               login_prefs.update prefs
-              dummy = {:ignore_logout => true, :update_sids => true, :update_session => true, :update_contentlength => true}
+              dummy = { :ignore_logout => true, :update_sids => true, :update_session => true, :update_contentlength => true }
               login_prefs.update dummy
-              puts "! Start Login ..." #if $DEBUG
+              puts "! Start Login ..." # if $DEBUG
               unless chat_list.empty?
                 #  puts login_prefs.to_yaml
                 chat_list.each do |chat|
@@ -111,7 +108,8 @@ module Watobo
           # update session from sid_cache
           @sid_cache.update_request(request) if cprefs[:update_session] == true
 
-          if request.method =~ /(post|put)/i
+          # multipart requests also require a content-length header
+          if request.method =~ /(post|put)/i #&& request.content_type !~ /multipart/i
             request.fix_content_length
           else
             request.removeHeader('Content-Length')
@@ -122,6 +120,8 @@ module Watobo
           #
           # Engress Handler
           h = Watobo::EgressHandlers.create cprefs[:egress_handler]
+
+          #puts request.to_s.inspect
           h.execute request unless h.nil?
 
           #
@@ -129,23 +129,24 @@ module Watobo
           sender = Watobo::Net::Http::Sender.new cprefs
           request, response = sender.exec request
 
-          #puts "!!!!!!!!!!!!!!!!! GOT ANSWER !!!!!!!!!!!!!"
+          # puts "!!!!!!!!!!!!!!!!! GOT ANSWER !!!!!!!!!!!!!"
           # TODO: Update-Sid, Check-Logout
-          @sid_cache.update_sids(request.site, response.headers) if cprefs[:update_sids] == true
+          if request && response
+            @sid_cache.update_sids(request.site, response.headers) if cprefs[:update_sids] == true
+          end
 
           [request, response]
         end
-
 
         def update_tokens(request)
 
           unless Watobo::OTTCache.requests(request).empty? or @settings[:update_otts] == false
             Watobo::OTTCache.requests(request).each do |req|
 
-              #binding.pry
+              # binding.pry
               copy = Watobo::Request.new YAML.load(YAML.dump(req))
 
-              #updateCSRFToken(csrf_cache, copy)
+              # updateCSRFToken(csrf_cache, copy)
               ott_cache.update_request(copy)
 
               socket, ott_request, ott_response = sendHTTPRequest(copy, opts)
@@ -153,18 +154,17 @@ module Watobo
               #  puts "= Response Headers:"
               #  puts csrf_response
               #  puts "==="
-              #update_sids(csrf_request.host, csrf_response.headers)
+              # update_sids(csrf_request.host, csrf_response.headers)
               @sid_cache.update_sids(csrf_request.site, csrf_response.headers) if @settings[:update_sids] == true
               next if socket.nil?
               #  p "*"
               #    csrf_response = readHTTPHeader(socket)
-              #binding.pry
-              #unless opts.has_key?(:skip_body) and opts[:skip_body] == true
-                readHTTPBody(socket, ott_response, ott_request, opts)
-              #end
+              # binding.pry
+              # unless opts.has_key?(:skip_body) and opts[:skip_body] == true
+              readHTTPBody(socket, ott_response, ott_request, opts)
+              # end
 
               # response = Response.new(csrf_response)
-
 
               next unless ott_response.has_body?
 
@@ -179,8 +179,8 @@ module Watobo
               # socket.close
               closeSocket(socket)
             end
-            #p @session[:csrf_requests].length
-            #updateCSRFToken(csrf_cache, request)
+            # p @session[:csrf_requests].length
+            # updateCSRFToken(csrf_cache, request)
             ott_cache.update_request(request)
           end
 

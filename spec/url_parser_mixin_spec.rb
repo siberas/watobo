@@ -53,7 +53,6 @@ EOF
 
     it '.file' do
       expect(request.file).to eq('here.php')
-      binding.pry
     end
 
     it '.file_ext' do

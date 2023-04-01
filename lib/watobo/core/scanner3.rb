@@ -260,7 +260,7 @@ module Watobo #:nodoc: all
             @active_checks.uniq.each do |ac|
               ac.reset()
               # if site_alive?(chat) then
-              puts "Generating Tasks for #{ac}"
+              puts "Generating Tasks for #{ac.class.to_s}" if $VERBOSE
               ac.generateChecks(chat) { |check|
                 while @tasks.size > @max_tasks
                   sleep 1

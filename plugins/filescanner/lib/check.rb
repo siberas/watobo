@@ -154,6 +154,7 @@ module Watobo #:nodoc: all
                 # puts ">> #{new_uri}"
                 sample.replaceFileExt(uri)
 
+
                 evasions(sample) do |test|
                   checker = proc {
 

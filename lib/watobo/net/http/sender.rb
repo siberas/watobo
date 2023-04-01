@@ -100,6 +100,10 @@ module Watobo
             do_header header
 
             response = read_body(socket, header)
+
+            # TODO: read extra body, maybe there might be some additional data on socket after reading only content-length
+            # ????
+            #
             t_end = Process.clock_gettime(Process::CLOCK_REALTIME)
 
             socket.close
@@ -109,6 +113,12 @@ module Watobo
           rescue ::Net::ReadTimeout => bang
             t_end = Process.clock_gettime(Process::CLOCK_REALTIME)
             response = error_response bang unless response
+          rescue OpenSSL::SSL::SSLError => e
+            unless header
+              response = error_response e
+            else
+              response = header
+            end
           rescue => bang
             response = error_response bang
             error = bang
@@ -172,11 +182,11 @@ module Watobo
           uri_cache = request.remove_uri unless proxy?
           data = request.join
 
+
           unless request.has_body?
             data << "\r\n" unless data =~ /\r\n\r\n$/
           end
 
-          # puts "+ send:\n#{data}"
           socket.write data
 
           request.restore_uri(uri_cache) unless proxy?
@@ -208,14 +218,15 @@ module Watobo
 
           #binding.pry
           begin
+            body = ''
             if response.is_chunked?
               body = read_chunked(sock)
               response.set_body body
               response.removeHeader("Transfer-Encoding")
               response.set_header("Content-Length", "#{body.length}")
               return response
-            elsif clen > 0
-              body = sock.read(clen)
+            elsif clen >= 0
+              body = sock.read(clen) unless clen == 0
             else
               #puts "!!!! start read_all !!!"
               #puts sock.class.to_s

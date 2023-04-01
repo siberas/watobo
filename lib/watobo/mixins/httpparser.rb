@@ -79,6 +79,11 @@ module Watobo #:nodoc: all
           end
         end
 
+        def http_version
+          m = self.first.match(/HTTP\/(.*)$/)
+          m[1] || nil
+        end
+
         def file_ext
           #@file_ext ||= nil
           # return @file_ext unless @file_ext.nil?
@@ -220,6 +225,10 @@ module Watobo #:nodoc: all
             break if h.strip.empty?
           end
           return false
+        end
+
+        def has_content_length?
+          content_length >= 0
         end
 
         def url_string

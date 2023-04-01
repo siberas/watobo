@@ -6,7 +6,6 @@ module Watobo
         include Watobo::Mixins::RequestParser
         include Watobo::Constants
 
-
         attr :name
         attr_accessor :request, :pre_script, :post_script, :enabled, :egress_handler
 
@@ -27,12 +26,19 @@ module Watobo
         end
 
         def run_pre(request)
-          eval(pre_script)
+          pre_lambda = eval(pre_script)
 
         end
 
         def run_post(request, response)
-          eval(post_script)
+          post_lambda = eval(post_script)
+          if post_lambda.arity == 1
+            post_lambda.call response
+          elsif post_lambda.arity == 2
+            post_lambda.call request, response
+          else
+            post_lambda.call
+          end
         end
 
         def enabled?
@@ -47,7 +53,7 @@ module Watobo
           @enabled = false
         end
 
-        def initialize(sequence, prefs)
+        def initialize(sequence,prefs)
           @request = nil
           @pre_script = nil
           @post_script = nil
@@ -56,23 +62,21 @@ module Watobo
           @sequence = sequence
           @sender = Watobo::Session.new
 
-          %w( name request pre_script post_script enable egress_handler ).each do |e|
-            instance_variable_set("@#{e}", prefs[e.to_sym])
+          %w( name request pre_script post_script enabled egress_handler ).each do |e|
+            instance_variable_set("@#{e}", prefs[e.to_sym]) if prefs[e.to_sym]
           end
         end
 
-        def exec(nprefs={}, &block)
+        def exec(nprefs = {}, &block)
           begin
             request = to_request
 
-
-
-            prefs = { logging: false}
+            prefs = { logging: false }
             prefs.update nprefs
 
             unless pre_script.nil? or pre_script.empty?
-              #f = eval(element.pre_script)
-              #f.call(request) if f.respond_to? :call
+              # f = eval(element.pre_script)
+              # f.call(request) if f.respond_to? :call
               run_pre(request)
             end
 
@@ -87,8 +91,8 @@ module Watobo
             test_req, response = @sender.doRequest(request, prefs)
 
             unless post_script.nil? or post_script.empty?
-              #f = eval(element.post_script)
-              #f.call(response) if f.respond_to? :call
+              # f = eval(element.post_script)
+              # f.call(response) if f.respond_to? :call
               run_post(request, response)
             end
 
@@ -102,7 +106,6 @@ module Watobo
           end
           return nil
         end
-
 
         def method_missing?(name, *args, &block)
           v = @sequence.vars[name.downcase]
