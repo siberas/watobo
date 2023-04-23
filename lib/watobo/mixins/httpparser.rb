@@ -32,12 +32,17 @@ module Watobo #:nodoc: all
       module Url
         include Watobo::Constants
 
+        # @return shortened URL (without query) [String]
+        # e.g.uri = URI.parse 'https://www.siberas.de/xxx/y.php?w=1'
+        # => "https://www.siberas.de/xxx/y.php"
         def short
           uri = URI.parse(url_string)
           return File.join(uri.origin, uri.path) if uri.origin
           nil
         end
 
+        # @return URI.origin [String]
+        # => "https://www.siberas.de"
         def origin
           uri = URI.parse(url_string)
           uri.origin

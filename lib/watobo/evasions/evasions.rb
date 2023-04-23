@@ -80,6 +80,7 @@ module Watobo
         end
 
         active_handlers = evasion_handlers.values
+
         unless evasion_filter.empty?
           active_handlers = []
           evasion_handlers.each { |n, h|
