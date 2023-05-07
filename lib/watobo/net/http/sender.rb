@@ -274,7 +274,6 @@ module Watobo
           response
         end
 
-
         def connect(request)
           if proxy?
             conn_host = @proxy.host
