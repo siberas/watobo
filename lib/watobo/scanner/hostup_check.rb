@@ -21,7 +21,7 @@ module Watobo
               origin = input.deq
               begin
                 req = Watobo::Request.new(origin)
-                #binding.pry
+
                 sender = Watobo::Net::Http::Sender.new @prefs
                 request, response = sender.exec req
                 puts response.status_code
@@ -48,6 +48,7 @@ module Watobo
           results << result_queue.deq
         end
 
+        binding.pry
         results.compact
       end
 

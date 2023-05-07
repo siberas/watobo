@@ -1,4 +1,4 @@
-module Watobo::EvasionHandler
+module Watobo::EvasionHandlers
   # SRC: https://github.com/gorilla/handlers/blob/master/proxy_headers.go#L13
   # // RFC7239 defines a new "Forwarded: " header designed to replace the
   # 	// existing use of X-Forwarded-* headers.
@@ -11,12 +11,18 @@ module Watobo::EvasionHandler
   # 	// prefixed by 'proto='. The match is case-insensitive.
   # 	protoRegex = regexp.MustCompile(`(?i)(?:proto=)(https|http)`)
   # )
-  class HttpHeaders
-    EVASION_SRC_HEADERS = %w( Via X-Originating-IP X-Forwarded-Host X-Forwarded-For X-Real-IP X-Remote-IP X-Remote-Addr )
+  class HttpHeaders < EvasionHandlerBase
+
+    prio 3
+
+    EVASION_SRC_HEADERS = %w( Via X-Originating-IP X-Forwarded-Host X-Forwarded-For X-Original-Forwarded-For X-Real-IP True-Client-IP X-True-IP X-Remote-IP X-Remote-Addr )
     EVASION_LOCATIONS = [
       '127.0.0.1',
       '::1',
-      '172.17.0.10' # Docker IPs
+      'null',
+      '0',
+      '172.17.0.10',  # Docker IPs
+      '100.64.0.1'    # Tailscale VPN
     # Todo: Add more IP locations for evasions
     # + public IP of server
     # + IPs of associated networks
@@ -39,11 +45,12 @@ module Watobo::EvasionHandler
       end
 
       EVASION_LOCATIONS.each do |loc|
-        E
-        location = "for:#{loc};proto=#{proto};by=#{loc}"
-        test = request.clone
+        EVASION_PROTOS.each do |proto|
+          location = "for:#{loc};proto=#{proto};by=#{loc}"
+          test = request.clone
           test.set_header "Forwarded: #{location}"
           yield test
+        end
       end
     end
   end

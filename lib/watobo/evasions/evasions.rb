@@ -1,4 +1,6 @@
 require 'pry'
+require_relative './evasion_base'
+
 module Watobo
   # module for evasion functions
   # must be include in active check sub-classes - NOT inside ActiveCheck directly, because dynamic functions will not be inherited
@@ -7,6 +9,11 @@ module Watobo
   #     class MyCheck < ActiveCheck
   #       include Watobo::Evasions
   #
+  # it will provide some functions to the class for handling  the evasion handlers
+  # evasion_handlers(['slash']) do |h| puts h.name ; end
+  #
+  # or sort by prio ritiy:
+  # evasion_handlers().sort_by{|h| h.prio }.map{|h| puts "#{h.name}: #{h.prio}" }
   #
   module Evasions
 
@@ -14,10 +21,16 @@ module Watobo
     @evasion_enabled = true
 
     def self.add_handlers
-      Watobo::EvasionHandler.constants.each do |handler|
-        h = Watobo::EvasionHandler.class_eval(handler.to_s)
-        @evasion_handlers[handler] = h.new
+      Watobo::EvasionHandlers.constants.each do |handler|
+        # don''t add the base class
+        next if handler.to_s =~ /EvasionHandlerBase/i
+        h = Watobo::EvasionHandlers.class_eval(handler.to_s)
+        @evasion_handlers[handler] = h
       end
+    end
+
+    def self.evasion_handlers
+      @evasion_handlers
     end
 
     def self.dryrun(request)
@@ -31,7 +44,7 @@ module Watobo
       stats
     end
 
-    def self.load_handlers
+    def self.init_handlers
       puts "+ [#{self}] load evasion handlers ..."
       Dir.glob("#{File.dirname(__FILE__)}/buildin/*.rb").map do |f|
         print '+' if $DEBUG
@@ -49,30 +62,31 @@ module Watobo
       @evasion_handlers.map { |k, v| k.to_s }
     end
 
-    def evasion_enabled?
-      @evasion_enabled ||= true
-      @evasion_enabled
+    # @param filters [Array] of Regexs for filtering evasion handlers by their name
+    # @return Array of EvasionHandlers which names matched the filters
+    #
+    def evasion_handlers(filters=nil, &block)
+      handlers = self.class.instance_variable_get(:@evasion_handlers)
+      active_handlers = []
+
+      active_filters = filters || ['.*']
+      active_filters = [ active_filters] if active_filters.is_a? String
+
+      handlers.sort_by { |h | h.prio }.each do |h|
+        active_filters.each do |f|
+          p = ( f == :all ? '.*' : f )
+          next unless h.name =~ /#{p}/i
+          active_handlers << h
+          # we cannot yield to the block, because it is passed as a proc.
+          # yield h if block_given?
+          # instead we call the proc
+          yield h if block_given?
+        end
+      end
+      active_handlers
     end
 
-    def enable_evasion
-      @evasion_enabled = true
-    end
-
-    def disable_evasion
-      @evasion_enabled = false
-    end
-
-    # @param filter [Array] of regexes
-    def evasion_filter=(filter)
-      @evasion_filter = filter
-    end
-
-    def evasion_filter
-      @evasion_filter ||= []
-      @evasion_filter
-    end
-
-    def evasions(request, &block)
+    def evasions_OBSOLETE(request, &block)
       begin
         unless evasion_enabled?
           yield request
@@ -83,9 +97,9 @@ module Watobo
 
         unless evasion_filter.empty?
           active_handlers = []
-          evasion_handlers.each { |n, h|
+          evasion_handlers.each { |name, handler|
             evasion_filter.each do |f|
-              active_handlers << h if n =~ /#{f}/i
+              active_handlers << handler if name =~ /#{f}/i
             end
           }
         end
@@ -99,19 +113,35 @@ module Watobo
       rescue => bang
         puts bang
         puts bang.backtrace
-        binding.pry
+        # binding.pry
       end
     end
 
+    # if
     def self.included(base)
       base.extend self
-      base.instance_variable_set(:@evasion_handlers, @evasion_handlers)
+      base.instance_variable_set(:@evasion_handlers, evasion_handlers.values.map { |h| h.new })
+      # base.const_set :Evasions, evasion_handlers
 
-      base.define_method :evasion_handlers do
-        self.class.instance_variable_get("@evasion_handlers");
+=begin
+      base.define_method(:evasion_handlersXXX) do |filters = nil, &block|
+        handlers = self.class.instance_variable_get(:@evasion_handlers)
+        active_handlers = []
+
+        active_filters = filters || ['.*']
+        handlers.each do |h|
+          active_filters.each do |f|
+            next unless h.name =~ /#{f}/i
+            active_handlers << h
+            # we cannot yield to the block, because it is passed as a proc.
+            # yield h if block_given?
+            # instead we call the proc
+            block.call(h) if block
+          end
+        end
+        active_handlers
       end
-
-      #base.class_eval { attr_reader :evasion_xxx }
+=end
     end
 
 =begin
@@ -158,29 +188,30 @@ module Watobo
     end
 =end
 
-    class Proxy
-      include Evasions
-    end
+    # the Proxy is only a dummy object used by the the latter methods
+    # class Proxy
+    #  include Evasions
+    # end
 
-    def self.evasions(*args, &block)
-      Proxy.evasions(*args, &block)
-    end
+    # def self.evasions(*args, &block)
+    #  Proxy.evasions(*args, &block)
+    # end
 
-    def self.evasion_enabled?(*args, &block)
-      Proxy.evasion_enabled?(*args, &block)
-    end
+    # def self.evasion_enabled?(*args, &block)
+    #  Proxy.evasion_enabled?(*args, &block)
+    # end
 
-    def self.enable_evasion(*args, &block)
-      Proxy.enable_evasion(*args, &block)
-    end
+    # def self.enable_evasion(*args, &block)
+    #  Proxy.enable_evasion(*args, &block)
+    # end
 
-    def self.disable_evasion(*args, &block)
-      Proxy.disable_evasion(*args, &block)
-    end
+    # def self.disable_evasion(*args, &block)
+    #  Proxy.disable_evasion(*args, &block)
+    # end
   end
 end
 
-Watobo::Evasions.load_handlers
+Watobo::Evasions.init_handlers
 
 if $0 == __FILE__
   require 'devenv'
@@ -197,7 +228,6 @@ Content-Length: 0
 Upgrade-Insecure-Requests: 1
 Connection: close
 EOF
-
 
   request = Watobo::Utils.text2request rstr
 

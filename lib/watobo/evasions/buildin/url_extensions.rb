@@ -1,5 +1,7 @@
-module Watobo::EvasionHandler
-  class UrlExtensions
+module Watobo::EvasionHandlers
+  class UrlExtensions < EvasionHandlerBase
+
+    prio 2
 
     def run(request, &block)
       puts "! run evasion #{self}" if $DEBUG

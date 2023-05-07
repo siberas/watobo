@@ -46,7 +46,7 @@ module Watobo #:nodoc: all
             # pulls new task from queue, waits if no task is available
             task = @tasks.deq
             begin
-              puts "RUNNING #{task[:module]}" if $DEBUG
+              puts "RUNNING #{task[:module]}" #if $DEBUG
               request, response = task[:check].call()
 
               next if response.nil?
@@ -231,10 +231,12 @@ module Watobo #:nodoc: all
       @prefs.update check_prefs
 
       checker = Watobo::Scanner::HostupCheck.new @prefs
+
       @origins_alive = checker.get_alive_sites(@chat_list)
 
       valid_chats = @chat_list.select { |chat| @origins_alive.include?(chat.request.origin) }
 
+      binding.pry
       patterns = auto_collect_404(valid_chats, @prefs)
       @prefs[:custom_error_patterns].concat patterns
       @prefs[:custom_error_patterns].uniq!
@@ -244,6 +246,7 @@ module Watobo #:nodoc: all
       notify(:logger, LOG_INFO, msg)
       puts msg
       puts @prefs.to_yaml if $VERBOSE
+
 
       # starting workers before check generation
       start_workers(@prefs)
@@ -261,6 +264,7 @@ module Watobo #:nodoc: all
               ac.reset()
               # if site_alive?(chat) then
               puts "Generating Tasks for #{ac.class.to_s}" if $VERBOSE
+              binding.pry
               ac.generateChecks(chat) { |check|
                 while @tasks.size > @max_tasks
                   sleep 1

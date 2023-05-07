@@ -44,34 +44,34 @@ module Watobo #:nodoc: all
         scan_prefs.update prefs
 
         if $VERBOSE
-          puts "=== FILESCANNER RUN ==="
+          puts "=== FILESCANNER RUN PREFS ==="
           puts scan_prefs
           puts '---'
           puts Watobo::Conf::Scanner.to_h
         end
 
-        Thread.new {
-          @@lock.synchronize {
-            patterns = get_not_found_pattern(scan_prefs)
-            scan_prefs[:custom_error_patterns].concat patterns
-            scan_prefs[:custom_error_patterns].uniq!
+        # Thread.new {
+        #  @@lock.synchronize {
+        #    patterns = get_not_found_pattern(scan_prefs)
+        #    scan_prefs[:custom_error_patterns].concat patterns
+        #    scan_prefs[:custom_error_patterns].uniq!
 
-            if $VERBOSE || $DEBUG
-              puts '>>> PATTERNS <<<'
-              puts scan_prefs[:custom_error_patterns].to_yaml
-              puts '--- EOP ---'
-            end
-          }
+        #if $VERBOSE || $DEBUG
+        #      puts '>>> PATTERNS <<<'
+        #      puts scan_prefs[:custom_error_patterns].to_yaml
+        #      puts '--- EOP ---'
+        #    end
+        #  }
 
-        }
+        #}
 
         # sleep a bit to ensure that thread for get_not_found_patterns gets @@lock first
-        sleep 1
+        #sleep 1
 
         Thread.new {
           @@lock.synchronize {
             @check = Watobo::Plugin::Filescanner::Check.new Watobo.project, @file_list, scan_prefs
-            @scanner = Watobo::Scanner3.new(@chat_list, [@check], [], scan_prefs)
+            @scanner = Watobo::Scanner3.new(@chat_list, [@check], @passive_checks, scan_prefs)
             @scanner.subscribe(:scanner_finished){
               @status = STATUS_FINISHED
             }
@@ -187,16 +187,24 @@ module Watobo #:nodoc: all
         @settings = OpenStruct.new prefs
         @chat_list = nil
         @file_list = nil
-        @status =
+        @passive_checks = []
+        @status = STATUS_IDLE
+        @enable_passive_checks = !!prefs[:run_passive_checks]
 
         file_list_init
         chatlist_init
+
+        init_passive_checks(prefs[:passive_check_filter]) if @enable_passive_checks
 
 
       end
 
 
       private
+
+      def init_passive_checks(filter)
+
+      end
 
       #def scan_prefs
       #  sprefs = Watobo.project.getScanPreferences

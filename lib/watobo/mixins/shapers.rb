@@ -55,8 +55,9 @@ module Watobo #:nodoc: all
         end
 
         def replaceQuery(new_query)
-          new_query.gsub!(/^\//, "")
-          self.first.gsub!(/(.*\/)(.*) (HTTP.*)/i, "\\1#{new_query} \\3")
+          m, method, scheme, site, port, path, query, version = self.first.match(/#{URL_SPLIT}/i).to_a
+          new_url = "#{scheme}://#{site}#{( port.nil? ? '' : ':' + port)}#{path}?#{new_query}"
+          replaceURL(new_url)
         end
 
         def strip_path()
@@ -302,7 +303,7 @@ module Watobo #:nodoc: all
 
         def fix_content_length
           # blen = self.has_body? ? self.body.force_encoding("ASCII-8BIT").length : 0
-          blen = self.has_body? ? self.raw_body.length : 0
+          blen = self.has_body? ? self.raw_body.bytesize : 0
           set_header("Content-Length", blen)
         end
 

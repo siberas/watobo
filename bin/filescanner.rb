@@ -29,6 +29,8 @@ OPTS = Optimist::options do
   opt :config, "file with additional configuration settings in JSON format", :type => :string
   opt :quiet, "no unneccessary output"
   opt :run_passive_checks, "run passive checks during scan"
+  opt :passive_check_filter, "filter for passive checks", type: :string, default:  '.*'
+  opt :rating, "set vuln rating for valid files[ 1(low) - 5 (critical) ]", type: :string, default: '0'
 
 end
 

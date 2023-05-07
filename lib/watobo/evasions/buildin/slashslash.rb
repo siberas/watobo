@@ -1,5 +1,7 @@
-module Watobo::EvasionHandler
-  class SlashSlash
+module Watobo::EvasionHandlers
+  class SlashSlash < EvasionHandlerBase
+
+    prio 2
 
     def run(request, &block)
       test = request.clone

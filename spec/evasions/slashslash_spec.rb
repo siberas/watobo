@@ -7,9 +7,9 @@ Accept: application/apl.universal.ui.v1+json
 Host: no.existing.host
 EOF
 
-describe Watobo::EvasionHandler::HTTPVersion do
+describe Watobo::EvasionHandlers::HTTPVersion do
   let(:request) { Watobo::Utils.text2request(rt) }
-  let(:evasion) { Watobo::EvasionHandler::SlashSlash.new }
+  let(:evasion) { Watobo::EvasionHandlers::SlashSlash.new }
   it ".run" do
     requests = []
     evasion.run(request) do |r|

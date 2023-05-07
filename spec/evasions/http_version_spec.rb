@@ -25,9 +25,9 @@ Cookie: SESSION=b3b4f247-354e-4e6a-9053-00be75ae7088
 }
 EOF
 
-describe Watobo::EvasionHandler::HTTPVersion do
+describe Watobo::EvasionHandlers::HTTPVersion do
   let(:request) { Watobo::Utils.text2request(rt) }
-  let(:evasion) { Watobo::EvasionHandler::HTTPVersion.new }
+  let(:evasion) { Watobo::EvasionHandlers::HTTPVersion.new }
   it ".run" do
 
 
@@ -35,10 +35,10 @@ describe Watobo::EvasionHandler::HTTPVersion do
     evasion.run(request) do |r|
       requests << r
     end
-    num_evasions =  Watobo::EvasionHandler::HTTPVersion::INJECTIONS.length
+    num_evasions =  Watobo::EvasionHandlers::HTTPVersion::INJECTIONS.length
     expect(requests.length).to be(num_evasions)
     versions = requests.map{|r| r.http_version }
-    Watobo::EvasionHandler::HTTPVersion::INJECTIONS.each do |e|
+    Watobo::EvasionHandlers::HTTPVersion::INJECTIONS.each do |e|
       expect(versions.include?(e)).to be(true)
     end
   end

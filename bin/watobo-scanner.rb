@@ -29,7 +29,7 @@ EOS
   opt :project, "Project name", :type => :string
   opt :session, "Session name", :type => :string
   opt :filter, "Filter (Regex) for active modules <Group>:<Name>, e.g. '.Net:.Net Custom Error'", :type => :string, :default => '.*'
-  opt :config, "use config file"
+  opt :config, "use config file for scanner settings"
   opt :url, "URL, e.g. https://www.somesite.org/xxx", :type => :string
 #  opt :database, "Filename with list of target URLs or simple URL", :type => :string
   opt :logname, "name of log directory", :type => :string

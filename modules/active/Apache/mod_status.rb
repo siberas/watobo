@@ -74,17 +74,13 @@ module Watobo #:nodoc: all
                   test = chat.copyRequest
                   test.setDir(status_path)
 
-                  evasions(test) do |request|
-                    check_list << request
-                  end
-
                   check_list.each do |test|
                     checker = proc {
 
 
                       status, test_request, test_response = fileExists?(test, :default => true)
 
-                      if test_response.status =~ /20/ and test_response.join =~ /Apache Server Status for/i then
+                      if test_response && test_response.status =~ /20/ && test_response.join =~ /Apache Server Status for/i then
 
                         addFinding(test_request, test_response,
                                    :check_pattern => "#{status_path}",
@@ -95,7 +91,7 @@ module Watobo #:nodoc: all
                                    :rating => VULN_RATING_LOW
                         )
 
-                      elsif test_response.status =~ /403/ then
+                      elsif test_response && test_response.status =~ /403/ then
 
                         addFinding(test_request, test_response,
                                    :threat => "Mod-status is installed but access is denied",

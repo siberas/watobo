@@ -124,7 +124,7 @@ module Watobo
             error = bang
             if $DEBUG
               puts bang.backtrace
-              binding.pry
+              # binding.pry
             end
           end
           # puts response
@@ -182,7 +182,6 @@ module Watobo
           uri_cache = request.remove_uri unless proxy?
           data = request.join
 
-
           unless request.has_body?
             data << "\r\n" unless data =~ /\r\n\r\n$/
           end
@@ -213,10 +212,37 @@ module Watobo
           nil
         end
 
+        def data_available?(sock, timeout = 1)
+          read_sockets, _, _ = IO.select([sock.io], nil, nil, timeout)
+          !read_sockets.nil? && !read_sockets.empty?
+        end
+
+        def read_all_nonblock(sock, timeout = 5)
+          result = []
+
+          loop do
+            break unless data_available?(sock, timeout)
+
+            begin
+              data = sock.io.read_nonblock(4096)
+              result << data
+            rescue IO::WaitReadable
+              # The socket is not readable, retry after a short delay
+              sleep(0.1)
+            rescue EOFError
+              # The socket is closed, exit the loop
+              break
+            end
+          end
+
+          # binding.pry
+          result.join
+        end
+
         def read_body(sock, response)
           clen = response.content_length
 
-          #binding.pry
+          # binding.pry
           begin
             body = ''
             if response.is_chunked?
@@ -225,13 +251,16 @@ module Watobo
               response.removeHeader("Transfer-Encoding")
               response.set_header("Content-Length", "#{body.length}")
               return response
+              # TODO: check which kind of reading is best
+              # Don't read by length, because if clen is larger than content
+              # an error will be raised and no data is read
             elsif clen >= 0
               body = sock.read(clen) unless clen == 0
             else
-              #puts "!!!! start read_all !!!"
-              #puts sock.class.to_s
-              body = sock.read_all
-              #puts "!!!! FINISHED read_all !!!"
+              puts "!!!! start read_all !!!"
+              # puts sock.class.to_s
+              body = read_all_nonblock(sock)
+              puts "!!!! FINISHED read_all !!!"
             end
             unless body.empty?
               response.set_body body
@@ -240,6 +269,7 @@ module Watobo
           rescue EOFError
             # ignore
           rescue => e
+            #binding.pry
             raise e
           end
 
@@ -349,7 +379,8 @@ module Watobo
         def read_chunked(sock)
           total = 0
           data = ''
-          while true
+          # begin
+          loop do
             line = sock.readline
             # next if line.strip.empty?
             hexlen = line.slice(/[0-9a-fA-F]+/) or raise "wrong chunk size line: #{line}"
@@ -362,9 +393,12 @@ module Watobo
               sock.read 2 # \r\n
             end
           end
-          until sock.readline.empty?
-            # none
-          end
+
+          # binding.pry
+          # data << sock.read_all
+          # rescue
+          #
+          # end
           data
         end
 

@@ -53,6 +53,7 @@ module Watobo #:nodoc: all
     end
 
     def self.clean_response(request, response)
+      min_len = 4
       begin
         return nil if request.nil? || response.nil?
         cleaned_response = response.headers.select { |h| !h.match?(/^Dat/) && !h.match?(/^Content/) }.join("\r\n")

@@ -1,7 +1,9 @@
-module Watobo::EvasionHandler
-  class HTTPVersion
+module Watobo::EvasionHandlers
+  class HTTPVersion < EvasionHandlerBase
 
     INJECTIONS = %w( 4.0 /1.1 * )
+
+    prio 3
 
     def run(request, &block)
       INJECTIONS.each do |v|

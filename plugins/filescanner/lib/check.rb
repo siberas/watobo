@@ -11,17 +11,17 @@ module Watobo #:nodoc: all
         attr_accessor :append_slash
 
         @info.update(
-            :check_name => 'File Scanner', # name of check which briefly describes functionality, will be used for tree and progress views
-            :description => "Test list of file names.", # description of checkfunction
-            :author => "Andreas Schmidt", # author of check
-            :version => "1.0" # check version
+          :check_name => 'File Scanner', # name of check which briefly describes functionality, will be used for tree and progress views
+          :description => "Test list of file names.", # description of checkfunction
+          :author => "Andreas Schmidt", # author of check
+          :version => "1.0" # check version
         )
 
         @finding.update(
-            :threat => 'Hidden files may reveal sensitive information or can enhance the attack surface.', # thread of vulnerability, e.g. loss of information
-            :class => "Hidden-File", # vulnerability class, e.g. Stored XSS, SQL-Injection, ...
-            :type => FINDING_TYPE_VULN, # FINDING_TYPE_HINT, FINDING_TYPE_INFO, FINDING_TYPE_VULN
-            :rating => VULN_RATING_LOW
+          :threat => 'Hidden files may reveal sensitive information or can enhance the attack surface.', # thread of vulnerability, e.g. loss of information
+          :class => "Hidden-File", # vulnerability class, e.g. Stored XSS, SQL-Injection, ...
+          :type => FINDING_TYPE_VULN, # FINDING_TYPE_HINT, FINDING_TYPE_INFO, FINDING_TYPE_VULN
+          :rating => VULN_RATING_LOW
         )
 
         def add_extension(ext)
@@ -53,16 +53,17 @@ module Watobo #:nodoc: all
         def initialize(project, file_list, prefs = {})
           super(project, prefs)
 
-
           @path = nil
           @file_list = file_list
-          @prefs = prefs.to_h
+          @prefs = prefs.dup.to_h
           @known_responses = []
+          @known_paths = []
+          @rating = @prefs.delete(:rating) || VULN_RATING_LOW
         end
-
 
         def reset()
           @known_responses = []
+          @known_paths = []
           # @catalog_checks.clear
         end
 
@@ -139,11 +140,12 @@ module Watobo #:nodoc: all
           return nil
         end
 
-
         def generateChecks(chat)
           begin
             sample_files.each do |uri|
               request_paths(chat) do |rpath|
+                next if @known_paths.include?(rpath)
+
                 test_request = nil
                 test_response = nil
                 # !!! ATTENTION !!!
@@ -153,37 +155,70 @@ module Watobo #:nodoc: all
 
                 # puts ">> #{new_uri}"
                 sample.replaceFileExt(uri)
+                file_exist = false
 
+                checker = proc {
 
-                evasions(sample) do |test|
-                  checker = proc {
+                  found = false
 
-                    #puts test.url if $VERBOSE
-                    fexist, test_request, test_response = fileExists?(test, @prefs)
+                  puts sample.url.to_s
+                  fexist, test_request, test_response = fileExists?(sample, @prefs)
 
-                    if fexist == true
-                      rhash = Watobo::Utils.responseHash(test_request, test_response)
-                      unless @known_responses.include?(rhash)
-                        @known_responses << rhash
-                        addFinding(test_request, test_response,
-                                   :test_item => uri,
-                                   # :proof_pattern => "#{Regexp.quote(uri)}",
-                                   :check_pattern => "#{Regexp.quote(uri)}",
-                                   :chat => chat,
-                                   :threat => "depends on the file ;)",
-                                   :title => "[#{uri}]"
+                  binding.pry
+                  if fexist == true
+                    found = true
+                    rhash = Watobo::Utils.responseHash(test_request, test_response)
+                    unless @known_responses.include?(rhash)
+                      @known_responses << rhash
+                      addFinding(test_request, test_response,
+                                 :test_item => uri,
+                                 # :proof_pattern => "#{Regexp.quote(uri)}",
+                                 :check_pattern => "#{Regexp.quote(uri)}",
+                                 :chat => chat,
+                                 :threat => "depends on the file ;)",
+                                 :title => "[#{uri}]",
+                                 :rating => @rating
 
-                        )
-                      end
-
+                      )
                     end
 
-                    # notify(:db_finished)
-                    [test_request, test_response]
-                  }
-                  yield checker
-                end
+                  end
+                  binding.pry
+                  unless found
+                    evasion_handlers.each do |handler|
+                      # puts test.url if $VERBOSE
+                      next if found
+
+                      handler.run(sample) do |test|
+                        fexist, test_request, test_response = fileExists?(test, @prefs)
+
+                        if fexist == true
+                          found = true
+                          rhash = Watobo::Utils.responseHash(test_request, test_response)
+                          unless @known_responses.include?(rhash)
+                            @known_responses << rhash
+                            addFinding(test_request, test_response,
+                                       :test_item => uri,
+                                       # :proof_pattern => "#{Regexp.quote(uri)}",
+                                       :check_pattern => "#{Regexp.quote(uri)}",
+                                       :chat => chat,
+                                       :threat => "depends on the file ;)",
+                                       :title => "[#{uri}]",
+                                       :rating => @rating
+
+                            )
+                          end
+
+                        end
+                      end
+                    end
+                  end
+                  # notify(:db_finished)
+                  [test_request, test_response]
+                }
+                yield checker
               end
+
             end
           rescue => bang
             puts "!error in module #{Module.nesting[0].name}"
@@ -192,7 +227,7 @@ module Watobo #:nodoc: all
         end
 
         def request_paths(chat, &block)
-          #binding.pry
+          # binding.pry
           unless !!@prefs[:test_sub_dirs]
             yield chat.request.path if block_given?
             return chat.request.path

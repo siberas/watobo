@@ -400,10 +400,17 @@ module Watobo #:nodoc: all
                     resp.set_header("Keep-Alive", "max=4, timeout=120")
                   end
 
-                  #binding.pry
+
                   #resp_data = resp.join
                   c_sock.write resp.to_s
-                  #binding.pry
+
+                  c_sock.flush
+                  # c_sock.write resp.first
+                  #c_sock.write resp.headers.join("\r\n")
+                  #c_sock.write "\r\r"
+                  #if resp.has_body?
+                  #c_sock.write resp.body.to_s
+                  #end
                   chat = Chat.new(request.copy, resp.copy, :source => CHAT_SOURCE_INTERCEPT)
 
                   # we have to add chat to the global Chats before we send it to the passive scanner,

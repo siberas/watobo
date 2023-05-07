@@ -1,5 +1,5 @@
 module Watobo::EvasionHandlers
-  class UrlParameters < EvasionHandlerBase
+  class Queries < EvasionHandlerBase
 
     prio 1
 

@@ -172,6 +172,7 @@ module Watobo #:nodoc: all
           end
         end
 
+        # returns query or empty String if no query is present
         def query
           begin
             q = nil
