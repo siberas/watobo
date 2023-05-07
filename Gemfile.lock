@@ -19,7 +19,7 @@ GEM
       mini_portile2 (~> 2.1)
     http-cookie (1.0.5)
       domain_name (~> 0.5)
-    jwt (2.2.2)
+    jwt (2.7.0)
     kmeans-clusterer (0.11.4)
       narray (~> 0.6)
     mechanize (2.9.1)
@@ -104,10 +104,11 @@ DEPENDENCIES
   damerau-levenshtein
   devenv (= 0.8)!
   fxruby (= 1.6.45)
-  jwt (= 2.2.2)
+  jwt
   kmeans-clusterer
   mechanize
   nfqueue (= 1.0.4)
+  nokogiri
   optimist
   pry
   rspec
