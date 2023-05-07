@@ -1,7 +1,9 @@
 # @private 
-module Watobo#:nodoc: all
+module Watobo #:nodoc: all
 
   class Project
+
+    include Watobo::Subscriber
 
     attr :chats
     attr_accessor :findings
@@ -19,17 +21,7 @@ module Watobo#:nodoc: all
     attr_accessor :excluded_chats
 
     attr :target_filter
-    def subscribe(event, &callback)
-      (@event_dispatcher_listeners[event] ||= []) << callback
-    end
 
-    def notify(event, *args)
-      if @event_dispatcher_listeners[event]
-        @event_dispatcher_listeners[event].each do |m|
-          m.call(*args) if m.respond_to? :call
-        end
-      end
-    end
 
     def sessionSettingsFile
       @session_file
@@ -41,7 +33,7 @@ module Watobo#:nodoc: all
 
     def session_settings()
       s = YAML.load(YAML.dump(scan_settings))
-      sf =  [:logout_signatures, :non_unique_parms, :login_chat_ids, :excluded_chats, :csrf_request_ids, :scope ]
+      sf = [:logout_signatures, :non_unique_parms, :login_chat_ids, :excluded_chats, :csrf_request_ids, :scope]
       s.each_key do |k|
         s.delete k unless sf.include? k
       end
@@ -97,7 +89,6 @@ module Watobo#:nodoc: all
       return nil
     end
 
-    
 
     def getLogoutSignatures
       @scan_settings[:logout_signatures]
@@ -112,7 +103,7 @@ module Watobo#:nodoc: all
     # request: test request which requires csrf handling
     # ids:      csrf request ids of current conversation
     # patterns: csrf patterns for identifiying and updating tokens
-    def setCSRFRequest(request, ids, patterns=[])
+    def setCSRFRequest(request, ids, patterns = [])
       puts "* setting CSRF Request"
       # puts request.class
       #  puts request
@@ -140,22 +131,22 @@ module Watobo#:nodoc: all
     # Helper function to get all necessary preferences for starting a scan.
     def getScanPreferences()
       settings = {
-        :smart_scan => @scan_settings[:smart_scan],
-        :non_unique_parms => @scan_settings[:non_unique_parms],
-        :excluded_parms => @scan_settings[:excluded_parms],
-        :sid_patterns => @scan_settings[:sid_patterns],
-        :csrf_patterns => @scan_settings[:csrf_patterns],
-        :run_passive_checks => false,
-        :login_chat_ids => [],
-        :proxy => getCurrentProxy(),
-        :login_chats => getLoginChats(),
-        :max_parallel_checks => @scan_settings[:max_parallel_checks],
-        :logout_signatures => @scan_settings[:logout_signatures],
-        :custom_error_patterns => @scan_settings[:custom_error_patterns],
-        :scan_session => self.object_id,
-        :www_auth => @scan_settings[:www_auth].nil? ? Hash.new : @scan_settings[:www_auth],
-        :client_certificates => @scan_settings[:client_certificates],
-        :session_store => @session_store
+          :smart_scan => @scan_settings[:smart_scan],
+          :non_unique_parms => @scan_settings[:non_unique_parms],
+          :excluded_parms => @scan_settings[:excluded_parms],
+          :sid_patterns => @scan_settings[:sid_patterns],
+          :csrf_patterns => @scan_settings[:csrf_patterns],
+          :run_passive_checks => false,
+          :login_chat_ids => [],
+          :proxy => getCurrentProxy(),
+          :login_chats => getLoginChats(),
+          :max_parallel_checks => @scan_settings[:max_parallel_checks],
+          :logout_signatures => @scan_settings[:logout_signatures],
+          :custom_error_patterns => @scan_settings[:custom_error_patterns],
+          :scan_session => self.object_id,
+          :www_auth => @scan_settings[:www_auth].nil? ? Hash.new : @scan_settings[:www_auth],
+          :client_certificates => @scan_settings[:client_certificates],
+          :session_store => @session_store
       }
       return settings
     end
@@ -174,9 +165,9 @@ module Watobo#:nodoc: all
       @scan_settings[:client_certificates] = certs
     end
 
-    def add_client_certificate(client_cert={})
+    def add_client_certificate(client_cert = {})
       return false unless client_cert.is_a? Hash
-      [ :site, :certificate_file, :key_file].each do |p|
+      [:site, :certificate_file, :key_file].each do |p|
         return false unless client_cert.has_key? p
       end
       cs = @scan_settings[:client_certificates]
@@ -221,20 +212,20 @@ module Watobo#:nodoc: all
         extend_request(request) unless request.respond_to? :site
         hashbase = request.site + request.method + request.path
         request.get_parm_names.sort.each do |p|
-        # puts "URL-Parm: #{p}"
+          # puts "URL-Parm: #{p}"
           if @scan_settings[:non_unique_parms].include?(p) then
-          hashbase += p + request.get_parm_value(p)
+            hashbase += p + request.get_parm_value(p)
           else
-          hashbase += p
+            hashbase += p
           end
 
         end
         request.post_parm_names.sort.each do |p|
-        # puts "POST-Parm: #{p}"
+          # puts "POST-Parm: #{p}"
           if @scan_settings[:non_unique_parms].include?(p) then
-          hashbase += p + request.post_parm_value(p)
+            hashbase += p + request.post_parm_value(p)
           else
-          hashbase += p
+            hashbase += p
           end
 
         end
@@ -266,7 +257,6 @@ module Watobo#:nodoc: all
       @settings[:project_name]
     end
 
-    
 
     def runLogin
       @sessionMgr.runLogin(loginChats)
@@ -309,24 +299,23 @@ module Watobo#:nodoc: all
       return false if !@scan_settings[:scope][site].nil?
 
       scope_details = {
-        :site => site,
-        :enabled => true,
-        :root_path => '',
-        :excluded_paths => [],
+          :site => site,
+          :enabled => true,
+          :root_path => '',
+          :excluded_paths => [],
       }
 
       @scan_settings[:scope][site] = scope_details
       return true
     end
 
-    
 
-    def setupProject(progress_window=nil)
+    def setupProject(progress_window = nil)
       begin
         puts "DEBUG: Setup Project" if $DEBUG and $debug_project
 
         importSession()
-        puts "* initialize egress handlers ..."
+
         Watobo::EgressHandlers.init
 
 
@@ -338,7 +327,7 @@ module Watobo#:nodoc: all
 
     # returns all chats which are in the target scope
 
-    def chatsInScope_UNUSED(chats=nil, scope=nil)
+    def chatsInScope_UNUSED(chats = nil, scope = nil)
       scan_prefs = @scan_settings
       unique_list = Hash.new
       chatlist = chats.nil? ? @chats : chats
@@ -362,14 +351,14 @@ module Watobo#:nodoc: all
             chat_in_scope = chat
 
             if chat_in_scope and c_scope[:root_path] != ''
-              chat_in_scope = ( chat.request.path =~ /^(\/)?#{c_scope[:root_path]}/i ) ? chat : nil
+              chat_in_scope = (chat.request.path =~ /^(\/)?#{c_scope[:root_path]}/i) ? chat : nil
             end
 
             if chat_in_scope and c_scope[:excluded_paths] and c_scope[:excluded_paths].length > 0
               c_scope[:excluded_paths].each do |p|
-                if ( chat.request.url.to_s =~ /#{p}/i )
+                if (chat.request.url.to_s =~ /#{p}/i)
                   chat_in_scope = nil
-                break
+                  break
                 end
               end
             end
@@ -380,12 +369,12 @@ module Watobo#:nodoc: all
       cis
     end
 
-    
+
     def siteSSL?(site)
       @chats.each do |c|
         if c.request.site == site
           return true if c.request.proto =~ /https/
-        return false
+          return false
         end
       end
     end
@@ -401,7 +390,7 @@ module Watobo#:nodoc: all
       @settings = {}
 
       @active_checks = []
-     # @passive_checks = []
+      # @passive_checks = []
       @plugins = []
 
       @chats = []
@@ -413,7 +402,7 @@ module Watobo#:nodoc: all
       #setDefaults()
 
       # reset counters
-      Watobo::Chat.resetCounters
+      #Watobo::Chat.resetCounters
       Watobo::Finding.resetCounters
 
       # UPDATE SETTINGS
@@ -424,23 +413,23 @@ module Watobo#:nodoc: all
 
       Watobo::ClientCertStore.load
 
-     # raise ArgumentError, "No SessionStore Defined" unless @settings.has_key? :session_store
+      # raise ArgumentError, "No SessionStore Defined" unless @settings.has_key? :session_store
 
-     # @session_store = @settings[:session_store]
+      # @session_store = @settings[:session_store]
       #  @passive_checks = @settings[:passive_checks] if @settings.has_key? :passive_checks
 
-     # @settings[:passive_checks].each do |pm|
-     #   pc = pm.new(self)
-     #   pc.subscribe(:new_finding){ |nf| addFinding(nf) }
-     #   @passive_checks << pc
-     # end
+      # @settings[:passive_checks].each do |pm|
+      #   pc = pm.new(self)
+      #   pc.subscribe(:new_finding){ |nf| addFinding(nf) }
+      #   @passive_checks << pc
+      # end
 
       #      @active_checks = @settings[:active_checks]
       #@settings[:active_checks].each do |am|
       #  ac = am.new(self)
       #  puts "subscribe to #{ac.class}"
       #  ac.subscribe(:new_finding){ |nf| 
-       #   puts "[subscribe] new_finding"
+      #   puts "[subscribe] new_finding"
       #    addFinding(nf)
       #     }
       #  @active_checks << ac
@@ -451,29 +440,37 @@ module Watobo#:nodoc: all
 
       @sessionController = Watobo::Session.new(self)
 
-      @sessionController.addProxy(getCurrentProxy())
+        # @sessionController.addProxy(getCurrentProxy())
 
     end
 
-    
 
     private
 
-    
-    def importSession()
+    def importSession
+      chats = Watobo::DataStore.chat_files.map { |f| Watobo::Utils.loadChatMarshal(f) }
+      #puts "Got #{chats.length} Chats"
+      Watobo::Chats.set chats
+        #notify(:update_chats, chats)
+      findings = Watobo::DataStore.finding_files.map{|f| Watobo::Utils.loadFindingMarshal(f) }
+      #puts "Got #{findings.length} Findings"
+      Watobo::Findings.set findings
+    end
+
+    def importSession_UNUSED()
       num_chats = Watobo::DataStore.num_chats
       num_findings = Watobo::DataStore.num_findings
       num_imports = num_chats + num_findings
       notify(:update_progress, :progress => 0, :total => num_imports, :task => "Import Conversation")
       Watobo::DataStore.each_chat do |c|
-        notify(:update_progress, :increment =>1, :job => "chat #{c.id}" )
-       Watobo::Chats.add(c, :run_passive_checks => false ) if c
+        notify(:update_progress, :increment => 1, :job => "chat #{c.id}")
+        Watobo::Chats.add(c, :run_passive_checks => false) if c
       end
 
       notify(:update_progress, :task => "Import Findings")
       Watobo::DataStore.each_finding do |f|
-        notify(:update_progress, :increment =>1, :job => "finding #{f.id}" )
-        Watobo::Findings.add(f, :notify => true ) if f
+        notify(:update_progress, :increment => 1, :job => "finding #{f.id}")
+        Watobo::Findings.add(f, :notify => true) if f
       end
 
     end

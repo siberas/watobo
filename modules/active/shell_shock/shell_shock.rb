@@ -101,8 +101,8 @@ EOF
               duration = t_stop - t_start
               #  puts duration
               if (duration >= time_to_sleep)
-                puts "Found ShellShock Vulnerablitiy !!!"
-                puts "after #{duration}s / time-to-sleep #{time_to_sleep}s)"
+                #puts "Found ShellShock Vulnerablitiy !!!"
+                #puts "after #{duration}s / time-to-sleep #{time_to_sleep}s)"
 
                 test_request.extend Watobo::Mixin::Parser::Url unless test_request.respond_to? :path
 

@@ -7,7 +7,7 @@ end
 require 'watobo'
 
 cert = {
-                :hostname => 'localhost',
+                :hostname => 'collab.qimera.eu',
                 :type => 'server',
                 :user => 'watobo',
                 :email => 'root@localhost',

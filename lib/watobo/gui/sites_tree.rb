@@ -187,6 +187,7 @@ module Watobo#:nodoc: all
       # end
       def addChatItem(chat)
 
+        return if chat.request.nil? || chat.response.nil?
         site = self.findItem(chat.request.site, nil, SEARCH_FORWARD|SEARCH_IGNORECASE)
 
         if not site then
@@ -248,7 +249,8 @@ module Watobo#:nodoc: all
         @quick_filter[new_item.object_id].push chat
         
         # also add findings here
-        addFindings4Chat(new_item, chat)
+        # TODO: addFindings4Chat takes far too long here. instead create menue item to load findings manually
+        # addFindings4Chat(new_item, chat)
         
         
         end

@@ -25,7 +25,7 @@ module Watobo #:nodoc: all
 
             @finishButton.connect(SEL_COMMAND) do |sender, sel, item|
               #self.handle(self, FXSEL(SEL_COMMAND, ID_CANCEL), nil)
-              @element = Element.new( name: @element_name_dt.value )
+              @element = Element.new( Watobo::Plugin::Sequencer.current, name: @element_name_dt.value )
               self.handle(self, FXSEL(SEL_COMMAND, ID_ACCEPT), nil)
             end
 

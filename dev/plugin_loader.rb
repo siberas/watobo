@@ -7,6 +7,8 @@ $: << inc_path
   require f
 
 end
+FXApp.new('Watobo', 'Plugin Loader')
+
 
 require 'watobo/gui/utils/init_icons'
 require 'watobo/gui/mixins/events'
@@ -33,3 +35,5 @@ require 'watobo/gui/subframes/egress_handler_selection'
 
 
 require File.join(File.dirname(__FILE__), 'plugin_loader', 'gui','main')
+
+Watobo.dev_mode

@@ -34,8 +34,8 @@ module Watobo#:nodoc: all
     # end
 
     def initialize(request, response)
-      @request = Watobo::Request.new request
-      @response = Watobo::Response.new response
+      @request = request.is_a?(Watobo::Request) ? request : Watobo::Request.new(request)
+      @response = response.is_a?(Watobo::Response) ? response : Watobo::Response.new(response)
       @file = nil
 
       #  extendRequest()

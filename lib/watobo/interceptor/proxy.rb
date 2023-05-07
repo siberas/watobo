@@ -171,6 +171,7 @@ module Watobo #:nodoc: all
           while (new_session = server.accept)
             #  new_session.sync = true
             new_sender = Watobo::Session.new(@target)
+
             Thread.new(new_sender, new_session) { |sender, session|
               #puts "* got new request from client"
               c_sock = Watobo::HTTPSocket::ClientSocket.connect(session)
@@ -205,6 +206,7 @@ module Watobo #:nodoc: all
                   if $DEBUG
                     puts bang.backtrace
                     puts request
+                    binding.pry
 
                   end
                   c_sock.close
@@ -248,8 +250,8 @@ module Watobo #:nodoc: all
                 # no preview, check if interception request is turned on
                 if Watobo::Interceptor.rewrite_requests? then
                   Interceptor::RequestCarver.shape(request, flags)
-                  puts "FLAGS >>"
-                  puts flags
+                  # puts "FLAGS >>"
+                  # puts flags
                 end
 
                 if @target and Watobo::Interceptor.intercept_requests? then
@@ -282,10 +284,13 @@ module Watobo #:nodoc: all
 
                 begin
                   puts "+ [PROXY] sending request: \n#{request}\n\n#{prefs.to_json}" if $DEBUG
-                  s_sock, req, resp = sender.sendHTTPRequest(request, prefs)
+
+                  # s_sock, req, resp = sender.sendHTTPRequest(request, prefs)
+                  req, resp = sender.doRequest(request, prefs)
                   # :client_certificates => @client_certificates
                   #)
-                  if s_sock.nil? then
+                  # if s_sock.nil? then
+                  if resp.nil?
                     puts "s_sock is nil! bye, bye, ..."
                     puts request if $DEBUG
                     c_sock.write resp.join unless resp.nil?
@@ -303,13 +308,13 @@ module Watobo #:nodoc: all
 
                 # check if response should be passed through
                 #Thread.current.exit if isPassThrough?(req, resp, s_sock, c_sock)
-                if isPassThrough?(req, resp, s_sock, c_sock)
-                  puts "[Interceptor] PassThrough >> #{req.url}"
-                  Watobo::HTTPSocket.close s_sock
-                  c_sock.close
-                  Thread.exit
-                end
-
+                #if isPassThrough?(req, resp, s_sock, c_sock)
+                #  puts "[Interceptor] PassThrough >> #{req.url}"
+                #  Watobo::HTTPSocket.close s_sock
+                #  c_sock.close
+                #  Thread.exit
+                #end
+=begin
                 begin
                   missing_credentials = false
                   rs = resp.status
@@ -355,16 +360,16 @@ module Watobo #:nodoc: all
                   puts bang.backtrace if $DEBUG
                   #  puts "* Error sending request"
                 end
-
+=end
                 begin
                   # Watobo::Response.create resp
                   #resp = Watobo::Response.new resp
                   # puts "* unchunk response ..."
                   resp.unchunk!
                   # puts "* unzip response ..."
-                  resp.unzip!
+                  #resp.unzip!
 
-                  if Watobo::Interceptor.rewrite_responses? then
+                  if Watobo::Interceptor.rewrite_responses?
                     Interceptor::ResponseCarver.shape(resp, flags)
                   end
 
@@ -384,6 +389,7 @@ module Watobo #:nodoc: all
                   # puts ">>C<< - Close: #{request.connection_close?}"
                   # request.headers("Connection"){ |h| puts h }
 
+                  missing_credentials = false
                   if missing_credentials
                     resp.set_header("Connection", "close")
                   elsif request.connection_close? or resp.content_length < 0 or max_loop > 4
@@ -394,11 +400,25 @@ module Watobo #:nodoc: all
                     resp.set_header("Keep-Alive", "max=4, timeout=120")
                   end
 
-                  resp_data = resp.join
-                  c_sock.write resp_data
 
+                  #resp_data = resp.join
+                  c_sock.write resp.to_s
+
+                  c_sock.flush
+                  # c_sock.write resp.first
+                  #c_sock.write resp.headers.join("\r\n")
+                  #c_sock.write "\r\r"
+                  #if resp.has_body?
+                  #c_sock.write resp.body.to_s
+                  #end
                   chat = Chat.new(request.copy, resp.copy, :source => CHAT_SOURCE_INTERCEPT)
+
+                  # we have to add chat to the global Chats before we send it to the passive scanner,
+                  # because the chat.id is set during add
                   Watobo::Chats.add chat
+                  Watobo::PassiveScanner.add(chat)
+
+
 
                 rescue Errno::ECONNRESET
                   print "x"
@@ -513,11 +533,21 @@ module Watobo #:nodoc: all
         @target = nil
         #  @sender = Watobo::Session.new(@target)
 
-        @bind_addr = Watobo::Conf::Interceptor.bind_addr
-        # puts "> Server: #{@bind_addr}"
-        @port = Watobo::Conf::Interceptor.port
-        # puts "> Port: #{@port}"
-        @proxy_mode = Watobo::Conf::Interceptor.proxy_mode
+
+        unless ENV['WATOBO_BINDING']
+          @bind_addr = Watobo::Conf::Interceptor.bind_addr
+          # puts "> Server: #{@bind_addr}"
+          @port = Watobo::Conf::Interceptor.port
+          # puts "> Port: #{@port}"
+          @proxy_mode = Watobo::Conf::Interceptor.proxy_mode
+        else
+          bip, bport = ENV['WATOBO_BINDING'].split(':')
+          @bind_addr = bip
+          # puts "> Server: #{@bind_addr}"
+          @port = bport
+          # puts "> Port: #{@port}"
+          @proxy_mode = Watobo::Interceptor::MODE_REGULAR
+        end
 
         pt = Watobo::Conf::Interceptor.pass_through
         @contentLength = pt[:content_length]
@@ -785,6 +815,7 @@ module Watobo #:nodoc: all
           chat = Watobo::Chat.new(request, response, :source => CHAT_SOURCE_INTERCEPT)
           #notify(:new_interception, chat)
           Watobo::Chats.add chat
+          #Watobo::PassiveScanner.add(chat)
 
           pass_through(s_sock, c_sock, clen)
           #  puts "* Close Server Socket..."

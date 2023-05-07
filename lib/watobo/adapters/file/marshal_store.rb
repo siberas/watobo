@@ -1,6 +1,9 @@
 # @private 
 module Watobo #:nodoc: all
   class FileSessionStore < SessionStore
+
+    attr :conversation_path, :findings_path
+
     def num_chats
       get_file_list(@conversation_path, "*-chat*").length
     end
@@ -13,7 +16,7 @@ module Watobo #:nodoc: all
       return false unless finding.respond_to? :request
       return false unless finding.respond_to? :response
 
-      finding_file = File.join("#{@findings_path}", "#{finding.id}-finding.mrs")
+      finding_file = File.join("#{@findings_path}", "#{finding.fid}-finding.mrs")
       unless File.exist?(finding_file)
         save_finding(finding_file, finding)
         return true
@@ -22,7 +25,7 @@ module Watobo #:nodoc: all
     end
 
     def delete_finding(finding)
-      finding_file = File.join("#{@findings_path}", "#{finding.id}-finding")
+      finding_file = File.join("#{@findings_path}", "#{finding.fid}-finding")
       File.delete finding_file if File.exist? finding_file
       file = finding_file + ".yml"
       File.delete file if File.exist? file
@@ -33,26 +36,27 @@ module Watobo #:nodoc: all
 
     def save_finding(fname, finding)
       File.open(fname, 'wb') {|f|
-        f.print Marshal::dump(finding.to_h)
+        f.print Marshal::dump(finding)
       }
     end
 
     def save_chat(file, chat)
       File.open(file, 'wb') {|f|
-        f.print Marshal::dump(chat.to_h)
+        f.print Marshal::dump(chat)
       }
     end
 
     def update_finding(finding)
-      finding_file = File.join("#{@findings_path}", "#{finding.id}-finding.mrs")
+      finding_file = File.join("#{@findings_path}", "#{finding.fid}-finding.mrs")
 
-      if File.exist?(finding_file) then
+      # we don't check if file already exists
+      # if File.exist?(finding_file) then
         save_finding(finding_file, finding)
-      end
+      # end
 
     end
 
-    def open_scan(scan_name, &block)
+    def open_scan_UNUSED(scan_name, &block)
       begin
 
         return false if scan_name.nil?
@@ -131,7 +135,7 @@ module Watobo #:nodoc: all
 
         unless File.exist?(file)
           File.open(file, 'wb') {|fh|
-            fh.print Marshal::dump(chat.to_h)
+            fh.print Marshal::dump(chat)
           }
         end
 
@@ -149,7 +153,7 @@ module Watobo #:nodoc: all
 
       unless File.exist?(chat_file)
         File.open(chat_file, "wb") {|fh|
-          fh.print Marshal::dump(chat.to_h)
+          fh.print Marshal::dump(chat)
         }
         chat.file = chat_file
         return true
@@ -157,9 +161,13 @@ module Watobo #:nodoc: all
       return false
     end
 
+    def chat_files
+      get_file_list(@conversation_path, "*-chat*")
+    end
+
     def each_chat(&block)
-      list = get_file_list(@conversation_path, "*-chat*")
-      list.each do |fname|
+      #list = get_file_list(@conversation_path, "*-chat*")
+      chat_files.each do |fname|
         #puts 
         chat = nil
         if fname =~ /\.mrs$/
@@ -172,9 +180,12 @@ module Watobo #:nodoc: all
       end
     end
 
+    def finding_files
+      get_file_list(@findings_path, "*-finding*")
+    end
+
     def each_finding(&block)
-      list = get_file_list(@findings_path, "*-finding*")
-      list.each do |fname|
+      finding_files.each do |fname|
         f = nil
         if fname =~ /\.mrs$/
           f = Watobo::Utils.loadFindingMarshal(fname)
@@ -227,7 +238,7 @@ module Watobo #:nodoc: all
 
       [@conversation_path, @findings_path, @log_path, @scanlog_path].each do |folder|
         if not File.exist?(folder) then
-          puts "create path #{folder}"
+          puts "create path #{folder}" if $VERBOSE
           begin
             Dir.mkdir(folder)
           rescue SystemCallError => bang

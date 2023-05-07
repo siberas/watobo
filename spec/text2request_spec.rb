@@ -1,10 +1,6 @@
-#!/usr/bin/ruby
-require 'devenv'
-require 'watobo'
-
 #
-# After parsing, the Content-Length header should be the size 974
-TEXT=<<EOF
+# After parsing, the Content-Length header should be the size 587
+rt=<<EOF
 POST https://no.existing.host HTTP/1.1
 Host: no.existing.host
 User-Agent: Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:79.0) Gecko/20100101 Firefox/79.0
@@ -38,4 +34,17 @@ Queues
 -----------------------------5543245338999447031528066707--
 EOF
 
-request = Watobo::Utils.text2request(TEXT)
+
+
+describe Watobo::Request do
+  context "Multipart Body" do
+    request = Watobo::Utils.text2request(rt)
+
+    it "body length" do
+      blen = request.body.to_s.length
+      puts blen
+      expect(blen).to eq(587)
+
+    end
+  end
+end

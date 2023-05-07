@@ -1,7 +1,13 @@
 # @private 
 module Watobo #:nodoc: all
 
-  class Session
+  # hakish was of replacing old Session class
+  class Session < Watobo::Net::Http::Session; end
+
+
+
+  # will be deleted in future, only alive for rewriting new Http::Session
+  class SessionV1
 
     include Watobo::Constants
     include Watobo::Subscriber
@@ -18,7 +24,7 @@ module Watobo #:nodoc: all
     @@login_in_progress = false
 
 
-    def runLogin(chat_list, prefs = {})
+    def runLogin(chat_list, prefs = {}, &block)
       #puts @session.object_id
       @@login_mutex.synchronize do
         begin
@@ -27,13 +33,15 @@ module Watobo #:nodoc: all
           login_prefs.update prefs
           dummy = {:ignore_logout => true, :update_sids => true, :update_session => true, :update_contentlength => true}
           login_prefs.update dummy
-          puts "! Start Login ..." if $DEBUG
+          puts "! Start Login ..." #if $DEBUG
           unless chat_list.empty?
             #  puts login_prefs.to_yaml
             chat_list.each do |chat|
+              puts chat.request.url
               puts "! LoginRequest: #{chat.id}" if $DEBUG
               test_req = chat.copyRequest
               request, response = doRequest(test_req, login_prefs)
+              yield [request, response] if block_given?
             end
           else
             puts "! no login script configured !"
@@ -41,6 +49,7 @@ module Watobo #:nodoc: all
         rescue => bang
           puts "!ERROR in runLogin"
           puts bang.backtrace if $DEBUG
+          binding.pry
         ensure
           @@login_in_progress = false
           @@login_cv.signal
@@ -243,6 +252,7 @@ module Watobo #:nodoc: all
             end
 
             data = request.join
+
             unless request.has_body?
               data << "\r\n" unless data =~ /\r\n\r\n$/
             end
@@ -298,11 +308,11 @@ module Watobo #:nodoc: all
         socket = nil
       rescue Timeout::Error
         #request = "WATOBO: TimeOut (#{host}:#{port})\n"
-        response = error_response "TimeOut (#{host}:#{port})"
+        response = error_response "TimeOut::Error (#{host}:#{port})"
         socket = nil
       rescue Errno::ETIMEDOUT
         puts "TimeOut (#{host}:#{port})"
-        response = error_response "TimeOut (#{host}:#{port})"
+        response = error_response "Errno::ETIMEDOUT (#{host}:#{port})"
         socket = nil
       rescue Errno::ENOTCONN
         puts "!!!ENOTCONN"
@@ -333,12 +343,14 @@ module Watobo #:nodoc: all
     # + function:
     #
     def doRequest(request, opts = {})
+
       begin
         ott_cache = Watobo::OTTCache.acquire(request)
         @session.update opts
         #  puts "[doRequest] #{@session.to_yaml}"
         # puts "#[#{self.class}]" + @session[:csrf_requests].first.object_id.to_s
         # unless @session[:csrf_requests].empty? or @session[:csrf_patterns].empty?
+        binding.pry
         unless Watobo::OTTCache.requests(request).empty? or @session[:update_otts] == false
           Watobo::OTTCache.requests(request).each do |req|
 
@@ -356,6 +368,7 @@ module Watobo #:nodoc: all
             next if socket.nil?
             #  p "*"
             #    csrf_response = readHTTPHeader(socket)
+             binding.pry
             unless opts.has_key?(:skip_body) and opts[:skip_body] == true
               readHTTPBody(socket, csrf_response, csrf_request, opts)
             end
@@ -433,8 +446,9 @@ module Watobo #:nodoc: all
         readHTTPBody(socket, response, request, opts)
 
         unless response.body.nil?
-          @sid_cache.update_sids(request.site, [response.body]) if @session[:update_sids] == true and response.content_type =~ /text\//
+          #@sid_cache.update_sids(request.site, [response.body]) if @session[:update_sids] == true and response.content_type =~ /text\//
         end
+        @sid_cache.update_sids(request.site, response) if @session[:update_sids]
 
         #socket.close
         closeSocket(socket)
@@ -515,30 +529,30 @@ module Watobo #:nodoc: all
 
       @event_dispatcher_listeners = Hash.new
       #     @session = {}
-
-      session = nil
-
       session = (session_id.is_a? Integer) ? session_id : session_id.object_id
       session = Digest::MD5.hexdigest(Time.now.to_f.to_s) if session_id.nil?
 
       @sid_cache = Watobo::SIDCache.acquire(session)
 
+      default_prefs = {
+          :logout_signatures => [],
+          :logout_content_types => Hash.new,
+          :update_valid_sids => false,
+          :update_sids => false,
+          :update_otts => false,
+          :update_session => true,
+          :update_contentlength => true,
+          :login_chats => [],
+          :www_auth => Hash.new,
+          :client_certificates => {},
+          :proxy_auth => Hash.new
+      }
+
       unless @@settings.has_key? session
-        @@settings[session] = {
-            :logout_signatures => [],
-            :logout_content_types => Hash.new,
-            :update_valid_sids => false,
-            :update_sids => false,
-            :update_otts => false,
-            :update_session => true,
-            :update_contentlength => true,
-            :login_chats => [],
-            :www_auth => Hash.new,
-            :client_certificates => {},
-            :proxy_auth => Hash.new
-        }
+        @@settings[session] = default_prefs
       end
-      @session = @@settings[session] # shortcut to settings
+      # @session = @@settings[session] # shortcut to settings
+      @session = default_prefs
 
       @session.update prefs.to_h
 
@@ -1148,14 +1162,14 @@ module Watobo #:nodoc: all
     def error_response(msg, comment = nil)
       er = []
       er << "HTTP/1.1 555 Watobo Error\r\n"
-      er << "WATOBO-MSG: #{Base64.strict_encode64(msg)}"
+      er << "WATOBO-MSG: #{Base64.strict_encode64(msg.to_s)}"
       er << "Date: #{Time.now.to_s}\r\n"
       er << "Content-Length: 0\r\n"
       er << "Content-Type: text/html\r\n"
       er << "Connection: close\r\n"
       er << "\r\n"
       unless comment.nil?
-        body = "<html><head><title>Watobo Error</title></head><body><H1>#{msg}</H1></br><H2>#{comment.gsub(/\r?\n/, "</br>")}</H2></body></html>"
+        body = "<html><head><title>Watobo Error</title></head><body><H1>#{msg.to_s}</H1></br><H2>#{comment.gsub(/\r?\n/, "</br>")}</H2></body></html>"
         er << body
       end
       er.extend Watobo::Mixin::Parser::Url
@@ -1289,11 +1303,11 @@ module Watobo #:nodoc: all
       }
     end
 
-    def applySessionSettings(prefs)
-      [:update_valid_sids, :update_session, :update_contentlength, :valid_sids, :sid_patterns, :logout_signatures].each do |v|
-        @@settings[v] = prefs[v] if prefs[v]
-      end
-    end
+    #   def applySessionSettings(prefs)
+    #  [:update_valid_sids, :update_session, :update_contentlength, :valid_sids, :sid_patterns, :logout_signatures].each do |v|
+    #    @@settings[v] = prefs[v] if prefs[v]
+    #  end
+    # end
 
   end
 end

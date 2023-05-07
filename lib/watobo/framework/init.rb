@@ -1,16 +1,16 @@
 # @private 
-module Watobo#:nodoc: all
+module Watobo #:nodoc: all
 
   @active_checks = []
   @passive_checks = []
   @running_projects = []
-  
+
   @tmp_dir = ""
-  
+
   def self.running_projects
     @running_projects
   end
-  
+
   def self.active_checks
     @active_checks
   end
@@ -23,11 +23,11 @@ module Watobo#:nodoc: all
     init_working_directory
 
     Watobo::Conf.each do |cm|
-     # puts "\n=== #{cm.group_name} ==="
-     # puts cm.to_h.to_yaml
+      # puts "\n=== #{cm.group_name} ==="
+      # puts cm.to_h.to_yaml
       cm.update
-     # puts "#"
-     # puts cm.to_h.to_yaml
+      # puts "#"
+      # puts cm.to_h.to_yaml
     end
 
     init_workspace_path
@@ -38,7 +38,7 @@ module Watobo#:nodoc: all
   def self.temp_directory
     @tmp_dir
   end
-  
+
   def self.working_directory
     # puts "Method Obsolet! use Watobo::Conf::General.working_directory instead."
     Watobo::Conf::General.working_directory
@@ -55,6 +55,7 @@ module Watobo#:nodoc: all
 
   private
 
+  #
   def self.init_workspace_path
     # gs = @settings[:general]
     if Conf::General.respond_to? :working_directory
@@ -92,27 +93,36 @@ module Watobo#:nodoc: all
     end
   end
 
-  def self.init_working_directory
+  def self.init_working_directory()
+    puts "* init_working_directory"
+
+
     watobo_folder = ".watobo"
     watobo_folder = Conf::General.watobo_folder if Conf::General.respond_to? :watobo_folder
 
-    unless Conf::General.respond_to? :working_directory
-      case RUBY_PLATFORM
+    if ENV['WATOBO_HOME']
+      Conf::General.working_directory = ENV['WATOBO_HOME']
+    else
+      unless Conf::General.respond_to? :working_directory
+        case RUBY_PLATFORM
 
-      when /mswin|mingw|bccwin/
+        when /mswin|mingw|bccwin/
 
-        Conf::General.working_directory = File.join(ENV['HOME'], watobo_folder)
+          Conf::General.working_directory = File.join(ENV['HOME'], watobo_folder)
 
-      when /linux|bsd|solaris|hpux|darwin/i
+        when /linux|bsd|solaris|hpux|darwin/i
 
-        Conf::General.working_directory = File.join(ENV['HOME'], watobo_folder)
+          Conf::General.working_directory = File.join(ENV['HOME'], watobo_folder)
 
-      else # cygwin|java
-      puts "!!! WATOBO is not tested for this platform (#{RUBY_PLATFORM})!!!"
-      exit
+        else # cygwin|java
+          puts "!!! WATOBO is not tested for this platform (#{RUBY_PLATFORM})!!!"
+          exit
+        end
       end
+      puts working_directory
     end
 
+    # create directories inside workspace
     unless File.exist? Conf::General.working_directory
       $first_time_watobo = true
       begin
@@ -125,7 +135,7 @@ module Watobo#:nodoc: all
         exit
       end
     end
-    
+
     if File.exist? Conf::General.working_directory
       cfg_dir = File.join(Conf::General.working_directory, "conf")
       unless File.exist? cfg_dir
@@ -133,7 +143,7 @@ module Watobo#:nodoc: all
         Dir.mkdir(cfg_dir)
         print "OK\n"
       end
-      
+
       @tmp_dir = File.join(Conf::General.working_directory, "tmp")
       unless File.exist? @tmp_dir
         puts "* create temp directory '#{@tmp_dir}' ..."

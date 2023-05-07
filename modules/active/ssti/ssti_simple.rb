@@ -32,7 +32,7 @@ EOF
           def initialize(project, prefs = {})
             super(project, prefs)
 
-            @evasions = ["%0a", "%00"]
+            @evasions = [ "%0d0a", "%0a", "%00"]
 
             @markers = []
             @markers << %w( { } )
@@ -76,7 +76,7 @@ EOF
 
                     parm.value = inj
                     if parm.location == :url
-                      parm.value = URI.escape(inj)
+                      parm.value = CGI.escape(inj)
                     end
                     test.set parm
 

@@ -14,6 +14,8 @@ end
 require 'fox16/colors'
 require 'watobo/patch_fxruby_setfocus'
 
+
+
 info =<<EOF
 Selenium webdriver binding is used by WATOBO for different purposes, e.g. html preview or screenshots.
 Therefor it is highly recommended to install this feature.
@@ -36,7 +38,6 @@ include Fox
 module Watobo #:nodoc: all
   module Gui
     @application = nil
-    @icon_path = File.expand_path(File.join(File.dirname(__FILE__), "..", "..", "icons"))
 
     @project = nil
 
@@ -80,7 +81,7 @@ module Watobo #:nodoc: all
       check_first_run()
 
       @application.run
-
+      # this will not be reached before window is closed
     end
 
     def self.create_application
@@ -141,3 +142,5 @@ require 'watobo/gui/subframes/egress_handler_selection'
 
 require 'watobo/gui/sequencer/sequencer'
 require 'watobo/gui/main_window'
+
+require 'watobo/ml'

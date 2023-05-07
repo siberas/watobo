@@ -1,8 +1,43 @@
-#!/bin/ruby
+#!/usr/bin/env ruby
 # this is just a little wrapper to start watobo with another command than watobo_gui.rb
+
+require 'optimist'
+
+OPTS = Optimist::options do
+  version "#{$0} 1.0 (c) 2019 siberas"
+  banner <<-EOS
+---
+ Thanks for choosing WATOBO - The Web Application ToolBox
+---
+Beside of using command line switches, it is also possible to controll watobo via environment variables
+The following env variables are available:
+
+WATOBO_BINDING=127.0.0.1:8081 - sets the binding definition of the interceptor
+
+WATOBO_PROXY=[true|false]     - enables or disables the interceptor
+
+WATOBO_HOME=/tmp/watobo       - directory where all conversations and settings are stored ( except initial settings )
+
+WATOBO_CA=/path/to/ca         - directory where ca files are located, use same directory to speed up start-up
+---
+  EOS
+  opt :binding, "binding of interceptor (proxy), e.g. 127.0.0.1:8081", :type => :string, :default => ''
+  opt :project, "Project name", :type => :string, :default => ''
+  opt :session, "Session name", :type => :string, :default => ''
+end
+
 if $0 == __FILE__
   inc_path = File.expand_path(File.join(File.dirname(__FILE__), "..", "lib")) # this is the same as rubygems would do
   $: << inc_path
+end
+
+unless OPTS[:project].empty? || OPTS[:session].empty?
+  $startup_project = OPTS[:project]
+  $startup_session =  OPTS[:session]
+end
+
+unless OPTS[:binding].empty?
+  ENV['WATOBO_BINDING'] = OPTS[:binding]
 end
 
 path = File.dirname(File.expand_path(__FILE__))

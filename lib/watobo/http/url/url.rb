@@ -2,8 +2,21 @@
 module Watobo #:nodoc: all
   module HTTP
     class Url
+
+      def to_str
+        @root.url_string
+      end
+
       def to_s
         @root.url_string
+      end
+
+      def to_uri
+        # we need some cleanup before URI.parsing
+        URI.parse(@root.url_string.gsub(/[^a-zA-Z0-9\/;\-:\.]/) do |m|
+                URI.encode_www_form_component(m)
+        end
+        )
       end
 
       def set(parm)

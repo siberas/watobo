@@ -1,9 +1,4 @@
-$debug_project = false
-$debug_active_check = false
-$debug_scanner = false
-
-
-# @private 
+# @private
 module Watobo#:nodoc: all
   module Constants    
     CHAT_SOURCE_UNDEF = 0x00
@@ -46,6 +41,7 @@ module Watobo#:nodoc: all
     AC_GROUP_FLASH = "Flash"
     AC_GROUP_APACHE = "Apache"
     AC_GROUP_APACHE_SOLR = "Apache SOLR"
+    AC_GROUP_JAVA = "Generic Java"
     
     ICON_PATH = "icons"
     

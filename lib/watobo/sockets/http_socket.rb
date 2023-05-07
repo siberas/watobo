@@ -1,20 +1,20 @@
 # @private
-module Watobo#:nodoc: all
+module Watobo #:nodoc: all
   module HTTPSocket
     def self.close(socket)
       #  def close
       begin
-      #if socket.class.to_s =~ /SSLSocket/
+        #if socket.class.to_s =~ /SSLSocket/
         if socket.respond_to? :sysclose
-        #socket.io.shutdown(2)
-        socket.sysclose
+          #socket.io.shutdown(2)
+          socket.sysclose
         elsif socket.respond_to? :shutdown
           #puts "SHUTDOWN"
           socket.shutdown(Socket::SHUT_RDWR)
         end
         # finally close it
         if socket.respond_to? :close
-        socket.close
+          socket.close
         end
         return true
       rescue => bang
@@ -22,7 +22,7 @@ module Watobo#:nodoc: all
         puts bang.backtrace if $DEBUG
       end
       false
-    # end
+      # end
     end
 
     # siteAlive?
@@ -42,18 +42,18 @@ module Watobo#:nodoc: all
       proxy = Watobo::ForwardingProxy.get site
 
       unless proxy.nil?
-        Watobo.print_debug("Using Proxy","#{proxy.to_yaml}") if $DEBUG
+        Watobo.print_debug("Using Proxy", "#{proxy.to_yaml}") if $DEBUG
 
         puts "* testing proxy connection:"
         puts "#{proxy.name} (#{proxy.host}:#{proxy.port})"
 
-      host = proxy.host
-      port = proxy.port
+        host = proxy.host
+        port = proxy.port
 
       else
         print "* check if site is alive (#{site}) ... "
-      host = chat.respond_to?(:request) ? chat.request.host : chat.host
-      port = chat.respond_to?(:request) ? chat.request.port : chat.port
+        host = chat.respond_to?(:request) ? chat.request.host : chat.host
+        port = chat.respond_to?(:request) ? chat.request.port : chat.port
 
       end
 
@@ -63,16 +63,16 @@ module Watobo#:nodoc: all
         tcp_socket = nil
         #  timeout(6) do
 
-        tcp_socket = TCPSocket.new( host, port)
-        tcp_socket.setsockopt( Socket::SOL_SOCKET, Socket::SO_KEEPALIVE, 1)
+        tcp_socket = TCPSocket.new(host, port)
+        tcp_socket.setsockopt(Socket::SOL_SOCKET, Socket::SO_KEEPALIVE, 1)
         tcp_socket.sync = true
 
         socket = tcp_socket
 
         if socket.class.to_s =~ /SSLSocket/
-        socket.io.shutdown(2)
+          socket.io.shutdown(2)
         else
-        socket.shutdown(2)
+          socket.shutdown(2)
         end
         socket.close
         print "[OK]\n"
@@ -99,8 +99,8 @@ module Watobo#:nodoc: all
         #  puts "!!! SSL-Error"
         print "E"
       rescue => bang
-      #  puts host
-      #  puts port
+        #  puts host
+        #  puts port
         puts bang
         puts bang.backtrace if $DEBUG
       end
@@ -109,7 +109,7 @@ module Watobo#:nodoc: all
       return false
     end
 
-    def self.get_ssl_cert_cn( host, port)
+    def self.get_ssl_cert_cn(host, port)
       cn = ""
       # if target is an ip address we use the cn name of the certificate
       # otherwise we return the hostname
@@ -117,11 +117,11 @@ module Watobo#:nodoc: all
       # return host unless host =~ /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/
 
       begin
-        tcp_socket = TCPSocket.new( host, port )
-        tcp_socket.setsockopt( Socket::SOL_SOCKET, Socket::SO_KEEPALIVE, 1)
+        tcp_socket = TCPSocket.new(host, port)
+        tcp_socket.setsockopt(Socket::SOL_SOCKET, Socket::SO_KEEPALIVE, 1)
         tcp_socket.sync = true
         ctx = OpenSSL::SSL::SSLContext.new()
-       # puts ctx.ciphers
+        # puts ctx.ciphers
 
         ctx.tmp_dh_callback = proc { |*args|
           OpenSSL::PKey::DH.new(128)
@@ -164,7 +164,7 @@ module Watobo#:nodoc: all
       return nil
     end
 
-    def self.read_body(socket, prefs=nil)
+    def self.read_body(socket, prefs = nil)
       buf = nil
       max_bytes = -1
       unless prefs.nil?
@@ -175,11 +175,11 @@ module Watobo#:nodoc: all
       bytes_read = 0
       while max_bytes < 0 or bytes_to_read > 0
         begin
-        #   timeout(5) do
-        # puts "<#{bytes_to_read} / #{bytes_read} / #{max_bytes}"
+          #   timeout(5) do
+          # puts "<#{bytes_to_read} / #{bytes_read} / #{max_bytes}"
           buf = socket.readpartial(bytes_to_read)
           bytes_read += buf.length
-          #   end
+            #   end
         rescue EOFError
           if $DEBUG
             puts "#{buf.class} - #{buf}"
@@ -189,7 +189,7 @@ module Watobo#:nodoc: all
           # end
           #buf = nil
           break
-          #return
+            #return
         rescue Timeout::Error
           puts "!!! Timeout: read_body (max_bytes=#{max_bytes})"
           #puts "* last data seen on socket:"
@@ -199,7 +199,7 @@ module Watobo#:nodoc: all
         rescue => bang
           print "E!"
           puts bang.backtrace if $DEBUG
-        break
+          break
         end
         break if buf.nil?
         yield buf if block_given?
@@ -212,12 +212,12 @@ module Watobo#:nodoc: all
     def self.readChunkedBody(socket, &block)
       buf = nil
       while (chunk_size = socket.gets)
-        
+
         if chunk_size.strip.empty?
           yield chunk_size
-          next 
+          next
         end
-        next unless chunk_size.strip =~/^[a-fA-F0-9]+$/
+        next unless chunk_size.strip =~ /^[a-fA-F0-9]+$/
         yield "#{chunk_size.strip}\n" if block_given?
         bytes_to_read = num_bytes = chunk_size.strip.hex
         # puts "> chunk-length: 0x#{chunk_size.strip}(#{num_bytes})"
@@ -225,15 +225,15 @@ module Watobo#:nodoc: all
         bytes_read = 0
         while bytes_read < num_bytes
           begin
-          # timeout(5) do
+            # timeout(5) do
             bytes_to_read = num_bytes - bytes_read
             # puts bytes_to_read.to_s
             buf = socket.readpartial(bytes_to_read)
             bytes_read += buf.length
-            # puts bytes_read.to_s
-            # end
+              # puts bytes_read.to_s
+              # end
           rescue EOFError
-          # yield buf if buf
+            # yield buf if buf
             return
           rescue Timeout::Error
             puts "!!! Timeout: readChunkedBody (bytes_to_read=#{bytes_to_read}"
@@ -241,22 +241,22 @@ module Watobo#:nodoc: all
             # puts buf
             return
           rescue => bang
-          # puts "!!! Error (???) reading body:"
-          # puts bang
-          # puts bang.class
-          # puts bang.backtrace.join("\n")
-          # puts "* last data seen on socket:"
-          # puts buf
+            # puts "!!! Error (???) reading body:"
+            # puts bang
+            # puts bang.class
+            # puts bang.backtrace.join("\n")
+            # puts "* last data seen on socket:"
+            # puts buf
             print "E!"
-          return
+            return
           end
           # puts bytes_read.to_s
           yield buf if block_given?
-        #return if max_bytes > 0 and bytes_read >= max_bytes
+          #return if max_bytes > 0 and bytes_read >= max_bytes
         end
         yield "\r\n" if block_given?
       end
-    #  end
+      #  end
     end
 
     def self.read_header(socket)
@@ -270,19 +270,19 @@ module Watobo#:nodoc: all
           # buf = nil
           return
         rescue Errno::ECONNRESET
-        #puts "!!! CONNECTION RESET: reading header"
-        #buf = nil
-        #return
+          #puts "!!! CONNECTION RESET: reading header"
+          #buf = nil
+          #return
           raise
         rescue Errno::ECONNABORTED
           raise
         rescue Timeout::Error
-        #puts "!!! TIMEOUT: reading header"
-        #return
+          #puts "!!! TIMEOUT: reading header"
+          #return
           raise
         rescue => bang
-        # puts "!!! READING HEADER:"
-        # puts buf
+          # puts "!!! READING HEADER:"
+          # puts buf
           puts bang
           puts bang.backtrace
           raise
@@ -300,9 +300,9 @@ module Watobo#:nodoc: all
 
       while true
         begin
-        #Timeout::timeout(1.5) do
+          #Timeout::timeout(1.5) do
           buf = socket.gets
-          #end
+            #end
         rescue EOFError => e
           puts "EOFError: #{e}"
           #puts "!!! EOF: reading header"
@@ -323,16 +323,16 @@ module Watobo#:nodoc: all
           puts "TIMEOUT: #{e}"
           return false
         rescue => bang
-        # puts "!!! READING HEADER:"
-        # puts buf
+          # puts "!!! READING HEADER:"
+          # puts buf
           puts bang
           puts bang.backtrace
           raise
         end
 
         return false if buf.nil?
-        
-       # puts buf
+
+        # puts buf
 
         yield buf if block_given?
         return if buf.strip.empty?

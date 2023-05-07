@@ -1,10 +1,27 @@
 source 'https://rubygems.org'
 
-gem 'mechanize', '2.7.7'
-gem 'fxruby', '1.6.44'
-gem 'jwt', '2.2.2'
-gem 'nfqueue', '1.0.4' if RUBY_PLATFORM =~ /linux/
-gem 'net-http-pipeline', '1.0.1' if RUBY_PLATFORM =~ /linux/
-gem 'selenium-webdriver', '3.0.1'
+group :development do
+  gem 'pry'
+  gem 'rspec'
+  gem 'sinatra'
+end
+
+gem 'nokogiri'
 gem 'xmlrpc'
-gem 'pry'
+
+gem 'mechanize'
+gem 'fxruby', '1.6.45'
+gem 'jwt'
+gem 'nfqueue', '1.0.4' if RUBY_PLATFORM =~ /linux/
+#gem 'net-http-pipeline', '1.0.1' if RUBY_PLATFORM =~ /linux/
+gem 'selenium-webdriver'
+gem 'xmlrpc'
+
+gem 'optimist'
+gem 'uri'
+gem 'kmeans-clusterer'
+gem 'damerau-levenshtein'
+
+if ENV['DEV_ENV'] && File.exist?(ENV['DEV_ENV'])
+  gem 'devenv', '= 0.8', :path => File.join(ENV['DEV_ENV'], 'devenv'), group: [:development]
+end

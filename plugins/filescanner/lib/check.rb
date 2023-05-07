@@ -3,22 +3,25 @@ module Watobo #:nodoc: all
     class Filescanner
 
       class Check < Watobo::ActiveCheck
+        include Watobo::Evasions
+
+        attr :prefs
         attr_accessor :db_file
         attr_accessor :path
         attr_accessor :append_slash
 
         @info.update(
-            :check_name => 'File Scanner', # name of check which briefly describes functionality, will be used for tree and progress views
-            :description => "Test list of file names.", # description of checkfunction
-            :author => "Andreas Schmidt", # author of check
-            :version => "1.0" # check version
+          :check_name => 'File Scanner', # name of check which briefly describes functionality, will be used for tree and progress views
+          :description => "Test list of file names.", # description of checkfunction
+          :author => "Andreas Schmidt", # author of check
+          :version => "1.0" # check version
         )
 
         @finding.update(
-            :threat => 'Hidden files may reveal sensitive information or can enhance the attack surface.', # thread of vulnerability, e.g. loss of information
-            :class => "Hidden-File", # vulnerability class, e.g. Stored XSS, SQL-Injection, ...
-            :type => FINDING_TYPE_VULN, # FINDING_TYPE_HINT, FINDING_TYPE_INFO, FINDING_TYPE_VULN
-            :rating => VULN_RATING_LOW
+          :threat => 'Hidden files may reveal sensitive information or can enhance the attack surface.', # thread of vulnerability, e.g. loss of information
+          :class => "Hidden-File", # vulnerability class, e.g. Stored XSS, SQL-Injection, ...
+          :type => FINDING_TYPE_VULN, # FINDING_TYPE_HINT, FINDING_TYPE_INFO, FINDING_TYPE_VULN
+          :rating => VULN_RATING_LOW
         )
 
         def add_extension(ext)
@@ -26,16 +29,7 @@ module Watobo #:nodoc: all
           @extensions << ext
         end
 
-        def evasion_level
-          @prefs.has_key?(:evasion_level) ? @prefs[:evasion_level] : 0
-        end
-
-        def set_extensions(extensions)
-          @extensions = extensions if extensions.is_a? Array
-          @extensions << nil
-        end
-
-        def append_slash
+        def append_slash?
           !!@prefs[:append_slash] ? @prefs[:append_slash] : false
         end
 
@@ -54,26 +48,29 @@ module Watobo #:nodoc: all
         #  additionally following keys are accepted:
         #  file_extension: [Array],
         #  append_slash: [Boolean]
-        #  evasion_level: [Integer]
+        #  evasion_extensions: [Array]
         #
-        def initialize(project, file_list, prefs)
+        def initialize(project, file_list, prefs = {})
           super(project, prefs)
-
 
           @path = nil
           @file_list = file_list
-          @prefs = prefs.to_h
+          @prefs = prefs.dup.to_h
+          @known_responses = []
+          @known_paths = []
+          @rating = @prefs.delete(:rating) || VULN_RATING_LOW
         end
 
-
         def reset()
+          @known_responses = []
+          @known_paths = []
           # @catalog_checks.clear
         end
 
         # create final path list for fileExist checks
         # @return [Array] of modified paths including the query for filter evasion
         # original query will be removed
-        def sample_files
+        def sample_files(&block)
           uris = []
           @file_list.each do |orig|
             next if orig.strip =~ /^#/
@@ -84,66 +81,166 @@ module Watobo #:nodoc: all
             orig.gsub!(/\/$/, '')
             next if orig.strip.empty?
 
+            # first we save the original
             uris << orig
+
+            # we keep the orig path also in the extended array
+            # for later evasions
+            extended = [orig]
+
             # append extensions
             #
             file_extensions.each do |ext|
               next if ext.nil? or ext.empty?
-              uris << "#{orig}.#{ext}"
+              fext = ext =~ /^\./ ? ext : ".#{ext}"
+              extended << apply_extension(orig, fext)
             end
 
-            evasion_extensions.each do |ext|
-              next if ext.nil? or ext.empty?
-              uris << "#{orig}#{ext}"
+            extended.each do |mpath|
+              evasion_extensions.each do |ext|
+                next if ext.nil? or ext.empty?
+                uris << apply_extension(mpath, ext)
+              end
             end
             # append slash (only to orig)
-            uris << "#{orig}/" if append_slash
+            uris << "#{orig}/" if append_slash?
 
           end
-          uris
+          uris.compact!
+          uris.uniq
         end
 
+        def apply_extension(orig, ext, &block)
+          return nil if orig.nil? || orig.empty?
+          return nil if ext.nil? || ext.empty?
+
+          dummy = Watobo::Request.new 'http://my.dummy.url'
+          dummy.path = orig
+
+          # file extensions start with '.', e.g. '.tar.gz'
+          if ext =~ /^\./
+            dummy.set_file_extension ext, :keep_query
+            return dummy.path_ext
+          end
+
+          # if extension starts with / it means that it's a path modification
+          # e.g. '/;' will make orig path '/xxx/y.php' to '/xxx;/y.php'
+          if ext =~ /^\//
+            file_ext = dummy.file_ext
+            dir = dummy.dir
+            return "#{dir}#{ext.gsub(/^\//, '')}/#{file_ext}"
+          end
+          # if extension starts with '?' it is handled as a query extension
+          if ext =~ /^\?(.*)/
+            dummy.appendQueryParms $1
+            return dummy.path_ext
+          end
+
+          # seems like a bad extension format
+          return nil
+        end
 
         def generateChecks(chat)
           begin
             sample_files.each do |uri|
+              request_paths(chat) do |rpath|
+                next if @known_paths.include?(rpath)
 
-              checker = proc {
                 test_request = nil
                 test_response = nil
                 # !!! ATTENTION !!!
                 # MAKE COPY BEFORE MODIFIYING REQUEST
-                test = chat.copyRequest
+                sample = chat.copyRequest
+                sample.set_path rpath
 
                 # puts ">> #{new_uri}"
-                test.replaceFileExt(uri)
-                #puts test.url if $VERBOSE
-                fexist, test_request, test_response = fileExists?(test, @prefs)
+                sample.replaceFileExt(uri)
+                file_exist = false
 
+                checker = proc {
 
-                if fexist == true
-                  addFinding(test_request, test_response,
-                             :test_item => uri,
-                             # :proof_pattern => "#{Regexp.quote(uri)}",
-                             :check_pattern => "#{Regexp.quote(uri)}",
-                             :chat => chat,
-                             :threat => "depends on the file ;)",
-                             :title => "[#{uri}]"
+                  found = false
 
-                  )
+                  puts sample.url.to_s
+                  fexist, test_request, test_response = fileExists?(sample, @prefs)
 
-                end
+                  binding.pry
+                  if fexist == true
+                    found = true
+                    rhash = Watobo::Utils.responseHash(test_request, test_response)
+                    unless @known_responses.include?(rhash)
+                      @known_responses << rhash
+                      addFinding(test_request, test_response,
+                                 :test_item => uri,
+                                 # :proof_pattern => "#{Regexp.quote(uri)}",
+                                 :check_pattern => "#{Regexp.quote(uri)}",
+                                 :chat => chat,
+                                 :threat => "depends on the file ;)",
+                                 :title => "[#{uri}]",
+                                 :rating => @rating
 
-                # notify(:db_finished)
-                [test_request, test_response]
-              }
-              yield checker
+                      )
+                    end
+
+                  end
+                  binding.pry
+                  unless found
+                    evasion_handlers.each do |handler|
+                      # puts test.url if $VERBOSE
+                      next if found
+
+                      handler.run(sample) do |test|
+                        fexist, test_request, test_response = fileExists?(test, @prefs)
+
+                        if fexist == true
+                          found = true
+                          rhash = Watobo::Utils.responseHash(test_request, test_response)
+                          unless @known_responses.include?(rhash)
+                            @known_responses << rhash
+                            addFinding(test_request, test_response,
+                                       :test_item => uri,
+                                       # :proof_pattern => "#{Regexp.quote(uri)}",
+                                       :check_pattern => "#{Regexp.quote(uri)}",
+                                       :chat => chat,
+                                       :threat => "depends on the file ;)",
+                                       :title => "[#{uri}]",
+                                       :rating => @rating
+
+                            )
+                          end
+
+                        end
+                      end
+                    end
+                  end
+                  # notify(:db_finished)
+                  [test_request, test_response]
+                }
+                yield checker
+              end
+
             end
-
           rescue => bang
             puts "!error in module #{Module.nesting[0].name}"
             puts bang
           end
+        end
+
+        def request_paths(chat, &block)
+          # binding.pry
+          unless !!@prefs[:test_sub_dirs]
+            yield chat.request.path if block_given?
+            return chat.request.path
+          end
+          paths = []
+          path = chat.request.path
+          while !path.empty? and path != '.'
+            # puts path
+            yield path if block_given?
+            paths << path
+            path = File.dirname(path)
+          end
+          paths
         end
       end
     end

@@ -12,7 +12,7 @@ module Watobo #:nodoc: all
       t = Time.now
 
       now = t.strftime("%m/%d/%Y@%H:%M:%S")
-      @@lock.synchronize {
+      #  @@lock.synchronize {
 
         new_details = Hash.new
         new_details.update(@finding)
@@ -64,7 +64,7 @@ module Watobo #:nodoc: all
 
         #@project.addFinding(new_finding)
         # notify(:new_finding, new_finding)
-      }
+        # }
     end
 
     def enabled?

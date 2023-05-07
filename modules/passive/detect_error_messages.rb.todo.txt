@@ -1,0 +1,2 @@
+Unrecognized field "xxxx" (class com.xxx.iffw.restapi.resources.process.request.Process), not marked as ignorable (4 known properties: "processMethod", "processName", "processModule", "processInput"])
+ at [Source: (org.glassfish.jersey.message.internal.ReaderInterceptorExecutor$UnCloseableInputStream); line: 7, column: 10] (through reference chain: de.xx.iffw.restapi.resources.process.request.ProcessRequest["process"]-

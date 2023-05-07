@@ -139,8 +139,8 @@ module Watobo #:nodoc: all
           yield s if block_given?
 
           if File.exist?(File.dirname(file))
-            puts "* save config #{self} to: #{file}"
-            puts s.to_yaml
+            puts "* save config #{self} to: #{file}" if $DEBUG
+            puts s.to_yaml if $DEBUG
 
             File.open(file, "w") { |fh|
               YAML.dump(s, fh)

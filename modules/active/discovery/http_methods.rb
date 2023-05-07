@@ -67,9 +67,9 @@ module Watobo #:nodoc: all
 
                       result_request, result_response = doRequest(test_request, :default => true)
                       is_vuln = true
-                      if result_response.status then
+                      if result_response && result_response.status
                         @not_allowed_response.each do |nar|
-                          if result_response.status =~ /#{nar}/i then
+                          if result_response.status =~ /#{nar}/i
                             is_vuln = false
                           end
                         end

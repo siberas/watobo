@@ -3,8 +3,8 @@
 
 module Watobo #:nodoc: all
   module CA
-    @cadir = File.join(Watobo.working_directory, "CA")
-    @crl_dir= File.join(@cadir, "crl")
+    @cadir = ENV['WATOBO_CA'] ? ENV['WATOBO_CA'] : File.join(Watobo.working_directory, "CA")
+    @crl_dir = File.join(@cadir, "crl")
     @hostname = %x('hostname').strip
     @hostname = "watobo" if @hostname.empty?
     @domain = "#{@hostname}.watobo.local"
@@ -72,8 +72,8 @@ module Watobo #:nodoc: all
         ]
     }
 
-    unless Watobo::CA.ca_ready? then
-      Dir.mkdir(@ca_config[:CA_dir])
+    if !Watobo::CA.ca_ready? && !ENV['WATOBO_PROXY']
+      FileUtils.mkdir_p(@ca_config[:CA_dir])
       Dir.mkdir @ca_config[:private_dir]
       Dir.mkdir @ca_config[:fake_certs_dir]
       Dir.mkdir @ca_config[:crl_dir]
@@ -106,6 +106,7 @@ module Watobo #:nodoc: all
 
       cert.version = 2 # X509v3
       # puts "Init ExtensionFactory ..."
+      cert.serial = @serial
       ef = OpenSSL::X509::ExtensionFactory.new
       ef.subject_certificate = cert
       ef.issuer_certificate = cert
@@ -147,10 +148,12 @@ module Watobo #:nodoc: all
       puts ">> create DH key ..."
       dh_key
     else
+      # TODO: check if this is still needed
       #puts "Open Cert File ..."
-      raw = File.read @ca_config[:cert_file] # DER- or PEM-encoded
-      cert = OpenSSL::X509::Certificate.new raw
-      # puts cert
+      if File.exist? @ca_config[:cert_file]
+        raw = File.read @ca_config[:cert_file] # DER- or PEM-encoded
+        cert = OpenSSL::X509::Certificate.new raw
+      end
 
     end
 
@@ -301,26 +304,26 @@ module Watobo #:nodoc: all
       ext_key_usage = []
 
       case cert_config[:type]
-        when "ca" then
-          basic_constraint = "CA:TRUE"
-          key_usage << "cRLSign" << "keyCertSign"
-        when "terminalsubca" then
-          basic_constraint = "CA:TRUE,pathlen:0"
-          key_usage << "cRLSign" << "keyCertSign"
-        when "server" then
-          basic_constraint = "CA:FALSE"
-          key_usage << "digitalSignature" << "keyEncipherment"
-          ext_key_usage << "serverAuth"
-        when "ocsp" then
-          basic_constraint = "CA:FALSE"
-          key_usage << "nonRepudiation" << "digitalSignature"
-          ext_key_usage << "serverAuth" << "OCSPSigning"
-        when "client" then
-          basic_constraint = "CA:FALSE"
-          key_usage << "nonRepudiation" << "digitalSignature" << "keyEncipherment"
-          ext_key_usage << "clientAuth" << "emailProtection"
-        else
-          raise "unknonw cert type \"#{cert_config[:type]}\""
+      when "ca" then
+        basic_constraint = "CA:TRUE"
+        key_usage << "cRLSign" << "keyCertSign"
+      when "terminalsubca" then
+        basic_constraint = "CA:TRUE,pathlen:0"
+        key_usage << "cRLSign" << "keyCertSign"
+      when "server" then
+        basic_constraint = "CA:FALSE"
+        key_usage << "digitalSignature" << "keyEncipherment"
+        ext_key_usage << "serverAuth"
+      when "ocsp" then
+        basic_constraint = "CA:FALSE"
+        key_usage << "nonRepudiation" << "digitalSignature"
+        ext_key_usage << "serverAuth" << "OCSPSigning"
+      when "client" then
+        basic_constraint = "CA:FALSE"
+        key_usage << "nonRepudiation" << "digitalSignature" << "keyEncipherment"
+        ext_key_usage << "clientAuth" << "emailProtection"
+      else
+        raise "unknonw cert type \"#{cert_config[:type]}\""
       end
 
       ef = OpenSSL::X509::ExtensionFactory.new
@@ -388,13 +391,13 @@ module Watobo #:nodoc: all
 
       name = @ca_config[:name].dup
       case cert_config[:type]
-        when 'server' then
-          # name << ['OU', 'Watobo CA']
-          name << ['CN', cert_config[:hostname]]
+      when 'server' then
+        # name << ['OU', 'Watobo CA']
+        name << ['CN', cert_config[:hostname]]
         #name << ['CN', "WATOBO"]
-        when 'client' then
-          name << ['CN', cert_config[:user]]
-          name << ['emailAddress', cert_config[:email]]
+      when 'client' then
+        name << ['CN', cert_config[:user]]
+        name << ['emailAddress', cert_config[:email]]
       end
 
       name = OpenSSL::X509::Name.new(name)

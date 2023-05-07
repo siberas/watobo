@@ -1,6 +1,7 @@
 # @private 
 module Watobo#:nodoc: all
   module Gui
+
     module Icons
       WATOBO_LOGO = Watobo::Gui.load_gui_icon("watobo-logo.png")
 

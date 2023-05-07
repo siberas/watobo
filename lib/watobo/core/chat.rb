@@ -1,5 +1,5 @@
 # @private 
-module Watobo#:nodoc: all
+module Watobo #:nodoc: all
   class Chat < Conversation
     attr :request
     attr :response
@@ -11,7 +11,8 @@ module Watobo#:nodoc: all
     @@lock = Mutex.new
 
     public
-    def self.resetCounters()
+
+    def self.resetCounters_UNUSED()
       @@numChats = 0
       @@max_id = 0
     end
@@ -38,34 +39,50 @@ module Watobo#:nodoc: all
     end
 
     def duration
-      @duration ||= (( tstop - tstart ) * 1000).round(2)
+      @duration ||= ((tstop - tstart) * 1000).round(2)
     end
 
     def id()
       @settings[:id]
     end
 
+    def set_id(id)
+      @@lock.synchronize {
+        @settings[:id] = id
+      }
+    end
+
     def comment=(c)
-      @settings[:comment] = c
+      @@lock.synchronize {
+        @settings[:comment] = c
+      }
     end
 
     def comment()
       @settings[:comment]
     end
-    
+
     def use_ssl?
       request.proto =~ /https/
     end
 
     def source()
-      @settings[:source]
+       @@lock.synchronize{
+         s = @settings[:source].clone
+       }
     end
-    
+
+    def source_str
+      return 'unknown' unless @settings[:source]
+      Watobo::Utils::Chat.source_str @settings[:source]
+    end
+
     def to_h
       h = {}
       h.update @settings
       h[:request] = @request.to_a
       h[:response] = @response.to_a
+      h[:meta] = @response.meta
       h
     end
 
@@ -81,23 +98,22 @@ module Watobo#:nodoc: all
 
       begin
         @settings = {
-          :source => CHAT_SOURCE_UNDEF,
-          :id => -1,
-          :tstart => 0,
-          :tstop => -1,
-          :comment => '',
-          :tested => false
+            :source => CHAT_SOURCE_UNDEF,
+            :id => -1,
+            :tstart => 0,
+            :tstop => -1,
+            :comment => '',
+            :tested => false
         }
-        
+
         super(request, response)
 
-       
 
         @settings.update prefs
         #  puts @settings[:id].to_s
 
-        @@lock.synchronize{
-        # enter critical section here ???
+        @@lock.synchronize {
+          # enter critical section here ???
           if @settings[:id] > @@max_id
             @@max_id = @settings[:id]
           elsif @settings[:id] < 0
@@ -105,8 +121,8 @@ module Watobo#:nodoc: all
             @settings[:id] = @@max_id
           end
           @@numChats += 1
-        # @comment = ''
-        # leafe critical section here ???
+          # @comment = ''
+          # leafe critical section here ???
         }
 
       rescue => bang

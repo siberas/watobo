@@ -29,20 +29,26 @@ EOF
               :measure => measure
           )
 
+          # todo: better injection for other languages
+=begin
+>>> cmd = "exec('import os; out = os.popen(\"id\").read(); print(out)')"
+>>> eval(cmd)
+=end
+
           def initialize(project, prefs = {})
             super(project, prefs)
 
-           @injections = []
-
-            @injections << [ 'X="WATOBO";echo "333333"$X"44444"', '33333WATOBO44444' ]
-            @injections << [ 'id', 'uid.*gid.*groups']
           end
 
 
           def generateChecks(chat)
-            #
-            #  Check GET-Parameters
-            #
+            @injections = []
+
+            @injections << [ 'X="WATOBO";echo "333333"$X"44444"', '33333WATOBO44444' ]
+            @injections << [ 'id', 'uid.*gid.*groups']
+            @injections << [ "ping -c 1 DNS_SENSOR", 'PING.*bytes of data' ]
+            @injections << [ "ping -n 1 DNS_SENSOR", 'Ping.*Bytes Dat' ]
+
             begin
 
 
@@ -66,11 +72,12 @@ EOF
                     parm = param.copy
                     pattern = "#{check[1]}"
 
-                    inj="#{check[0]}"
+                    dns_inj = "#{checkid}.#{Watobo::Conf::Scanner.dns_sensor}"
+                    inj="#{check[0].gsub('DNS_SENSOR', dns_inj)}"
 
                     parm.value = inj
                     if parm.location == :url
-                      parm.value = URI.escape(inj)
+                      parm.value = CGI.escape(inj)
                     end
                     test.set parm
 
@@ -78,9 +85,7 @@ EOF
 
 
                     if test_response.join =~ /(#{pattern})/i
-                      puts '!!! GOTCHA !!!! FOUND SSTI Vulnerability' if $VERBOSE
                       match = $1
-
                       addFinding(test_request, test_response,
                                  # :check_pattern => "#{Regexp.quote(parm.value)}",
                                  :check_pattern => "#{parm.value}",

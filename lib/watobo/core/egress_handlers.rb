@@ -53,7 +53,11 @@ module Watobo#:nodoc: all
     end
 
     def self.create(name)
-#      puts "create egress-handler #{name}" 
+      return nil if name.nil?
+      return nil if name.strip.empty?
+
+      puts "+ create EgressHandler #{name}" if $DEBUG
+
       fkey = name.to_sym
       return nil unless @handlers.has_key? fkey
       @handlers[fkey].new()

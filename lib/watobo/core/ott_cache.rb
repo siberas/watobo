@@ -25,13 +25,13 @@ module Watobo#:nodoc: all
         Watobo::Conf::OttCache.patterns.each do |p|
           yield p if block_given?
         end
+        # return copy of patterns
         YAML.load(YAML.dump(Watobo::Conf::OttCache.patterns))
    
     end
     
       
     def update_tokens(response)
-        
         begin
           #   site = request.site
           @tokens_lock.synchronize do
@@ -43,7 +43,7 @@ module Watobo#:nodoc: all
                   token_key = Regexp.quote($1.upcase)
                   token_value = $2
                   #print "U"
-                    puts "GOT NEW TOKEN (#{token_key}): #{token_value}" if $DEBUG
+                    puts "GOT NEW ONE-TIME-TOKEN (#{token_key}): #{token_value}" if $DEBUG
                   #   @session[:valid_csrf_tokens][site] = Hash.new if @session[:valid_csrf_tokens][site].nil?
                   #   @session[:valid_csrf_tokens][site][token_key] = token_value
                   @tokens[token_key] = token_value
@@ -119,14 +119,17 @@ module Watobo#:nodoc: all
             res = line
             self.class.patterns do |pat|
               begin
+                puts pat
                 if line =~ /#{pat}/i then
                   key = Regexp.quote($1.upcase)
                   old_value = $2
                   if @tokens.has_key?(key) then
-                    res = line.gsub!(/#{Regexp.quote(old_value)}/, @tokens[key])
+                    res = line.gsub!(/#{Regexp.quote(old_value)}/, CGI.unescapeHTML(@tokens[key]))
                     if res.nil? then
                       res = line
                       puts "!!!could not update token (#{key})"
+                    else
+                      puts "[OTT-Update]\nToken: #{key}\nOld: #{old_value}\nNew: #{CGI.unescapeHTML(@tokens[key])}}"
                     end
                   else
                     if $DEBUG

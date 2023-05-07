@@ -64,11 +64,11 @@ module Watobo#:nodoc: all
         
         @finding_date.text = finding.details[:tstamp]
         @finding_module.text = finding.details[:module]
-        @finding_chat.text = finding.id.to_s
+        @finding_chat.text = finding.chat_id.to_s
         
         @finding_check.text = finding.details[:check_pattern]
         @finding_proof.text = finding.details[:proof_pattern]
-        @finding_id.text = finding.id.to_s
+        @finding_id.text = finding.fid.to_s
         
         self.recalc()
         self.update()

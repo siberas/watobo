@@ -103,26 +103,42 @@ module Watobo #:nodoc: all
       def to_request(opts = {})
         options = {:update_content_length => false}
         options.update opts
-        body = nil
+
         begin
           text = parse_code
-          b = binding
+
+          # remove all CR, because we only want LF ('\n')
+          # DON'T!!!!
+          # we will loos CRLF added by Code-Injections
+          #text.gsub!(/\r/,'')
+
+          # parse erb templating
           parser = ERB.new text
-          text = parser.result(b)
-          puts ">>> ERB"
-          puts text
-          puts '<<< ERB'
+          text = parser.result(binding)
+
           return nil if text.nil?
           request = []
 
+          # find end of headers (eoh)
+          # test for \r\n\r\n and \n\n
+          # the pattern with the lower index will be taken
           eoh = nil
-          eoh = text.index("\n\n") unless text.nil?
+          nn_index = text.index("\n\n")
+          rnrn_index = text.index("\r\n\r\n")
+          if nn_index && rnrn_index
+            eoh = nn_index < rnrn_index ? nn_index : rnrn_index
+          elsif nn_index
+            eoh = nn_index
+          elsif rnrn_index
+            eoh = rnrn_index
+          end
 
           unless eoh.nil?
             header = text.slice(0, eoh).split("\n").map { |h| "#{h.strip}\r\n" }
-            body = text.slice(eoh + 2, text.length - 1)
+            #body = text.slice(eoh + 2, text.length - 1)
+            body = text[eoh + 2..-1]
           else
-            header = text.split(/\n/).map { |h| "#{h}\r\n" }
+            header = text.split(/\n/).map { |h| "#{h.strip}\r\n" }
             body = nil
           end
 
@@ -134,7 +150,7 @@ module Watobo #:nodoc: all
           ct = request.content_type_ex
 
           # last line is without "\r\n" if text has a body
-          if ct =~ /multipart/ and body then
+          if ct =~ /multipart/i and body then
             #Content-Type: multipart/form-data; boundary=---------------------------3035221901842
             if ct =~ /boundary=([\-\w]+)/
               boundary = $1.strip

@@ -28,26 +28,33 @@ module Watobo #:nodoc: all
           @config = Watobo::Plugin::Filescanner.config
           main_frame = FXVerticalFrame.new(self, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y)
           @status_frame = Filescanner::Gui::StatusFrame.new(self, main_frame, :opts => LAYOUT_FILL_X)
-          @status_frame.subscribe(:start){ start_scan }
-          mr_splitter = FXSplitter.new(main_frame, LAYOUT_FILL_X|LAYOUT_FILL_Y|SPLITTER_HORIZONTAL|SPLITTER_REVERSED|SPLITTER_TRACKING)
+          @status_frame.subscribe(:start) { start_scan }
+          mr_splitter = FXSplitter.new(main_frame, LAYOUT_FILL_X | LAYOUT_FILL_Y | SPLITTER_HORIZONTAL | SPLITTER_REVERSED | SPLITTER_TRACKING)
 
           @settings_frame = Filescanner::Gui::SettingsFrame.new(self, mr_splitter, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y)
-          @settings_frame.subscribe(:site_changed){|site|}
+          @settings_frame.subscribe(:site_changed) { |site| }
 
           @request_frame = Filescanner::Gui::RequestFrame.new(self, mr_splitter, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y)
-          @request_frame.subscribe(:armed){ @status_frame.armed }
+          @request_frame.subscribe(:armed) { @status_frame.armed }
 
         end
 
         def start_scan
           update_and_save_config
           #  puts @settings_frame.settings
-          @scanner = Watobo::Plugin::Filescanner.new( @request_frame.request, @settings_frame.settings )
-          #puts @scanner.status
 
+          begin
+            getApp().beginWaitCursor()
+            @scanner = Watobo::Plugin::Filescanner.new(@request_frame.request, @settings_frame.settings)
+              #puts @scanner.status
+          ensure
+            getApp().endWaitCursor()
+          end
           @scanner.run(@settings_frame.settings)
+
+          puts '[Filescanner-GUI] starting update timer'
           start_update_timer
-            #puts @scanner.status
+          #puts @scanner.status
         end
 
         private
@@ -61,7 +68,7 @@ module Watobo #:nodoc: all
           interval = 2000
           @_prev_progress = 0
           @timer = FXApp.instance.addTimeout(interval, :repeat => true) {
-            unless @scanner.nil?
+            if !@scanner.nil? && @scanner.respond_to?(:sum_progress)
               progress = @scanner.sum_progress
 
               speed = progress - @_prev_progress
@@ -69,7 +76,7 @@ module Watobo #:nodoc: all
 
               if @scanner.finished?
                 FXApp.instance.removeTimeout(@timer)
-                msg = "Scan Finished!"
+                msg = "[Filescanner-GUI] Scan Finished!"
                 #   @log_viewer.log(LOG_INFO, msg)
                 Watobo.log(msg, :sender => "Catalog")
                 @scanner = nil
@@ -85,10 +92,4 @@ module Watobo #:nodoc: all
       end
     end
   end
-end
-
-
-if __FILE__ == $0
-  puts "Running #{__FILE__}"
-  catalog = Watobo::Plugin::Catalog.new(project)
 end

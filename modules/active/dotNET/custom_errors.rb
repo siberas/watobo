@@ -49,7 +49,7 @@ module Watobo#:nodoc: all
                     
                     status, test_request, test_response = fileExists?(test)
                     
-                    if test_response.has_body? and test_response.body =~ /Server Error in/
+                    if test_response && test_response.has_body? and test_response.body =~ /Server Error in/
 
                       puts ".NET Custom Error >> #{test.url.to_s}"
 

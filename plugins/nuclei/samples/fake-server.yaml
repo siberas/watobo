@@ -1,0 +1,65 @@
+id: watobo-fake-server_01
+
+info:
+  name: Watobo Fake Server Check #1
+  author: as
+  severity: critical
+  reference: ???
+  description: |
+    sample definition to better understand nuclei design
+  tags: nuclei
+
+requests:
+  - raw:
+      - |
+        GET /index.html HTTP/1.1
+        Host: {{Hostname}}
+        Accept: */*
+        Accept-Language: en
+
+      - |
+         GET /match-something-two.html HTTP/1.1
+         Host: {{Hostname}}
+         Accept: */*
+         Accept-Language: en
+         MyHeader: {{ev01}}
+         Another-Header: {{header}}
+
+      - |
+         GET /match-something-three.html HTTP/1.1
+         Host: {{Hostname}}
+         Accept: */*
+         Accept-Language: en
+         MyHeader: {{ev01}}
+    payloads:
+      header:
+        - header01
+        - header02
+
+    extractors:
+      - type: regex
+        part: body
+        name: ev01
+        internal: true
+        group: 1
+        regex:
+          - 'EV_START(.*)EV_END'
+
+  - method: GET
+    path:
+      - '{{BaseURL}}/match-something.html'
+      - '{{BaseURL}}/match-nothing.html'
+      - '{{BaseURL}}/{{ev01}}'
+      - '{{BaseURL}}/{{ev02}}'
+
+    extractors:
+      - type: regex
+        part: body
+        name: ev02
+        regex:
+          - 'EV_START(.*)EV_END'
+
+    matchers:
+      - type: dsl
+        dsl:
+          - 'contains(body, "something") == true && status_code == 200' # Using CVE-2020-17519 to confirm this.

@@ -12,7 +12,8 @@ module Watobo #:nodoc: all
       def run
         @t = Thread.new {
           loop do
-            if Watobo::PassiveScanner.queue.size > 0
+            # we don't need a sleep here, because pop is blocking
+            #if Watobo::PassiveScanner.queue.size > 0
               chat = Watobo::PassiveScanner.pop
               # TODO: make max size configurable
               unless chat.nil? or chat.response.to_s.length > 500000
@@ -26,9 +27,9 @@ module Watobo #:nodoc: all
                   end
                 end
               end
-            else
-              sleep 0.5
-            end
+              #else
+              #sleep 0.5
+            #end
           end
         }
       end

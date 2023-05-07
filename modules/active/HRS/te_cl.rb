@@ -78,12 +78,12 @@ module Watobo #:nodoc: all
                 )
 
 
-                puts ">>> HRS <<<<"
-                puts test_request
-                puts '---'
-                puts test_response
-                puts test_response.class
-                puts test_response.empty?
+                # puts ">>> HRS <<<<"
+                #puts test_request
+                #puts '---'
+                #puts test_response
+                #puts test_response.class
+                #puts test_response.empty?
 
                 if test_response.status_code != ref_response.status_code  then
                   addFinding(test_request, test_response,
@@ -100,11 +100,11 @@ module Watobo #:nodoc: all
               yield checker
 
             rescue => bang
-
+              puts ">>> #{self} <<<<"
               puts "ERROR!! #{Module.nesting[0].name} "
               puts "chatid: #{chat.id}"
               puts bang
-              puts
+              puts bang.backtrace if $DEBUG
 
             end
           end

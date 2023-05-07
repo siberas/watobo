@@ -11,7 +11,9 @@ module Watobo #:nodoc: all
 
         def replace_post_parm(parm, value)
           parm_quoted = Regexp.quote(parm)
-          self.last.gsub!(/([?&]{1}|^)#{parm_quoted}=([^&]*)(&{0,1})/i, "\\1#{parm}=#{value}\\3")
+          self.last.gsub!(/([?&]{1}|^)#{parm_quoted}=([^&]*)(&{0,1})/i, "
+
+          \\1#{parm}=#{value}\\3")
         end
 
         def replace_get_parm(parm, value)
@@ -23,10 +25,11 @@ module Watobo #:nodoc: all
           self.first.gsub!(/^[^[:space:]]{1,}/i, "#{new_method}")
         end
 
-        def replaceFileExt(new_file)
+        def replaceFileExt(file_ext)
           begin
-            file = new_file.strip
-            file.gsub!(/^\//, "")
+            new_file = file_ext.dup
+            new_file.strip!
+            new_file.gsub!(/^\//, "")
             m, method, scheme, site, port, path, query, version = self.first.match(/#{URL_SPLIT}/i).to_a
             unless m.nil?
               i = path.rindex('/')
@@ -42,7 +45,6 @@ module Watobo #:nodoc: all
           return false
         end
 
-
         def replaceElement(new_element)
           new_element.gsub!(/^\//, "")
           self.first.gsub!(/([^\?]*\/)(.*) (HTTP.*)/i, "\\1#{new_element} \\3")
@@ -53,8 +55,9 @@ module Watobo #:nodoc: all
         end
 
         def replaceQuery(new_query)
-          new_query.gsub!(/^\//, "")
-          self.first.gsub!(/(.*\/)(.*) (HTTP.*)/i, "\\1#{new_query} \\3")
+          m, method, scheme, site, port, path, query, version = self.first.match(/#{URL_SPLIT}/i).to_a
+          new_url = "#{scheme}://#{site}#{( port.nil? ? '' : ':' + port)}#{path}?#{new_query}"
+          replaceURL(new_url)
         end
 
         def strip_path()
@@ -68,7 +71,6 @@ module Watobo #:nodoc: all
           dir << '/' unless dir.empty?
           self.first.gsub!(/(^[^[:space:]]{1,} https?:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}\/)(.*)( HTTP\/.*)/, "\\1#{dir}\\3")
         end
-
 
         def set_path(path_name)
           begin
@@ -85,6 +87,8 @@ module Watobo #:nodoc: all
           end
           return false
         end
+
+        alias :path= :set_path
 
         #
         # set a new file extension, e.g. mysite.html to mysite.php
@@ -166,26 +170,26 @@ module Watobo #:nodoc: all
 
         alias :add_url_parm :add_get_parm
 
-        def addHeader(header, value)
+        def addHeader(header, value = nil)
           self_copy = []
           self_copy << self.first
-          self_copy.concat(self.headers)
-          self_copy.push "#{header}: #{value}\r\n"
+          self_copy.concat(self.headers.map { |h| h =~ /\r\n$/ ? h : "#{h}\r\n" })
+          hv = value.nil? ? "#{header}\r\n" : "#{header}: #{value}\r\n"
+          self_copy.push hv
 
           unless self.body.nil?
             self_copy.push "\r\n"
-            #self_copy.concat(self.body)
+            # self_copy.concat(self.body)
             self_copy.push self.body
           end
 
           self.replace(self_copy)
-
         end
 
         alias_method :add_header, :addHeader
 
         def removeURI
-          if self.first =~ /(^[^[:space:]]{1,}) (https?:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}\/)/ then
+          if self.first =~ /(^[^[:space:]]{1,}) (https?:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}(\/)?)/ then
             uri = $2
             self.first.gsub!(/(^[^[:space:]]{1,}) (#{Regexp.quote(uri)})/, "\\1 /")
             # puts "* Removed URI: #{uri}"
@@ -194,20 +198,13 @@ module Watobo #:nodoc: all
           else
             return nil
           end
-          #self.first.gsub!(/^(.*)(https?:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}\/)/,"\\1/")
+          # self.first.gsub!(/^(.*)(https?:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}\/)/,"\\1/")
         end
+
+        alias :remove_uri :removeURI
 
         def removeBody
           self.pop if self[-2].strip.empty?
-        end
-
-        def set_body(content)
-          if self[-2].strip.empty?
-            self.pop
-          else
-            self << "\r\n"
-          end
-          self << content
         end
 
         def rewrite_body(pattern, content)
@@ -215,9 +212,8 @@ module Watobo #:nodoc: all
             puts "rewrite_body ... #{pattern} - #{content}"
 
             b = self.pop.force_encoding('BINARY')
-            #puts "Body Encoding: #{b.encoding}"
-            #puts "Pattern Encoding: #{pattern.encoding}"
-
+            # puts "Body Encoding: #{b.encoding}"
+            # puts "Pattern Encoding: #{pattern.encoding}"
 
             b.gsub!(/#{pattern}/i, content)
 
@@ -234,15 +230,17 @@ module Watobo #:nodoc: all
             method = $1
             rest = $2
             http = $3.strip
-            #self.first.gsub!(/^\w*/, "#{method} #{uri}#{rest}")
+            # self.first.gsub!(/^\w*/, "#{method} #{uri}#{rest}")
             self.shift
             self.unshift "#{method} #{uri}#{rest} #{http}\r\n"
             return self.first
           else
             return nil
           end
-          #self.first.gsub!(/^(.*)(https?:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}\/)/,"\\1/")
+          # self.first.gsub!(/^(.*)(https?:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}\/)/,"\\1/")
         end
+
+        alias :restore_uri :restoreURI
 
         #
         # R E M O V E _ H E A D E R
@@ -290,8 +288,8 @@ module Watobo #:nodoc: all
           begin
             pattern = '^Cookie'
             while i = headers.index { |h| h =~ /#{pattern}/i }
-              #puts "* remove #{self[i]}"
-              self.delete_at i
+              # remove i + 1 because of first request line, which is not part of headers
+              self.delete_at i + 1
             end
           rescue => bang
             puts bang
@@ -303,45 +301,9 @@ module Watobo #:nodoc: all
 
         end
 
-        def removeHeader_OLD(header)
-          #  p "REMOVE HEADER: #{header}"
-          begin
-            self_copy = []
-            eoh = false
-            self.each do |line|
-              puts self if line.nil?
-              if not eoh == true then
-                if not line =~ /#{header}/i
-                  self_copy.push line unless line.nil?
-                end
-              else
-                self_copy.push line unless line.nil?
-              end
-
-              if line and line.strip.empty? then
-                eoh = true
-              end
-            end
-            self.replace(self_copy)
-
-          rescue => bang
-            puts bang
-            puts bang.backtrace if $DEBUG
-            puts self
-            puts "====="
-          end
-        end
-
-        def replace_header(header, value)
-
-        end
-
-        def fix_session(pattern, value)
-
-        end
-
         def fix_content_length
-          blen = self.has_body? ? self.body.force_encoding("ASCII-8BIT").length : 0
+          # blen = self.has_body? ? self.body.force_encoding("ASCII-8BIT").length : 0
+          blen = self.has_body? ? self.raw_body.bytesize : 0
           set_header("Content-Length", blen)
         end
 
@@ -350,12 +312,14 @@ module Watobo #:nodoc: all
           self.fix_content_length
         end
 
+        alias :update_content_length :fixupContentLength
+
         def setRawQueryParms(parm_string)
           return nil if parm_string.nil?
           return nil if parm_string == ''
           new_r = ""
           path = Regexp.quote(self.path)
-          #puts path
+          # puts path
           if self.first =~ /(.*#{path})/ then
             new_r = $1 << "?" << parm_string
           end
@@ -365,13 +329,10 @@ module Watobo #:nodoc: all
         def appendQueryParms(parms)
           return if parms.nil?
           return if parms == ''
-
-          puts self.first
-          puts self.file_ext
-
-          pref = (self.file_ext =~ /\?/) ? '&' : '?'
-          puts "append query parms"
-          self.first.gsub!(/(.*) (HTTP\/.*)/, "\\1#{pref}#{parms} \\2")
+          # remove leading separators & and ?
+          parms.gsub!(/^[&?]+/, '')
+          prefix = (self.file_ext =~ /\?/) ? '&' : '?'
+          self.first.gsub!(/(.*) (HTTP\/.*)/, "\\1#{prefix}#{parms} \\2")
 
         end
 
@@ -383,15 +344,27 @@ module Watobo #:nodoc: all
           set_header("Content-Type", ctype)
         end
 
-        def set_header(header, value)
+        # set a http-header
+        # @param header [String]
+        #   - name of header, if @param value is set
+        # or
+        #   - full header (with or without CRLF) if no @param value is given
+        #   e.g. "X-Atlassian-token: no-check"
+        # @return true or false
+        def set_header(header, value = nil)
           begin
-            new_header = "#{header}: #{value}\r\n"
+            header_name = value.nil? ? header.split(':')[0].strip : header
+            header_value = value.nil? ? header.split(':')[1..-1].join(':').strip : value
+
+            new_header = "#{header_name}: #{header_value}\r\n"
+
             self.each_with_index do |h, i|
-              if h =~ /^#{Regexp.quote(header)}:/i
+              if h =~ /^#{Regexp.quote(header_name)}:/i
                 self[i] = new_header
                 return true
               end
 
+              # insert header if we reached end of headers
               if h.strip.empty? or i == self.length - 1
                 self.insert(i, new_header)
                 return true
@@ -408,13 +381,25 @@ module Watobo #:nodoc: all
         # sets post data
         def setData(data)
           return if data.nil?
-          if self.has_body?
+          self.pop if self.has_body?
+
+          while self.last.strip.empty?
             self.pop
-            self.push data
-          else
-            self.push("\r\n")
-            self.push data
           end
+
+          self.push("\r\n")
+          self.push data
+        end
+
+        alias :set_body :setData
+
+        def set_body_UNUSED(content)
+          if self[-2].strip.empty?
+            self.pop
+          else
+            self << "\r\n"
+          end
+          self << content
         end
 
         alias :setBody :setData
@@ -432,6 +417,9 @@ module Watobo #:nodoc: all
           #  puts "HTTPVersion fixed: #{self.first}"
         end
 
+        def version=(version)
+          self.first.gsub!(/HTTP\/(.*)$/, "HTTP\/#{version}")
+        end
       end
 
       module HttpResponse
@@ -439,23 +427,16 @@ module Watobo #:nodoc: all
 
         def unchunk!
           return false unless self.has_body?
-
-          unchunked = self.unchunk
-
-          self.replace(unchunked)
-          self.fix_content_length
-
-        end
-
-        def unchunk
-          return Response.new(self) unless self.has_body?
+          return false if transfer_encoding == TE_NONE
 
           if self.transfer_encoding == TE_CHUNKED
             self.removeHeader("Transfer-Encoding")
             self.addHeader("Content-Length", "0")
             new_r = []
-            new_r << self.first
-            new_r.concat self.headers
+            eoh = self.index("\r\n")
+            eoh.times do |i|
+              new_r << self[i]
+            end
 
             new_r.push "\r\n"
 
@@ -479,51 +460,32 @@ module Watobo #:nodoc: all
                 off = chunk_end
               end
             end
-            new_r.push new_body
+            set_body new_body
+            fix_content_length
 
-            return Watobo::Response.new new_r
+            return true
 
           end
-          return Response.new(self)
+          false
         end
 
         def unzip!
           if self.content_encoding == TE_GZIP or self.transfer_encoding == TE_GZIP
             if self.has_body?
-              unziped = self.unzip_body
+              gziped = raw_body
+              gz = Zlib::GzipReader.new(StringIO.new(gziped))
+              data = gz.read
+              gz.close
 
-              self[-1] = unziped
+              required_charset = charset
+              charset = (required_charset && ['ASCII', 'UTF-8', 'ISO-8859-1'].include?(required_charset.upcase)) ? required_charset.upcase : 'ASCII-8BIT'
+              data.encode!(charset, :invalid => :replace, :undef => :replace, :replace => '')
+
+              set_body data
               self.removeHeader("Transfer-Encoding") if self.transfer_encoding == TE_GZIP
               self.removeHeader("Content-Encoding") if self.content_encoding == TE_GZIP
               self.fix_content_length
             end
-          end
-
-        end
-
-        def unzip
-          if self.content_encoding == TE_GZIP or self.transfer_encoding == TE_GZIP
-            if self.has_body?
-              unzipped = Response.new(self)
-              unzipped.unzip!
-              return unzipped
-            end
-          end
-
-          return Response.new(self)
-        end
-
-        def unzip_body
-          begin
-            if self.has_body?
-              gziped = self.last
-              gz = Zlib::GzipReader.new(StringIO.new(gziped))
-              data = gz.read
-              return data
-            end
-
-          rescue => bang
-            puts bang
           end
 
         end

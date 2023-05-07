@@ -59,7 +59,7 @@ module Watobo #:nodoc: all
                 output = ""
 
                 begin
-                  timeout(max_t.to_f) do
+                  Timeout.timeout(max_t.to_f) do
                     test = chat.copyRequest
                     test.set_header('X-siLock-AgentBrand', 'yourout')
 

@@ -73,4 +73,8 @@ content.feed.xml
 content.rss.xml
 content.feed.html
 valid_page+".html?debug=layout
-
+bin/acs-commons/custom-importers.json
+bin/acs-commons/jcr-compare.dump.json
+bin/acs-commons/jcr-compare.hashes.txt
+bin/acs-commons/dam/custom-components.json
+bin/acs-commons/jcr-compare

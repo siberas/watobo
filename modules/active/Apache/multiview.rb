@@ -121,7 +121,7 @@ EOD
                       
                       tcn_headers = result_response.headers("^TCN")
                       unless tcn_headers.empty?                     
-                        puts "MULTIVIEW - #{self.class}!!!\n"
+                        # puts "MULTIVIEW - #{self.class}!!!\n"
                         #test_chat = Chat.new(test_request, test_response, chat.id)
                         addFinding( result_request, result_response,
                                    :check_pattern => "#{new_file}",

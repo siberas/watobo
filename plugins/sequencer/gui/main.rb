@@ -4,11 +4,29 @@ module Watobo #:nodoc: all
     class Sequencer
       include Watobo::Settings
 
+      @@sequences = {}
+      @@sequence = nil
+
+      def self.current
+        @@sequence
+      end
+
+      def self.get_sequence(name)
+      @@sequences[name.downcase.to_sym]
+      end
+
+      def self.add_sequence(sequence)
+        @@sequences[sequence.name.downcase.to_sym] = sequence
+        @@sequence = sequence
+      end
+
       class Gui < Watobo::PluginGui
 
         window_title "Sequencer"
-        icon_file "sequence32x32.png"
+        # icon_file "sequence32x32.png"
+        icon_file "sequence_32x32.png"
 
+        attr :sequence
 
         def start
           @results = []
@@ -72,6 +90,7 @@ module Watobo #:nodoc: all
             @log = FXCheckButton.new(top_frame, "log", nil, 0, JUSTIFY_LEFT | JUSTIFY_TOP | ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
             @log.checkState = true
             @sender.logging = true
+
             @log.connect(SEL_COMMAND) do
               @sender.logging = @log.checked? ? true : false
             end
@@ -95,7 +114,9 @@ module Watobo #:nodoc: all
             end
 
             @list_frame.subscribe(:send_element) do |element|
-              @sender.do_request(element)
+              #@sender.do_request(element)
+              prefs = { logging: @log.checked? }
+              element.exec prefs
             end
 
             @list_frame.subscribe(:element_selected) { |element|
@@ -144,6 +165,7 @@ module Watobo #:nodoc: all
             @sequence = Watobo::Sequence.create filename
             @sequence_name_dt.value = @sequence.name
             @list_frame.update_elements @sequence
+            Watobo::Plugin::Sequencer.add_sequence @sequence
           end
         end
 

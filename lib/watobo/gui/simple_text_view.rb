@@ -35,7 +35,7 @@ module Watobo
       end
 
       def clear
-        @textbox.setText('')
+        @textbox.setText('', true)
       end
 
       def setFont(font_type=nil, size=nil)
@@ -293,7 +293,7 @@ module Watobo
           text.gsub!(/\x0d/u, '')
           r = Regexp.new '[\x00-\x09\x0b-\x1f\x7f-\xff]+', nil, 'n'
           text.gsub!(r, '.')
-          @textbox.setText(text)
+          @textbox.setText(text, true)
           return true
         rescue => bang
           puts bang
