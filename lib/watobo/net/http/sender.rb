@@ -257,10 +257,8 @@ module Watobo
             elsif clen >= 0
               body = sock.read(clen) unless clen == 0
             else
-              puts "!!!! start read_all !!!"
               # puts sock.class.to_s
               body = read_all_nonblock(sock)
-              puts "!!!! FINISHED read_all !!!"
             end
             unless body.empty?
               response.set_body body

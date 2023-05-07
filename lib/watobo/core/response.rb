@@ -29,9 +29,13 @@ module Watobo #:nodoc: all
       begin
         # data = self.map { |e| e.force_encoding('ASCII-8BIT') }.join
 
-        data = self.join
-        unless has_body?
-          data << "\r\n" unless data =~ /\r\n\r\n$/
+        data = ''
+        self.each do |h|
+          data << h.force_encoding('ASCII-8BIT')
+        end
+        data << "\r\n".force_encoding('ASCII-8BIT')
+        if has_body?
+          data << self.body.to_s
         end
         return data
       rescue => bang
