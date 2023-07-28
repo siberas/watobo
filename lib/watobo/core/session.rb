@@ -33,7 +33,7 @@ module Watobo #:nodoc: all
           login_prefs.update prefs
           dummy = {:ignore_logout => true, :update_sids => true, :update_session => true, :update_contentlength => true}
           login_prefs.update dummy
-          puts "! Start Login ..." #if $DEBUG
+          #  puts "! Start Login ..." #if $DEBUG
           unless chat_list.empty?
             #  puts login_prefs.to_yaml
             chat_list.each do |chat|

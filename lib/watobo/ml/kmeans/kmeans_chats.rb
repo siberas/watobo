@@ -29,7 +29,6 @@ Vary
 
       attr :headers, :status_codes, :body_lens, :metrics, :clusters
 
-
       def cluster_by_id(cluster_id)
         @clusters.select { |c| c.id == cluster_id }.first
       end
@@ -49,13 +48,12 @@ Vary
         @metrics = metrics
       end
 
-
       def run(prefs = {}, prepare = false)
         dprefs = {
-            # num_clusterst default is the number of metrics, which is dynamic because it depends on the number
-            # of header/value combinations
-            num_clusters: 15,
-            runs: 5
+          # num_clusterst default is the number of metrics, which is dynamic because it depends on the number
+          # of header/value combinations
+          num_clusters: 15,
+          runs: 5
         }
 
         dprefs.update prefs
@@ -74,7 +72,6 @@ Vary
         notify_finished
         @clusters
       end
-
 
       def initialize(chats)
         @chats = validate_chats(chats)
@@ -115,9 +112,9 @@ Vary
 
         progress_total += steps_kmeans
         p = {
-            total: progress_total,
-            progress: 0,
-            status: :running
+          total: progress_total,
+          progress: 0,
+          status: :running
         }
 
         @progress = p
@@ -135,20 +132,20 @@ Vary
       end
 
       def metrics_preparation
-        #start = Time.now.to_i
+        # start = Time.now.to_i
         collect_status_codes
-        #duration = Time.now.to_i - start
-        #puts "Collecting Status-Code: #{duration} sec"
+        # duration = Time.now.to_i - start
+        # puts "Collecting Status-Code: #{duration} sec"
 
-        #start = Time.now.to_i
+        # start = Time.now.to_i
         collect_headers
-        #duration = Time.now.to_i - start
-        #puts "Collecting Headers: #{duration} sec"
+        # duration = Time.now.to_i - start
+        # puts "Collecting Headers: #{duration} sec"
 
-        #start = Time.now.to_i
+        # start = Time.now.to_i
         collect_body_lens
-        #duration = Time.now.to_i - start
-        #puts "Collecting Body-Lens: #{duration} sec"
+        # duration = Time.now.to_i - start
+        # puts "Collecting Body-Lens: #{duration} sec"
 
         collect_condensed_bodies
 
@@ -161,21 +158,21 @@ Vary
       # [1] - body-length or condensed body length
       # [2] - condensed body diff (levensthein)
       # [3..n] - headers
-      def chat_metrics(chat, index= -1)
+      def chat_metrics(chat, index = -1)
         @differ ||= DamerauLevenshtein
 
         begin
           metrics = []
           metrics << chat.response.status_code.to_i * 10
 
-          if index >= 0
+          if index >= 0 && @condensed_bodies[index]
             metrics << @condensed_bodies[index].length * 10
 
             dist = @differ.distance @longest_condensed_body, @condensed_bodies[index]
 
             metrics << dist * 100
 
-            else
+          else
             metrics << chat.response.body.to_s.length
           end
 
@@ -185,8 +182,8 @@ Vary
           # all others will be 0
           headers_copy = @headers.clone
 
-          #metrics.concat @headers.keys.map { |hk| chat.response.headers.select { |rh| rh.strip =~ /#{Regexp.quote(hk.strip)}/i }.length > 0 ? 1000 : 0 }
-          #metrics.concat @headers.keys.map { |hk| chat.response.headers(Regexp.quote(hk.strip)).length > 0 ? 1000 : 0 }
+          # metrics.concat @headers.keys.map { |hk| chat.response.headers.select { |rh| rh.strip =~ /#{Regexp.quote(hk.strip)}/i }.length > 0 ? 1000 : 0 }
+          # metrics.concat @headers.keys.map { |hk| chat.response.headers(Regexp.quote(hk.strip)).length > 0 ? 1000 : 0 }
           chat.response.headers.each do |h|
             # we have to use condensed headers here, if we generated the collection too
             header = condense_header(h)
@@ -199,7 +196,7 @@ Vary
         rescue => bang
           puts bang
           puts bang.backtrace
-          binding.pry
+          # binding.pry
         end
         nil
       end
@@ -236,13 +233,12 @@ Vary
 
       end
 
-
       # condense_header "AAAA: alsdjkflkajslfkjljwioerowielksjdlfkjalaadlkajsdlf"
       # => "AAAA: adefijklorsw"
       def condense_header(h)
         i = h.index(':')
         name = h[0..i]
-        val = h[i+1..-1]
+        val = h[i + 1..-1]
         cval = val.chars.uniq.sort.join.strip
         "#{name} #{cval}"
       end
@@ -260,15 +256,20 @@ Vary
       def collect_condensed_bodies
         @condensed_bodies = []
         @chats.each do |chat|
+          next unless chat.response.has_body?
           notify_inc 1
-          cb = chat.response.body.to_s.chars.uniq.sort.join.strip
+          if chat.response.is_binary?
+            cb = Digest::MD5.hexdigest(chat.response.body)
+          else
+            cb = chat.response.body.to_s.chars.uniq.sort.join.strip
+          end
           #@condensed_bodies << cb.force_encoding('UTF-8').encode('UTF-8')
-          @condensed_bodies << cb.force_encoding('UTF-8').encode('UTF-8', :invalid=>:replace, :replace => '')
+          @condensed_bodies << cb.force_encoding('UTF-8').encode('UTF-8', :invalid => :replace, :replace => '')
 
         end
 
         # @longest_condensed_body is used as the baseline for levensthein diffing
-        @longest_condensed_body = @condensed_bodies.sort_by{|b| b.length }.reverse.first
+        @longest_condensed_body = @condensed_bodies.sort_by { |b| b.length }.reverse.first
       end
 
       def collect_body_lens
@@ -279,7 +280,6 @@ Vary
           @body_lens[len] += 1
         end
       end
-
 
     end
   end

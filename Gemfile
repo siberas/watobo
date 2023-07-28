@@ -8,7 +8,7 @@ end
 
 gem 'nokogiri'
 gem 'xmlrpc'
-
+gem 'rubyntlm'
 gem 'mechanize'
 gem 'fxruby', '1.6.45'
 gem 'jwt'

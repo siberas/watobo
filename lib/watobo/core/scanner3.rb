@@ -46,7 +46,7 @@ module Watobo #:nodoc: all
             # pulls new task from queue, waits if no task is available
             task = @tasks.deq
             begin
-              puts "RUNNING #{task[:module]}" #if $DEBUG
+              puts "RUNNING #{task[:module]}" if $DEBUG
               request, response = task[:check].call()
 
               next if response.nil?
@@ -236,7 +236,7 @@ module Watobo #:nodoc: all
 
       valid_chats = @chat_list.select { |chat| @origins_alive.include?(chat.request.origin) }
 
-      binding.pry
+
       patterns = auto_collect_404(valid_chats, @prefs)
       @prefs[:custom_error_patterns].concat patterns
       @prefs[:custom_error_patterns].uniq!
@@ -245,7 +245,7 @@ module Watobo #:nodoc: all
 
       notify(:logger, LOG_INFO, msg)
       puts msg
-      puts @prefs.to_yaml if $VERBOSE
+      # puts @prefs.to_yaml if $VERBOSE
 
 
       # starting workers before check generation
@@ -261,10 +261,17 @@ module Watobo #:nodoc: all
           valid_chats.each do |chat|
             # puts chat.request.url.to_s
             @active_checks.uniq.each do |ac|
+
+              # to be able to also log 'inner' requests of a module, we subscribe to :new_chat
+              ac.subscribe(:new_chat) {|chat|
+                unless @prefs[:scanlog_name].nil? or @prefs[:scanlog_name].empty?
+                  Watobo::DataStore.add_scan_log(chat, @prefs[:scanlog_name])
+                end
+              }
               ac.reset()
               # if site_alive?(chat) then
               puts "Generating Tasks for #{ac.class.to_s}" if $VERBOSE
-              binding.pry
+              #binding.pry
               ac.generateChecks(chat) { |check|
                 while @tasks.size > @max_tasks
                   sleep 1
@@ -381,6 +388,8 @@ module Watobo #:nodoc: all
         nfpatterns[req_key].concat extract_not_found_pattern(test_req, test_resp)
 
       end
+
+      nfpatterns.values.flatten
     end
 
     # possible prefs
@@ -490,7 +499,7 @@ module Watobo #:nodoc: all
             @logged_out.clear
             # puts "!LOGOUT DETECTED!\n#{@logged_out.size} - #{@workers.length} - #{@tasks.num_waiting}\n\n"
             begin
-              puts "Run login ..."
+              puts "Run login ..." if $DEBUG
               login
               @workers.each do |wrkr|
                 # puts "State: #{wrkr.state}"

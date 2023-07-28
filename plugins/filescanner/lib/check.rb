@@ -49,7 +49,7 @@ module Watobo #:nodoc: all
         #  file_extension: [Array],
         #  append_slash: [Boolean]
         #  evasion_extensions: [Array]
-        #
+        #  force_evasions: [Bool]
         def initialize(project, file_list, prefs = {})
           super(project, prefs)
 
@@ -160,11 +160,19 @@ module Watobo #:nodoc: all
                 checker = proc {
 
                   found = false
+                  need_evasion = false
 
-                  puts sample.url.to_s
+                  # puts sample.url.to_s
                   fexist, test_request, test_response = fileExists?(sample, @prefs)
 
-                  binding.pry
+                  if test_response.respond_to? :status_code
+                    status = test_response.status_code
+                    need_evasion = ( status =~ /^4\d\d/ && status != '404' )
+                  end
+
+                  chat = Chat.new(test_request, test_response, :id => 0, :chat_source => prefs[:chat_source])
+                  notify(:new_chat, chat)
+
                   if fexist == true
                     found = true
                     rhash = Watobo::Utils.responseHash(test_request, test_response)
@@ -177,20 +185,24 @@ module Watobo #:nodoc: all
                                  :chat => chat,
                                  :threat => "depends on the file ;)",
                                  :title => "[#{uri}]",
-                                 :rating => @rating
+                                 :rating => @rating.to_i
 
                       )
                     end
 
                   end
-                  binding.pry
-                  unless found
+                  # binding.pry
+                  if need_evasion or !!@prefs[:force_evasions]
                     evasion_handlers.each do |handler|
                       # puts test.url if $VERBOSE
+
                       next if found
 
                       handler.run(sample) do |test|
                         fexist, test_request, test_response = fileExists?(test, @prefs)
+
+                        chat = Chat.new(test_request, test_response, :id => 0, :chat_source => prefs[:chat_source])
+                        notify(:new_chat, chat)
 
                         if fexist == true
                           found = true
@@ -204,7 +216,7 @@ module Watobo #:nodoc: all
                                        :chat => chat,
                                        :threat => "depends on the file ;)",
                                        :title => "[#{uri}]",
-                                       :rating => @rating
+                                       :rating => @rating.to_i
 
                             )
                           end
@@ -213,8 +225,9 @@ module Watobo #:nodoc: all
                       end
                     end
                   end
-                  # notify(:db_finished)
-                  [test_request, test_response]
+                  # we don't need to return request and response, because it's already upwarded via notify(:new_chat)
+                  #[test_request, test_response]
+                  [ nil, nil]
                 }
                 yield checker
               end

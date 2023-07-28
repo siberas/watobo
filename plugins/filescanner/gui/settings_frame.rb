@@ -30,7 +30,8 @@ module Watobo #:nodoc: all
                 evasion_level: @el_dt.value,
                 file_extensions: (@append_extensions_cb.checked? ? @extensions_text.text.split(';') : []),
                 evasion_extensions: (@el_dt.value > 0 ? @l1_txt.text.split : []),
-                evasions_enabled: @evasions_enabled_chk.checked?
+                evasions_enabled: @evasions_enabled_chk.checked?,
+                force_evasions: @evasions_force_chk.checked?
             }
             s
           end
@@ -76,6 +77,9 @@ module Watobo #:nodoc: all
 
             @evasions_enabled_chk = FXCheckButton.new(evasion_frame, "Enable Evasions", nil, 0, JUSTIFY_LEFT | JUSTIFY_TOP | ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
             @evasions_enabled_chk.checkState = false
+
+            @evasions_force_chk = FXCheckButton.new(evasion_frame, "Force", nil, 0, JUSTIFY_LEFT | JUSTIFY_TOP | ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
+            @evasions_force_chk.checkState = false
 
             @evasion_filter_dt = FXDataTarget.new('')
             # @scanlog_name_dt.value = @project.scanLogDirectory() if File.exist?(@project.scanLogDirectory())

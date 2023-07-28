@@ -66,7 +66,7 @@ module Watobo
               login_prefs.update prefs
               dummy = { :ignore_logout => true, :update_sids => true, :update_session => true, :update_contentlength => true }
               login_prefs.update dummy
-              puts "! Start Login ..." # if $DEBUG
+              puts "! Start Login ..." if $DEBUG
               unless chat_list.empty?
                 #  puts login_prefs.to_yaml
                 chat_list.each do |chat|
@@ -77,7 +77,7 @@ module Watobo
                   yield [request, response] if block_given?
                 end
               else
-                puts "! no login script configured !"
+                puts "! no login script configured !" if $DEBUG
               end
             rescue => bang
               puts "!ERROR in runLogin"
@@ -94,14 +94,17 @@ module Watobo
         def doRequest(orig, prefs = {})
           request = orig.copy
 
+          #puts "doRequest ..."
           cprefs = @settings ? @settings.clone : {}
           # overwrite :timeout with controllable value
           cprefs[:timeout] = timeout
           # get client certificate from ClientCertStore
           cprefs[:client_certificate] = Watobo::ClientCertStore.get request.site
+          cprefs[:proxy] = Watobo::ForwardingProxy.get(request.site)&.to_h
           cprefs.update prefs
 
-          if $VERBOSE
+          if $VERBOSE || $DEBUG
+            puts "\n=== Session.doRequest ==="
             puts JSON.pretty_generate(cprefs)
           end
 
@@ -121,12 +124,32 @@ module Watobo
           # Engress Handler
           h = Watobo::EgressHandlers.create cprefs[:egress_handler]
 
-          #puts request.to_s.inspect
+          # puts request.to_s.inspect
+          # make request available in do_header
+          @request = request
           h.execute request unless h.nil?
 
           #
           # Send request over the wire
           sender = Watobo::Net::Http::Sender.new cprefs
+
+          sender.on_header do |header|
+            # HTTP/1.1 401                                                                                                                                                                                                                                   │
+            # WWW-Authenticate: Negotiate                                                                                                                                                                                                                    │
+            # Content-Length: 0                                                                                                                                                                                                                              │
+            # Date: Tue, 23 May 2023 13:12:28 GMT
+            if header.first =~ /^HTTP.* 401/i
+              auth_types = header.select { |h| h =~ /^www-authenticate/i }.map { |h| h.gsub(/^.*:/, '').strip }
+              if auth_types.join =~ /(negotiate|ntlm)/i
+                # puts "=== AUTH REQUIRED !!! ==="
+                # puts header
+                header.clear
+                header.concat do_ntlm(sender)
+              end
+            end
+
+          end
+
           request, response = sender.exec request
 
           # puts "!!!!!!!!!!!!!!!!! GOT ANSWER !!!!!!!!!!!!!"
@@ -136,6 +159,77 @@ module Watobo
           end
 
           [request, response]
+        end
+
+        def do_ntlm(sender)
+          t1 = ::Net::NTLM::Message::Type1.new()
+          %w(workstation domain).each do |a|
+            t1.send("#{a}=", '')
+            t1.enable(a.to_sym)
+          end
+
+          msg = "NTLM #{t1.encode64}"
+
+          head_request = @request.copy
+          head_request.setMethod(:head)
+          head_request.removeBody
+          head_request.removeHeader("Content-Length")
+          head_request.set_header("Authorization", msg)
+
+          sender.socket.close
+          sender.send :connect, head_request
+
+          sender.send :send_request, sender.socket, head_request
+
+          response = sender.send :read_header, sender.socket
+
+          creds = Watobo::Conf::Scanner.www_auth[@request.site]
+          creds = Watobo::Conf::Scanner.www_auth[''] unless creds
+          creds = Watobo::Conf::Scanner.www_auth['*'] unless creds
+
+          puts response.to_s
+
+          puts "* Using NTLM creds:"
+          puts creds
+          ntlm_creds = ( creds && creds[:type] == AUTH_TYPE_NTLM ) ? creds : nil
+          challenge_header = response.headers('WWW-Authenticate').first
+          unless challenge_header
+            puts "NTLM Challenge missing!"
+            puts response
+            return response
+          end
+          if ntlm_creds && challenge_header =~ /WWW-Authenticate.*NTLM/i
+
+            ntlm_challenge = challenge_header.gsub(/^.*NTLM/, '').strip
+            #puts "[NTLM] got ntlm challenge: #{ntlm_challenge}"
+
+            t2 = ::Net::NTLM::Message.decode64(ntlm_challenge)
+            domain = ntlm_creds.has_key?(:domain) ? Watobo::UTF16.encode_utf16le(ntlm_creds[:domain].upcase) : ""
+            creds = { :user => ntlm_creds[:username],
+                      :password => ntlm_creds[:password],
+                      :domain => ntlm_creds[:domain]
+                      # :workstation => Watobo::UTF16.encode_utf16le(Socket.gethostname)
+            }
+
+            t3 = t2.response(creds,
+                             { :ntlmv2 => true }
+            )
+
+            auth_request = @request.copy
+            #auth_request.removeBody
+            #auth_request.removeHeader("Content-Length")
+            auth_request.set_header("Connection", "Keep-Alive")
+
+            msg = "NTLM #{t3.encode64}"
+            auth_request.set_header("Authorization", msg)
+            #      puts "============= T3 ======================="
+
+            sender.send :send_request, sender.socket, auth_request
+
+            response = sender.send :read_header, sender.socket
+            puts response.to_s
+          end
+          response
         end
 
         def update_tokens(request)

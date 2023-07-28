@@ -48,9 +48,8 @@ module Watobo #:nodoc: all
           uri.origin
         end
 
-
         def fext
-          #uri = URI.parse(url_string)
+          # uri = URI.parse(url_string)
           # we don't use File.extname because it cannot handle extensions if file name is empty
           # > u.path
           # => "/api/users/.zip"
@@ -61,7 +60,7 @@ module Watobo #:nodoc: all
           di = f.rindex('.')
           return '' unless di
           return '' if f.length - di > 4
-          f[di+1..-1]
+          f[di + 1..-1]
         end
 
         def file
@@ -294,6 +293,7 @@ module Watobo #:nodoc: all
 
           combinations
         end
+
         alias :subdirs :subDirs
 
         def port
@@ -525,6 +525,35 @@ module Watobo #:nodoc: all
           return ct
         end
 
+        def content_transfer_encoding
+          te = TE_NONE
+          self.each do |line|
+            break if line.strip.empty?
+            if line =~ /^Content-Transfer-Encoding:(.*)/i then
+              dummy = $1.strip
+              #  puts "Content-Encoding => #{dummy}"
+              te = case dummy
+                   when /chunked/i
+                     TE_CHUNKED
+                   when /compress/i
+                     TE_COMPRESS
+                   when /zip/i
+                     TE_GZIP
+                   when /deflate/i
+                     TE_DEFLATE
+                   when /identity/i
+                     TE_IDENTITY
+                   when /(binary|octet\-stream)/i
+                     TE_BINARY
+                   else
+                     TE_NONE
+                   end
+              break
+            end
+          end
+          return te
+        end
+
         def content_encoding
           te = TE_NONE
           self.each do |line|
@@ -543,6 +572,8 @@ module Watobo #:nodoc: all
                      TE_DEFLATE
                    when /identity/i
                      TE_IDENTITY
+                   when /(binary|octet\-stream)/i
+                     TE_BINARY
                    else
                      TE_NONE
                    end
@@ -656,9 +687,9 @@ module Watobo #:nodoc: all
         def body
           return nil unless raw_body
           required_charset = charset
-          charset = (required_charset && ['ASCII', 'UTF-8'].include?(required_charset.upcase)) ? required_charset.upcase : 'UTF-8'
+          # charset = (required_charset && ['ASCII', 'UTF-8'].include?(required_charset.upcase)) ? required_charset.upcase : 'UTF-8'
           s = raw_body
-          s.encode!(charset, :invalid => :replace, :undef => :replace, :replace => '.')
+          # s.encode!(charset, :invalid => :replace, :undef => :replace, :replace => '.')
           s
         end
 
@@ -671,6 +702,13 @@ module Watobo #:nodoc: all
             return true if ct =~ /text/i
             return false
           end
+        end
+
+        def is_binary?
+          return true if content_encoding == TE_BINARY
+          return true if content_transfer_encoding == TE_BINARY
+          return true if content_type =~ /(binary|octet\-)/i
+          false
         end
 
         def is_wwwform?
@@ -792,6 +830,8 @@ module Watobo #:nodoc: all
           hnames
         end
 
+        # @return Array of HTTP headers
+        # @@param filter String (Regex) is case-insensitive
         def headers(filter = nil, &b)
           begin
             filter = '.*' if filter.nil?
@@ -813,7 +853,6 @@ module Watobo #:nodoc: all
             if $DEBUG
               puts bang.backtrace
               puts self.to_yaml
-              binding.pry if binding.respond_to? :pry
             end
             return nil
           end

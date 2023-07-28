@@ -23,10 +23,12 @@ describe Watobo::EvasionHandlers::HTTPVersion do
 
     let(:evasion) { Watobo::EvasionHandlers::SlashSlash.new }
 
-    it ".run" do
+    it ".evasion_handlers" do
       requests = []
 
-      dummy.run(request)
+      dummy.evasion_handlers do |handler|
+        binding.pry
+      end
 
     end
   end

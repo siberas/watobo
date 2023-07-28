@@ -112,6 +112,7 @@ DEPENDENCIES
   optimist
   pry
   rspec
+  rubyntlm
   selenium-webdriver
   sinatra
   uri

@@ -13,6 +13,22 @@ module Watobo #:nodoc: all
         @socket.flush
       end
 
+      def send_response(response)
+        raise "not a Watobo::Response" unless response.is_a?(Watobo::Response)
+        header_lines = ''.force_encoding('ASCII-8BIT')
+        response.each do |l|
+          break if l.strip.empty?
+          header_lines << l.force_encoding('ASCII-8BIT')
+        end
+        header_lines << "\r\n".force_encoding('ASCII-8BIT')
+
+        write(header_lines)
+
+        if response.has_body?
+          write response.body.to_s
+        end
+      end
+
       def flush
         @socket.flush
       end
@@ -104,10 +120,6 @@ module Watobo #:nodoc: all
         end
 
         return nil
-      end
-
-      def send_response(response)
-
       end
 
       def initialize(socket, req = nil)

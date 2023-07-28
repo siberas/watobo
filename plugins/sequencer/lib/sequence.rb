@@ -2,14 +2,19 @@ module Watobo
   class Sequence < Array
 
     def self.create(filename)
-      prefs = {}
-      if File.exist?(filename) then
-        File.open(filename, "rb") { |f|
-          prefs = Marshal::load(f.read)
-          prefs[:file] = filename
-        }
-      end
+      begin
+        prefs = {}
+        if File.exist?(filename) then
+          File.open(filename, "rb") { |f|
+            prefs = Marshal::load(f.read)
+            prefs[:file] = filename
+          }
+        end
+      rescue => bang
+        puts bang
+        puts bang.backtrace
 
+      end
 
       seq = Sequence.new prefs
       # Watobo::Sequences.add seq
@@ -24,7 +29,7 @@ module Watobo
 
     def to_h
       h = {}
-          h[:name] = @name
+      h[:name] = @name
       h[:file] = @file
       h[:elements] = []
       each do |e|
@@ -46,22 +51,20 @@ module Watobo
       if prefs.has_key? :elements
         prefs[:elements].each do |element|
           self << Watobo::Plugin::Sequencer::Element.new(self, element)
-            #binding.pry
+          # binding.pry
         end
       end
 
       if prefs.has_key? :vars
-        prefs[:vars].each do |var|
+        #   prefs[:vars].each do |var|
 
-        end
+        #end
       end
 
       @vars = prefs[:vars]
     end
 
-    def method_missing?(name, *args, &block)
-
-    end
+    def method_missing?(name, *args, &block) end
 
   end
 end

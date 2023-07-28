@@ -45,6 +45,9 @@ EOF
           def initialize(project, prefs = {})
             super(project, prefs)
 
+            # TODO: insert new patterns
+            # Postgres:
+            # OR/**/$$1$$=$$1$$--/**/-
 
             @boolean_checks = [
                 ['\'--', '\''],

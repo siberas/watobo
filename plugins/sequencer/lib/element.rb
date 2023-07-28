@@ -27,7 +27,11 @@ module Watobo
 
         def run_pre(request)
           pre_lambda = eval(pre_script)
-
+          if pre_lambda.arity == 1
+            pre_lambda.call request
+          else
+            pre_lambda.call
+          end
         end
 
         def run_post(request, response)
@@ -53,7 +57,7 @@ module Watobo
           @enabled = false
         end
 
-        def initialize(sequence,prefs)
+        def initialize(sequence, prefs)
           @request = nil
           @pre_script = nil
           @post_script = nil

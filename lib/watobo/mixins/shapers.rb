@@ -56,7 +56,7 @@ module Watobo #:nodoc: all
 
         def replaceQuery(new_query)
           m, method, scheme, site, port, path, query, version = self.first.match(/#{URL_SPLIT}/i).to_a
-          new_url = "#{scheme}://#{site}#{( port.nil? ? '' : ':' + port)}#{path}?#{new_query}"
+          new_url = "#{scheme}://#{site}#{(port.nil? ? '' : ':' + port)}#{path}?#{new_query}"
           replaceURL(new_url)
         end
 
@@ -392,16 +392,6 @@ module Watobo #:nodoc: all
         end
 
         alias :set_body :setData
-
-        def set_body_UNUSED(content)
-          if self[-2].strip.empty?
-            self.pop
-          else
-            self << "\r\n"
-          end
-          self << content
-        end
-
         alias :setBody :setData
 
         def setMethod(method)
@@ -473,13 +463,18 @@ module Watobo #:nodoc: all
           if self.content_encoding == TE_GZIP or self.transfer_encoding == TE_GZIP
             if self.has_body?
               gziped = raw_body
+
               gz = Zlib::GzipReader.new(StringIO.new(gziped))
               data = gz.read
               gz.close
 
-              required_charset = charset
-              charset = (required_charset && ['ASCII', 'UTF-8', 'ISO-8859-1'].include?(required_charset.upcase)) ? required_charset.upcase : 'ASCII-8BIT'
-              data.encode!(charset, :invalid => :replace, :undef => :replace, :replace => '')
+              # puts "! unzip data"
+
+              # charset = ['ASCII', 'UTF-8', 'ISO-8859-1'].include?(required_charset.upcase) ? required_charset.upcase : 'ASCII-8BIT'
+              #required_charset = charset || 'ASCII-8BIT'
+              #data.encode!(required_charset.upcase, :invalid => :replace, :undef => :replace, :replace => '')
+
+              # puts data.encoding
 
               set_body data
               self.removeHeader("Transfer-Encoding") if self.transfer_encoding == TE_GZIP

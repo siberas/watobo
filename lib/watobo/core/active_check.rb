@@ -153,14 +153,6 @@ module Watobo #:nodoc: all
       count
     end
 
-    def maxChecks_UNUSED=(m)
-      @@max_checks = m
-    end
-
-    def maxChecks_UNUSED()
-      @@max_checks
-    end
-
     def enabled?
       r = nil
       @enable_mutex.synchronize do
@@ -205,15 +197,18 @@ module Watobo #:nodoc: all
       begin
         t_request, t_response = doRequest(request, prefs)
         # first custom error patterns are checked
+        return false unless t_response
         status = t_response.status
         # if @settings.has_key? :custom_error_patterns
         custom_error_patterns.each do |pat|
+          binding.pry unless pat.is_a? String
           if pat =~ /^[0-9a-zA-Z]{10,}$/
             return [false, t_request, t_response] if Watobo::Utils.responseHash(t_request, t_response) == pat
           end
           return [false, t_request, t_response] if t_response.to_s =~ /#{pat}/
         end
         # end
+        #
         # if @settings.has_key? :custom_error_patterns
         #  @settings[:custom_error_patterns].each do |pat|
         #    t_response.headers.each do |hl|

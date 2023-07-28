@@ -50,6 +50,11 @@ module Watobo::EvasionHandlers
           test = request.clone
           test.set_header "Forwarded: #{location}"
           yield test
+          # do some more header-foo, as seen in a POC for CVE-2022-40684
+          location = "for:[#{loc}];proto=#{proto};by=[#{loc}]"
+          test = request.clone
+          test.set_header "Forwarded: #{location}"
+          yield test
         end
       end
     end

@@ -48,7 +48,6 @@ module Watobo
           results << result_queue.deq
         end
 
-        binding.pry
         results.compact
       end
 

@@ -46,7 +46,7 @@
 
 
 module Watobo
-  module NTLM
+  module NTLM_UNUSED
     # @private
     module VERSION
       MAJOR = 0

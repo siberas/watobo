@@ -75,6 +75,10 @@ module Watobo #:nodoc: all
             @scanner.subscribe(:scanner_finished){
               @status = STATUS_FINISHED
             }
+
+            @scanner.subscribe(:new_chat){ |chat|
+              puts chat.request.url.to_s
+            }
             @scanner.run
           }
         }
@@ -82,7 +86,7 @@ module Watobo #:nodoc: all
       end
 
       # automatically detects pattern for F
-      def get_not_found_pattern(prefs)
+      def get_not_found_pattern_UNUSED(prefs)
         sender = Watobo::Session.new(self.object_id, prefs)
 
         nfpatterns = []

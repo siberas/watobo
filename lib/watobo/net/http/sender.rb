@@ -4,7 +4,7 @@ module Watobo
   module Net
     module Http
       class Sender < ::Net::Protocol
-        attr_accessor :sni_host
+        attr_accessor :sni_host, :socket
 
         include Net
 
@@ -19,11 +19,27 @@ module Watobo
           :sni_host => nil,
           :timeout => 60,
           :write_timeout => 60,
-          :open_timeout => 10
+          :open_timeout => 10,
+          # setting raw_request TRUE will stop any modifications on the request data, e.g.
+          # it will not remove the URI from the first line. So it's possible to test for OpenProxy hosts
+          :raw_request => false,
+          :fixed_host => nil # format 1.2.3.4:888
         }
 
         def proxy?
           !@proxy.nil?
+        end
+
+        def fixed_host?
+          !@prefs[:fixed_host].nil? && !@prefs[:fixed_host].strip.empty?
+        end
+
+        def fixed_host
+          @fixed_host_cache ||= URI.parse(@prefs[:fixed_host])
+        end
+
+        def raw_request?
+          !!@prefs[:raw_request]
         end
 
         # def is_ssl?
@@ -67,7 +83,7 @@ module Watobo
           DEFAULT_PREFS.keys.each do |pk|
             @prefs[pk] = prefs.has_key?(pk) ? prefs[pk] : DEFAULT_PREFS[pk]
           end
-          @sni_host = prefs[:sni_host]
+          @sni_host = @prefs[:sni_host]
 
           @read_timeout = @prefs[:timeout]
           @write_timeout = @prefs[:write_timeout]
@@ -92,24 +108,28 @@ module Watobo
           begin
             # socket = connect
             # request = send_request(socket, request)
-            socket = send_request(request)
-            header = read_header(socket)
+            connect(request)
+            send_request(@socket, request)
+            header = read_header(@socket)
 
             return [request, nil] unless header
 
             do_header header
 
-            response = read_body(socket, header)
+            # puts "#{self} read body for header:"
+            # puts header
 
+            response = read_body(@socket, header)
+
+            # puts "DONE!"
             # TODO: read extra body, maybe there might be some additional data on socket after reading only content-length
             # ????
             #
             t_end = Process.clock_gettime(Process::CLOCK_REALTIME)
 
-            socket.close
+            @socket.close
 
             response.unzip!
-
           rescue ::Net::ReadTimeout => bang
             t_end = Process.clock_gettime(Process::CLOCK_REALTIME)
             response = error_response bang unless response
@@ -151,7 +171,7 @@ module Watobo
           @on_ssl_connect_cb.call(sock) if @on_ssl_connect_cb
         end
 
-        def connect_proxy
+        def connect_proxy_UNUSED
           host = @proxy.host
           port = @proxy.port
 
@@ -176,19 +196,22 @@ module Watobo
 
         end
 
-        def send_request(request)
-          socket = connect(request)
+        def send_request(socket, request)
+          # socket = connect(request)
           # remove URI before sending request but cache it for restoring request
-          uri_cache = request.remove_uri unless proxy?
-          data = request.join
+          uri_cache = nil
+          uri_cache = request.remove_uri unless proxy? || raw_request?
+          data = request.to_s
 
-          unless request.has_body?
-            data << "\r\n" unless data =~ /\r\n\r\n$/
+          if $DEBUG
+            puts '[DEBUG]'
+            puts "Sender.send_request:"
+            puts data
           end
 
           socket.write data
 
-          request.restore_uri(uri_cache) unless proxy?
+          request.restore_uri(uri_cache) if uri_cache
 
           # request
           socket
@@ -245,29 +268,40 @@ module Watobo
           # binding.pry
           begin
             body = ''
-            if response.is_chunked?
+            if response.is_chunked? and !response.status_code.match?(/^302/)
+              # puts "* reading chunked body"
+              # puts response
+              # puts response.status_code
+              # puts response.status_code.class
+              # binding.pry
               body = read_chunked(sock)
+              # binding.pry
+              # puts "+ chunk finished"
               response.set_body body
               response.removeHeader("Transfer-Encoding")
-              response.set_header("Content-Length", "#{body.length}")
+              response.set_header("Content-Length", "#{body.bytesize}")
               return response
               # TODO: check which kind of reading is best
               # Don't read by length, because if clen is larger than content
               # an error will be raised and no data is read
             elsif clen >= 0
+              # puts "* reading #{clen} bytes"
               body = sock.read(clen) unless clen == 0
             else
               # puts sock.class.to_s
-              body = read_all_nonblock(sock)
+              # body = read_all_nonblock(sock)
             end
             unless body.empty?
+              # required_charset = response.charset || 'ASCII-8BIT'
+              # body.encode!(required_charset.upcase, :invalid => :replace, :undef => :replace, :replace => '')
+
               response.set_body body
-              response.set_header("Content-Length", "#{body.length}")
+              response.set_header("Content-Length", "#{body.bytesize}")
             end
           rescue EOFError
             # ignore
           rescue => e
-            #binding.pry
+            # binding.pry
             raise e
           end
 
@@ -275,38 +309,48 @@ module Watobo
         end
 
         def connect(request)
+          ssl_required = false
+
           if proxy?
             conn_host = @proxy.host
             conn_port = @proxy.port
+          elsif fixed_host?
+            conn_host = fixed_host.host
+            conn_port = fixed_host.port
+            ssl_required = fixed_host.ssl?
           else
             conn_host = request.host
             conn_port = request.port
+            ssl_required = request.is_ssl?
           end
 
           conn_ip = IPSocket.getaddress(conn_host)
 
+
+
+          puts "! Connecting to #{conn_host}: #{conn_port}" if $DEBUG
           s = Socket.tcp conn_ip, conn_port, nil, nil, connect_timeout: @open_timeout
           s.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
 
-          if request.is_ssl?
+          if proxy?
+            plain_sock = ::Net::BufferedIO.new(s, read_timeout: @read_timeout,
+                                               write_timeout: @write_timeout,
+                                               continue_timeout: @continue_timeout,
+                                               debug_output: @debug_output)
+            buf = "CONNECT #{request.host}:#{request.port} HTTP/#{1.1}\r\n"
+            buf << "Host: #{request.host}:#{request.port}\r\n"
+            # if proxy_user
+            #  credential = ["#{proxy_user}:#{proxy_pass}"].pack('m0')
+            #  buf << "Proxy-Authorization: Basic #{credential}\r\n"
+            # end
+            buf << "\r\n"
+            plain_sock.write(buf)
 
-            if proxy?
-              plain_sock = ::Net::BufferedIO.new(s, read_timeout: @read_timeout,
-                                                 write_timeout: @write_timeout,
-                                                 continue_timeout: @continue_timeout,
-                                                 debug_output: @debug_output)
-              buf = "CONNECT #{request.host}:#{request.port} HTTP/#{1.1}\r\n"
-              buf << "Host: #{request.host}:#{request.port}\r\n"
-              # if proxy_user
-              #  credential = ["#{proxy_user}:#{proxy_pass}"].pack('m0')
-              #  buf << "Proxy-Authorization: Basic #{credential}\r\n"
-              # end
-              buf << "\r\n"
-              plain_sock.write(buf)
+            ph = read_header(plain_sock)
+            # assuming nothing left in buffers after successful CONNECT response
+          end
 
-              ph = read_header(plain_sock)
-              # assuming nothing left in buffers after successful CONNECT response
-            end
+          if ssl_required
 
             @ssl_context = ssl_context
 
@@ -323,7 +367,11 @@ module Watobo
             s.sync_close = true
             # need hostname for SNI (Server Name Indication)
             # http://en.wikipedia.org/wiki/Server_Name_Indication
-            s.hostname = @sni_host ? @sni_host : request.host # if s.respond_to?(:hostname=) && ssl_host_address
+            s_hostname = request.host
+            s_hostname = fixed_host.host if fixed_host?
+            # if sni_host is set it will overwrite fixed_host
+            s_hostname = @sni_host if @sni_host # if s.respond_to?(:hostname=) && ssl_host_address
+            s.hostname = s_hostname
 
             if @ssl_session and
               Process.clock_gettime(Process::CLOCK_REALTIME) < @ssl_session.time.to_f + @ssl_session.timeout
@@ -378,6 +426,7 @@ module Watobo
           total = 0
           data = ''
           # begin
+          # puts "Read chunked"
           loop do
             line = sock.readline
             # next if line.strip.empty?

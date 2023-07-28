@@ -19,6 +19,7 @@ module Watobo
 
     @evasion_handlers = {}
     @evasion_enabled = true
+    @evasion_forced = false
 
     def self.add_handlers
       Watobo::EvasionHandlers.constants.each do |handler|
@@ -64,7 +65,7 @@ module Watobo
 
     # @param filters [Array] of Regexs for filtering evasion handlers by their name
     # @return Array of EvasionHandlers which names matched the filters
-    #
+    # Array is sorted by handler.prio (asc)
     def evasion_handlers(filters=nil, &block)
       handlers = self.class.instance_variable_get(:@evasion_handlers)
       active_handlers = []
@@ -77,9 +78,7 @@ module Watobo
           p = ( f == :all ? '.*' : f )
           next unless h.name =~ /#{p}/i
           active_handlers << h
-          # we cannot yield to the block, because it is passed as a proc.
-          # yield h if block_given?
-          # instead we call the proc
+
           yield h if block_given?
         end
       end

@@ -23,7 +23,7 @@ OPTS = Optimist::options do
   opt :session, "Session name", :type => :string
   opt :url, "URL, e.g. https://www.somesite.org/xxx", :type => :string
   opt :database, "Filename of database or simple URI-Filename", :type => :string
-  opt :logname, "name of log directory", :type => :string
+  opt :scanlog_name, "name of log directory", :type => :string
   opt :evasion, "evasion extensions", :type => :string, :default => '/; ?y=x.png ?debug=true'
   opt :workspace, "workspace directory", :type => :string
   opt :config, "file with additional configuration settings in JSON format", :type => :string
@@ -85,10 +85,12 @@ project = Watobo.create_project project_name: project_name, session_name: sessio
 project.setupProject
 
 request = Watobo::Request.new OPTS[:url]
+
 prefs = {}
 prefs[:db_file] = OPTS[:database]
 prefs[:evasion_extension] = OPTS[:evasion].split(' ').map{|e| e.strip }
-prefs[:scanlog_name] = OPTS[:logname] if !!OPTS[:logname]
+prefs[:scanlog_name] = OPTS[:scanlog_name] if !!OPTS[:scanlog_name]
+prefs[:rating] =OPTS[:rating]
 
 if !!OPTS[:run_passive_checks]
   puts "+ starting passive scanner ..." if $VERBOSE
@@ -110,7 +112,7 @@ scanner.run(prefs)
 sleep 3
 
 while !scanner.finished?
-  puts "wait for finish" if $VERBOSE
+  print '.' if $VERBOSE
   sleep 3
 end
 

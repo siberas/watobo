@@ -5,7 +5,8 @@ module Watobo::Resources
 
   # TODO: also load private keys from local file
 
-  keywords = %w( api key username user uname pw password pass passwd email mail credentials credential login token secret )
+  #keywords = %w( api key username user uname pw password pass passwd email mail credentials credential login token secret )
+  keywords = %w( api key username user uname pw password pass passwd credentials credential login token secret )
 
   generic = {}
   generic['Generic'] = "(\\b|[ ._-])(#{keywords.join('|')})[ '\"]*(=|:)[ '\"]*([^'\" ]+)"
@@ -18,6 +19,7 @@ module Watobo::Resources
     "SSH (DSA) private key" => "-----BEGIN DSA PRIVATE KEY-----",
     "SSH (EC) private key" => "-----BEGIN EC PRIVATE KEY-----",
     "PGP private key block" => "-----BEGIN PGP PRIVATE KEY BLOCK-----",
+    "Generic key" => "-----BEGIN [^\-] PRIVATE KEY-----",
     "AWS API Key 1" => "((?=>A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16})",
     "AWS API Key 2" => "AKIA[0-9A-Z]{16}",
     "Amazon MWS Auth Token" => "amzn\\.mws\\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -49,7 +51,7 @@ module Watobo::Resources
     "Twitter OAuth" => "[tT][wW][iI][tT][tT][eE][rR].*['|\"][0-9a-zA-Z]{35,44}['|\"]",
     "urls 1" => "https?://(www\\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)",
     "urls 2" => "[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)",
-    "url-parameter" => "(?<=\\?|\\&)[a-zA-Z0-9_]+(?=\\=)",
+    # "url-parameter" => "(?<=\\?|\\&)[a-zA-Z0-9_]+(?=\\=)",
     "twitter-secret" => "(?i)twitter(.{0,20})?['\"][0-9a-z]{35,44}",
     "twitter-oauth" => "[t|T][w|W][i|I][t|T][t|T][e|E][r|R].{0,30}['\"\\s][0-9a-zA-Z]{35,44}['\"\\s]",
     "twitter-id" => "(?i)twitter(.{0,20})?['\"][0-9a-z]{18,25}",
@@ -75,13 +77,13 @@ module Watobo::Resources
     "heroku-api" => "[h|H][e|E][r|R][o|O][k|K][u|U].{0,30}[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}",
     "google-ouath-token" => "ya29.[0-9A-Za-z\\-_]+",
     "google-oauth" => "[0-9]+-[0-9A-Za-z_]{32}\\.apps\\.googleusercontent\\.com",
-    "google-cloud-key" => "(?i)(google|gcp|youtube|drive|yt)(.{0,20})?['\"][AIza[0-9a-z\\-_]{35}]['\"]",
+    # "google-cloud-key" => "(?i)(google|gcp|youtube|drive|yt)(.{0,20})?['\"][AIza[0-9a-z\\-_]{35}]['\"]",
     "github" => "(?i)github(.{0,20})?(?-i)['\"][0-9a-zA-Z]{35,40}",
     "facebook-secret-key" => "(?i)(facebook|fb)(.{0,20})?(?-i)['\"][0-9a-f]{32}",
     "facebook-oauth" => "[f|F][a|A][c|C][e|E][b|B][o|O][o|O][k|K].*['|\"][0-9a-f]{32}['|\"]",
     "facebook-client-id" => "(?i)(facebook|fb)(.{0,20})?['\"][0-9]{13,17}",
     "cloudinary-basic-auth" => "cloudinary://[0-9]{15}:[0-9A-Za-z]+@[a-z]+",
-    "base64" => "(eyJ|YTo|Tzo|PD[89]|aHR0cHM6L|aHR0cDo|rO0)[a-zA-Z0-9+/]+={0,2}",
+    "base64" => "\\b(eyJ|YTo|Tzo|PD[89]|aHR0cHM6L|aHR0cDo|rO0)[a-zA-Z0-9+/]+={0,2}",
     "aws-secret-key" => "(?i)aws(.{0,20})?(?-i)['\"][0-9a-zA-Z/+]{40}['\"]",
     "aws-mws-key" => "amzn\\.mws\\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
     "aws-client-id" => "(A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}",

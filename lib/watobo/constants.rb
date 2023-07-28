@@ -54,6 +54,7 @@ module Watobo#:nodoc: all
     TE_GZIP = 0x04
     TE_DEFLATE = 0x08
     TE_IDENTITY = 0x10
+    TE_BINARY = 0x20
     
     # Log Level
     LOG_INFO = 0x00
