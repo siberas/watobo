@@ -8,7 +8,8 @@ module Watobo #:nodoc: all
 
       def set_chats(chats)
         @chats = chats
-        kmeans_update
+        # kmeans_update
+        clear_cluster_buttons
         #update_cluster_matrix
       end
 
@@ -84,7 +85,7 @@ module Watobo #:nodoc: all
         @runs_num.text = @settings.runs.to_s
 
         @update_btn = FXButton.new(vframe_r, "Update", nil, nil, :opts => BUTTON_NORMAL | LAYOUT_RIGHT | LAYOUT_FILL_Y | LAYOUT_FILL_X | LAYOUT_MIN_WIDTH, :width => 180)
-        @update_btn.connect(SEL_COMMAND) { update_clusters }
+        @update_btn.connect(SEL_COMMAND) { kmeans_update }
 
 
         @pbar = FXProgressBar.new(self, nil, 0, LAYOUT_FILL_X | FRAME_SUNKEN | FRAME_THICK | PROGRESSBAR_HORIZONTAL)
@@ -178,7 +179,7 @@ module Watobo #:nodoc: all
         notify(:show_chats, chats)
       end
 
-      def start_update_timer(interval = 500)
+      def start_update_timer(interval = 1500)
 
         @timer = FXApp.instance.addTimeout(interval, :repeat => true) {
           #print '*'

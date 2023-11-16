@@ -122,8 +122,13 @@ Vary
       end
 
       def notify_inc(inc)
+        @progress_block_size ||= 0
+        @progress_block_size += 1
         @progress[:progress] += 1
-        notify(:progress, @progress)
+        if @progress_block_size > 100
+          notify(:progress, @progress)
+          @progress_block_size = 0
+        end
       end
 
       def notify_finished
@@ -212,6 +217,7 @@ Vary
       def validate_chats(chats)
         vchats = []
         chats.each do |chat|
+          next unless chat.response.respond_to?(:headers)
           next if chat.response.headers('Server').first =~ /watobo/i
           vchats << chat
         end

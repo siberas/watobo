@@ -9,7 +9,7 @@ module Watobo #:nodoc: all
           include Watobo::Subscriber
 
           def request
-            @request_editor.rawRequest
+             @request_editor.rawRequest
           end
 
           def request=(request)

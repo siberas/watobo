@@ -574,6 +574,8 @@ module Watobo #:nodoc: all
                      TE_IDENTITY
                    when /(binary|octet\-stream)/i
                      TE_BINARY
+                   when /^br$/
+                     TE_BROTLI
                    else
                      TE_NONE
                    end

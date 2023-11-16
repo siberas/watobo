@@ -8,6 +8,13 @@ module Watobo
           # only reload if url of script is different to current
           # not sure if it will work nicely but it will be faster
           driver.navigate.to form.src if form.src != driver.current_url
+
+          wait = Selenium::WebDriver::Wait.new(timeout: 10)
+          wait.until { driver.execute_script('return document.readyState') == 'complete' }
+
+          wait = Selenium::WebDriver::Wait.new(timeout: 10)
+          wait.until { driver.find_element(:css, "form[action='#{form.action}']") }
+
           begin
             filler = Spider::Autofill.new(driver)
             filler.fill!
@@ -15,18 +22,27 @@ module Watobo
             binding.pry if $DEBUG
           end
 
-          f = driver.find_element(:css, "form[action='#{form.attributes.action}']")
-          f.submit
+          wait = Selenium::WebDriver::Wait.new(timeout: 10)
+          wait.until { driver.find_element(:css, "form[action='#{form.action}']") }
 
+          f = driver.find_element(:css, "form[action='#{form.action}']")
 
-
+          # binding.pry
+          if form.button
+            button = driver.find_element(css: form.button)
+            # puts "Click button: #{form.button}"
+            # we use javascript to click, because seleniums click will be blocked if the page is overlayed by a popup
+            driver.execute_script('arguments[0].click();', button)
+          else
+            f.submit
+          end
         end
 
         def collect(resource)
           # print '.' if $VERBOSE
           collection = []
           if resource.is_a? Href
-            #return collection unless resource.respond_to?(:href)
+            # return collection unless resource.respond_to?(:href)
             @driver.navigate.to resource.href
           end
 
@@ -37,15 +53,15 @@ module Watobo
 
             # puts "Executing #{resource.script}"
             begin
-               filler = Spider::Autofill.new(driver)
-               filler.fill!
+              filler = Spider::Autofill.new(driver)
+              filler.fill!
             rescue => bang
               binding.pry if $DEBUG
-             end
+            end
 
-            #puts resource.script
+            # puts resource.script
 
-            @driver.execute_script( resource.script )
+            @driver.execute_script(resource.script)
 
           end
 
@@ -64,26 +80,29 @@ module Watobo
           @runner = Thread.new(@in_queue, @out_queue) { |inq, outq|
             loop do
               begin
-                #link, referer, depth = lq.deq
+                # link, referer, depth = lq.deq
 
                 outq << nil
                 Thread.current[:xxx] = :waiting
                 resource = inq.deq
                 Thread.current[:xxx] = :working
                 t_start = Process.clock_gettime(Process::CLOCK_REALTIME)
-                #next if link.depth > @opts[:max_depth]
+                # next if link.depth > @opts[:max_depth]
                 results = collect(resource)
                 t_end = Process.clock_gettime(Process::CLOCK_REALTIME)
                 results.each do |r|
                   outq.enq r
                 end
                 duration = t_end - t_start
-                #puts "Took: #{duration}"
-                outq << Stat.new(resource, duration )
+                # puts "Took: #{duration}"
+                outq << Stat.new(resource, duration)
 
+              rescue Selenium::WebDriver::Error::StaleElementReferenceError
+              rescue Selenium::WebDriver::Error::NoSuchElementError
               rescue => bang
                 puts bang
-                puts bang.backtrace #if $DEBUG
+                puts bang.backtrace if $DEBUG
+                binding.pry if $DEBUG
               end
             end
           }
@@ -107,6 +126,13 @@ module Watobo
           @options.add_argument('--headless') if headless
           @options.add_argument('--allow-file-access-from-files')
           @options.add_argument('--ignore-certificate-errors')
+          #@options.add_argument("--disable-logging")
+          #@options.add_argument("--log-level=3")
+          #@options.add_preference("goog:loggingPrefs", { browser: :NONE })
+
+          # logging_prefs = { browser: :NONE, driver: :NONE }
+          # Configure Chrome options
+          #@options.add_preference(:loggingPrefs, logging_prefs)
 
           if proxy
             @options.add_argument('--proxy-server=%s' % proxy)
@@ -116,16 +142,19 @@ module Watobo
           # @driver = Selenium::WebDriver::Chrome(chrome_options=@options,
           #                          executable_path='/usr/share/chrome-linux/')
 
-          Selenium::WebDriver::Chrome::Service.driver_path = File.join(prefs[:chrome_bundle_path],'chromedriver') #prefs[:driver_path] if prefs[:driver_path]
-          #Selenium::WebDriver::Chrome.executable_path = File.join(prefs[:driver_path],'chrome')
-          Selenium::WebDriver::Chrome.path = File.join(prefs[:chrome_bundle_path],'chrome')
+          Selenium::WebDriver::Chrome::Service.driver_path = File.join(prefs[:chrome_bundle_path], 'chromedriver') # prefs[:driver_path] if prefs[:driver_path]
+
+          # https://www.selenium.dev/selenium/docs/api/rb/Selenium/WebDriver/Logger.html
+          Selenium::WebDriver.logger.level = :error
+
+          # Selenium::WebDriver::Chrome.executable_path = File.join(prefs[:driver_path],'chrome')
+          Selenium::WebDriver::Chrome.path = File.join(prefs[:chrome_bundle_path], 'chrome')
 
           @driver = Selenium::WebDriver.for :chrome, options: @options
 
           at_exit do
             @driver.quit
           end
-
 
         end
       end

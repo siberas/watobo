@@ -99,8 +99,18 @@ module Watobo
           # overwrite :timeout with controllable value
           cprefs[:timeout] = timeout
           # get client certificate from ClientCertStore
-          cprefs[:client_certificate] = Watobo::ClientCertStore.get request.site
-          cprefs[:proxy] = Watobo::ForwardingProxy.get(request.site)&.to_h
+
+          site = request.site
+          if prefs[:fixed_host]
+            begin
+              u = URI.parse(prefs[:fixed_host])
+              site = "#{u.host}:#{u.port}"
+            rescue => bang
+              puts bang
+            end
+          end
+          cprefs[:client_certificate] = Watobo::ClientCertStore.get site
+          cprefs[:proxy] = Watobo::ForwardingProxy.get(site)&.to_h
           cprefs.update prefs
 
           if $VERBOSE || $DEBUG
@@ -118,6 +128,7 @@ module Watobo
             request.removeHeader('Content-Length')
           end
 
+          request.setHeader('Accept-Encoding','none')
           update_tokens(request)
 
           #

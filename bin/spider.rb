@@ -16,7 +16,8 @@ OPTS = Optimist::options do
 
 EOS
 
-  opt :url, "set WATOBO_HOME aka working_directory", :type => :string, :default => ENV['WATOBO_HOME']
+  opt :url,  "URL, e.g. https://www.somesite.org/xxx", :type => :string
+  #  opt :watobo_home, "set WATOBO_HOME aka working_directory", :type => :string, :default => ENV['WATOBO_HOME']
   opt :proxy, "Proxy (host:port)", :type => :string
   opt :headless, "headless mode"
   opt :screenshot, "headless mode"
@@ -28,6 +29,8 @@ EOS
 end
 
 Optimist.die :url, "Need URL" unless OPTS[:url]
+
+
 require 'watobo/headless'
 
 require 'pry'

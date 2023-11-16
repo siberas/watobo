@@ -98,6 +98,7 @@ module Watobo #:nodoc: all
         # remove Accept-Encoding header
         # otherwise we won't get the content-length information for pass-through feature
         request.removeHeader("^Accept-Encoding")
+        request.setHeader("Accept-Encoding","none")
         # If-Modified-Since: Tue, 28 Oct 2008 11:06:43 GMT
         # If-None-Match: W/"3975-1225192003000"
         # request.removeHeader("^If-")

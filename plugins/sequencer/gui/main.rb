@@ -153,6 +153,7 @@ module Watobo #:nodoc: all
             Thread.new(filename) { |fn|
               #    File.open(fn,"wb"){|fh| fh.print JSON.pretty_generate(@results) }
               File.open(fn, 'wb') { |f|
+                puts JSON.pretty_generate( @sequence.to_h)
                 f.print Marshal::dump(@sequence.to_h)
               }
             }

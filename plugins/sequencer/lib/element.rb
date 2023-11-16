@@ -7,10 +7,11 @@ module Watobo
         include Watobo::Constants
 
         attr :name
-        attr_accessor :request, :pre_script, :post_script, :enabled, :egress_handler
+        attr_accessor :request, :pre_script, :post_script, :enabled, :egress_handler, :egress_handler_enabled
 
         # we need this for RequestParser mixin
         def to_s
+          puts @request.inspect
           @request
         end
 
@@ -22,6 +23,7 @@ module Watobo
           h[:post_script] = @post_script
           h[:enabled] = @enabled
           h[:egress_handler] = @egress_handler
+          h[:egress_handler_enabled] = @egress_handler_enabled
           h
         end
 
@@ -66,7 +68,7 @@ module Watobo
           @sequence = sequence
           @sender = Watobo::Session.new
 
-          %w( name request pre_script post_script enabled egress_handler ).each do |e|
+          %w( name request pre_script post_script enabled egress_handler egress_handler_enabled ).each do |e|
             instance_variable_set("@#{e}", prefs[e.to_sym]) if prefs[e.to_sym]
           end
         end
@@ -75,7 +77,9 @@ module Watobo
           begin
             request = to_request
 
-            prefs = { logging: false }
+            prefs = Watobo::Conf::Scanner.to_h
+            #prefs = { logging: false }
+
             prefs.update nprefs
 
             unless pre_script.nil? or pre_script.empty?

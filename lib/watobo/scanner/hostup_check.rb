@@ -22,9 +22,11 @@ module Watobo
               begin
                 req = Watobo::Request.new(origin)
 
+
+                @prefs[:client_certificate] = @client_certificate || Watobo::ClientCertStore.get(req.site)
+
                 sender = Watobo::Net::Http::Sender.new @prefs
                 request, response = sender.exec req
-                puts response.status_code
                 results << case response.status_code
                            when /^(555|502|504)/
                              nil
@@ -35,7 +37,7 @@ module Watobo
                 puts bang
                 puts bang.backtrace
                 results << nil
-                raise bang
+                #raise bang
               end
 
             end
@@ -52,8 +54,11 @@ module Watobo
       end
 
       def initialize(prefs)
-        @prefs = prefs
+        @prefs = {}
         @max_workers =  @prefs[:max_parallel_checks] || 10
+        @client_certificate = prefs.delete(:client_certificate)
+        #cprefs[:proxy] = Watobo::ForwardingProxy.get(request.site)&.to_h
+        @prefs.update prefs
       end
 
     end

@@ -80,12 +80,13 @@ module Watobo#:nodoc: all
     def self.reload
       @history.each do |file|
         puts "load egress file #{file}" if $VERBOSE
-        Kernel.load file
+        Kernel.load(file) if File.exist?(file)
       end
     end
 
     def self.load(file)
       begin
+        return false unless File.exist?(file)
         Kernel.load file
         @history << file
         @history.uniq!

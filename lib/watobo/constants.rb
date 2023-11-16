@@ -55,6 +55,7 @@ module Watobo#:nodoc: all
     TE_DEFLATE = 0x08
     TE_IDENTITY = 0x10
     TE_BINARY = 0x20
+    TE_BROTLI = 0x21
     
     # Log Level
     LOG_INFO = 0x00

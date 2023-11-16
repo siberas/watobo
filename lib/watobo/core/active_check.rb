@@ -199,9 +199,11 @@ module Watobo #:nodoc: all
         # first custom error patterns are checked
         return false unless t_response
         status = t_response.status
+
+        return false if t_response&.first&.match?(/HTTP.*555.*Watobo/i)
         # if @settings.has_key? :custom_error_patterns
         custom_error_patterns.each do |pat|
-          binding.pry unless pat.is_a? String
+          # binding.pry unless pat.is_a? String
           if pat =~ /^[0-9a-zA-Z]{10,}$/
             return [false, t_request, t_response] if Watobo::Utils.responseHash(t_request, t_response) == pat
           end

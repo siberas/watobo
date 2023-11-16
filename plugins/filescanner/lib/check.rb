@@ -41,6 +41,10 @@ module Watobo #:nodoc: all
           !!@prefs[:file_extensions] ? @prefs[:file_extensions] : []
         end
 
+        def evasion_enabled?
+          !!@prefs[:evasions_enabled] ? @prefs[:evasions_enabled] : false
+        end
+
         # @return Object [ActiveCheck]
         # @param file_list [Array]
         # @param prefs [Hash]
@@ -50,6 +54,7 @@ module Watobo #:nodoc: all
         #  append_slash: [Boolean]
         #  evasion_extensions: [Array]
         #  force_evasions: [Bool]
+        #  evasions_enabled: [Bool]
         def initialize(project, file_list, prefs = {})
           super(project, prefs)
 
@@ -192,7 +197,7 @@ module Watobo #:nodoc: all
 
                   end
                   # binding.pry
-                  if need_evasion or !!@prefs[:force_evasions]
+                  if evasion_enabled? && ( need_evasion or !!@prefs[:force_evasions] )
                     evasion_handlers.each do |handler|
                       # puts test.url if $VERBOSE
 
@@ -247,8 +252,8 @@ module Watobo #:nodoc: all
           end
           paths = []
           path = chat.request.path
-          while !path.empty? and path != '.'
-            # puts path
+          while !path.empty? and path != '.' and path != '/' and !paths.include?(path)
+            puts path
             yield path if block_given?
             paths << path
             path = File.dirname(path)

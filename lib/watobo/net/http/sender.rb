@@ -23,7 +23,7 @@ module Watobo
           # setting raw_request TRUE will stop any modifications on the request data, e.g.
           # it will not remove the URI from the first line. So it's possible to test for OpenProxy hosts
           :raw_request => false,
-          :fixed_host => nil # format 1.2.3.4:888
+          :fixed_host => nil # format https://1.2.3.4:888
         }
 
         def proxy?
@@ -413,6 +413,7 @@ module Watobo
         def ssl_context
           ctx = OpenSSL::SSL::SSLContext.new()
           ctx.ciphers = @prefs[:ssl_cipher] if !!@prefs[:ssl_cipher]
+          
           if !!@prefs[:client_certificate]
             ccp = @prefs[:client_certificate]
             ctx.cert = ccp[:ssl_client_cert]

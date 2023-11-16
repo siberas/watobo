@@ -25,7 +25,7 @@ module Watobo #:nodoc: all
             super(project, prefs)
 
             @@checked_locations = []
-            @selectors = %w( query assets infinity children s7catalog pages feed feedentry tidy sysview docview permissions overlay 1 2 3 4 5 6 7 )
+            @selectors = %w( query assets _jcr_content infinity children childrenlist s7catalog pages feed feedentry tidy sysview docview permissions overlay 1 2 3 4 5 6 7 )
             @extensions = %w( json csv zip xml )
             # specials are combinations which need one or more parameters to produce a valid result
             @specials = %w( query.json?statement=%2F%2F%2A cqactions.json?path=/&depth=1&authorizableId=* permissions.overlay.json?path=/ )

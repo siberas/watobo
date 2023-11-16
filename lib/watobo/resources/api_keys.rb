@@ -15,6 +15,8 @@ module Watobo::Resources
 
   patterns = {
     "Slack Token" => "(xox[pborsa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})",
+    # Base64.encode64 "-----BEGIN "
+    "Base64 Cert/Key" => "LS0tLS1CRUdJTi",
     "RSA private key" => "-----BEGIN RSA PRIVATE KEY-----",
     "SSH (DSA) private key" => "-----BEGIN DSA PRIVATE KEY-----",
     "SSH (EC) private key" => "-----BEGIN EC PRIVATE KEY-----",
@@ -83,7 +85,7 @@ module Watobo::Resources
     "facebook-oauth" => "[f|F][a|A][c|C][e|E][b|B][o|O][o|O][k|K].*['|\"][0-9a-f]{32}['|\"]",
     "facebook-client-id" => "(?i)(facebook|fb)(.{0,20})?['\"][0-9]{13,17}",
     "cloudinary-basic-auth" => "cloudinary://[0-9]{15}:[0-9A-Za-z]+@[a-z]+",
-    "base64" => "\\b(eyJ|YTo|Tzo|PD[89]|aHR0cHM6L|aHR0cDo|rO0)[a-zA-Z0-9+/]+={0,2}",
+    # "base64" => "\\b(eyJ|YTo|Tzo|PD[89]|aHR0cHM6L|aHR0cDo|rO0)[a-zA-Z0-9+/]+={0,2}",
     "aws-secret-key" => "(?i)aws(.{0,20})?(?-i)['\"][0-9a-zA-Z/+]{40}['\"]",
     "aws-mws-key" => "amzn\\.mws\\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
     "aws-client-id" => "(A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}",

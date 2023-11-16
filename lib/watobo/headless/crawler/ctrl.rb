@@ -171,11 +171,11 @@ module Watobo
             :user_agent => "Sp1der",
             :proxy => nil,
             :delay => 0,
-            :ignore_file_pattern => '(pdf|swf|doc|flv|jpg|png|gif)',
+            :ignore_file_pattern => '(pdf|swf|doc|flv|jpg|png|gif|js)',
             :allowed_hosts => [], # regex's
             :allowed_urls => [], # regex's
             :excluded_urls => ["logout"], # regex's
-            :excluded_fields => ["userid", "username", "password"], # regex's'
+            :excluded_fields => [], # ["userid", "username", "password"], # regex's'
             :excluded_form_names => [], # regex's'
             :root_path => "", # regex
             :username => "",

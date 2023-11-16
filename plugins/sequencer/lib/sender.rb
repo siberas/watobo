@@ -38,7 +38,7 @@ module Watobo #:nodoc: all
             request = element.to_request
             test_req = nil
 
-            binding.pry
+            #binding.pry
             unless element.pre_script.nil? or element.pre_script.empty?
               #f = eval(element.pre_script)
               #f.call(request) if f.respond_to? :call

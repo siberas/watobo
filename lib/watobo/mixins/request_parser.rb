@@ -113,6 +113,7 @@ module Watobo #:nodoc: all
           #text.gsub!(/\r/,'')
 
           # parse erb templating
+
           parser = ERB.new text
           text = parser.result(binding)
 
