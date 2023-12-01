@@ -47,7 +47,7 @@ module Watobo
 
     def self.init_handlers
       puts "+ [#{self}] load evasion handlers ..."
-      Dir.glob("#{File.dirname(__FILE__)}/buildin/*.rb").map do |f|
+      Dir.glob("#{File.dirname(__FILE__)}/builtin/*.rb").map do |f|
         print '+' if $DEBUG
         Kernel.load f
       end

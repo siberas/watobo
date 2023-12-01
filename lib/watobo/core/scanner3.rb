@@ -81,13 +81,6 @@ module Watobo #:nodoc: all
               chat = Chat.new(request, response, :id => 0, :chat_source => prefs[:chat_source])
               notify(:new_chat, chat)
 
-              if prefs.has_key?(:run_passive_checks)
-                Watobo::PassiveScanner.add(chat) if prefs[:run_passive_checks] == true
-              end
-
-              unless prefs[:scanlog_name].nil? or prefs[:scanlog_name].empty?
-                Watobo::DataStore.add_scan_log(chat, prefs[:scanlog_name])
-              end
             rescue => bang
               puts "!!! #{task[:module]} !!!"
               puts bang
@@ -263,11 +256,15 @@ module Watobo #:nodoc: all
           valid_chats.each do |chat|
             # puts chat.request.url.to_s
             @active_checks.uniq.each do |ac|
-
               # to be able to also log 'inner' requests of a module, we subscribe to :new_chat
               ac.subscribe(:new_chat) {|chat|
+
                 unless @prefs[:scanlog_name].nil? or @prefs[:scanlog_name].empty?
                   Watobo::DataStore.add_scan_log(chat, @prefs[:scanlog_name])
+                end
+
+                if !!@prefs[:run_passive_checks]
+                  Watobo::PassiveScanner.add(chat)
                 end
               }
               ac.reset()

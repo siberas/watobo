@@ -2,6 +2,8 @@ module Watobo #:nodoc: all
   module Plugin
     class Filescanner
 
+      include Watobo::Constants
+
       STATUS_IDLE = 0x00
       STATUS_RUNNING = 0x01
       STATUS_FINISHED = 0x02
@@ -43,12 +45,12 @@ module Watobo #:nodoc: all
         scan_prefs.update @settings.to_h
         scan_prefs.update prefs
 
-        if $VERBOSE
-          puts "=== FILESCANNER RUN PREFS ==="
-          puts scan_prefs
-          puts '---'
-          puts Watobo::Conf::Scanner.to_h
-        end
+        # if $VERBOSE
+        #  puts "=== FILESCANNER RUN PREFS ==="
+        #  puts scan_prefs
+        #  puts '---'
+        #  puts Watobo::Conf::Scanner.to_h
+        # end
 
         # Thread.new {
         #  @@lock.synchronize {
@@ -97,13 +99,13 @@ module Watobo #:nodoc: all
           request.replaceFileExt(notfound)
 
           test_req, test_resp = sender.doRequest(request)
-          if $VERBOSE
-            puts "REQUEST >>>"
-            puts test_req
-            puts "RESPONSE <<<"
-            puts test_resp
-            puts '---'
-          end
+          # if $VERBOSE
+          #  puts "REQUEST >>>"
+          #  puts test_req
+          #  puts "RESPONSE <<<"
+          #  puts test_resp
+          #  puts '---'
+          #end
           status = test_resp.status
           # skip if status is 4xx, because this will be recognized by fileExists?
           next if status =~ /^4/
@@ -236,7 +238,7 @@ module Watobo #:nodoc: all
       #end
 
       def file_list_init
-        puts "[Filescanne] file_list_init" if $VERBOSE
+        # puts "[Filescanne] file_list_init" if $VERBOSE
         # set file_list array as db_file in case it is not a file
         @file_list = [settings.db_file]
         # read file content if db_file is a valid file
@@ -251,7 +253,7 @@ module Watobo #:nodoc: all
       def chatlist_init
         @chat_list = []
         @chat_list << Watobo::Chat.new(request, [], :id => 0)
-        puts "[Filescanne] chatlist_init" if $VERBOSE
+        #  puts "[Filescanne] chatlist_init" if $VERBOSE
         if settings.test_all_dirs
           Watobo::Chats.dirs(request.site, :base_dir => request.dir).each do |dir|
             chat = Watobo::Chat.new(request, [], :id => 0)

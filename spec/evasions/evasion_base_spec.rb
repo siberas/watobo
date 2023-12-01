@@ -15,9 +15,17 @@ Accept: application/apl.universal.ui.v1+json
 Host: no.existing.host
 EOF
 
-describe Watobo::EvasionHandlers::HTTPVersion do
+describe Watobo::EvasionHandlers do
   let(:dummy) { EvasionDummy.new }
   let(:request) { Watobo::Utils.text2request(rt) }
+
+  context Watobo::EvasionHandlers do
+    it '.evasion_handlers for HTTPVersion and HTTPHeaders' do
+    selection = dummy.evasion_handlers(['HTTPVersion','HTTPHeaders'])
+    expect(selection.length).to be(2)
+    end
+
+  end
 
   context Watobo::EvasionHandlers::SlashSlash do
 
@@ -27,7 +35,7 @@ describe Watobo::EvasionHandlers::HTTPVersion do
       requests = []
 
       dummy.evasion_handlers do |handler|
-        binding.pry
+        #  binding.pry
       end
 
     end

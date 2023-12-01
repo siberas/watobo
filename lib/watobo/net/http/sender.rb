@@ -125,17 +125,16 @@ module Watobo
             # TODO: read extra body, maybe there might be some additional data on socket after reading only content-length
             # ????
             #
-            t_end = Process.clock_gettime(Process::CLOCK_REALTIME)
+            # t_end = Process.clock_gettime(Process::CLOCK_REALTIME)
 
             @socket.close
 
             response.unzip!
           rescue ::Net::ReadTimeout => bang
-            t_end = Process.clock_gettime(Process::CLOCK_REALTIME)
-            response = error_response bang unless response
+            response = error_response(bang) unless response
           rescue OpenSSL::SSL::SSLError => e
             unless header
-              response = error_response e
+              response = error_response(e)
             else
               response = header
             end
@@ -147,6 +146,7 @@ module Watobo
               # binding.pry
             end
           end
+          t_end = Process.clock_gettime(Process::CLOCK_REALTIME) unless t_end
           # puts response
           meta = {
             t_start: t_start,
@@ -221,18 +221,15 @@ module Watobo
           h = []
           # puts '+ read header ...'
           # read first response line and add CRLF because .readline removed it
-          begin
-            h << sock.readline + "\r\n"
-            while true
-              line = sock.readuntil("\n", true) #.sub(/\s+\z/, '')
-              h << line
-              break if line.strip.empty?
-            end
-            return Watobo::Response.new(h)
-          rescue => bang
-            # TODO: Log
+
+          h << sock.readline + "\r\n"
+          while true
+            line = sock.readuntil("\n", true) #.sub(/\s+\z/, '')
+            h << line
+            break if line.strip.empty?
           end
-          nil
+          return Watobo::Response.new(h)
+
         end
 
         def data_available?(sock, timeout = 1)
@@ -326,9 +323,7 @@ module Watobo
 
           conn_ip = IPSocket.getaddress(conn_host)
 
-
-
-          puts "! Connecting to #{conn_host}: #{conn_port}" if $DEBUG
+          # puts "! Connecting to #{conn_host}: #{conn_port}" if $DEBUG
           s = Socket.tcp conn_ip, conn_port, nil, nil, connect_timeout: @open_timeout
           s.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
 
@@ -413,7 +408,7 @@ module Watobo
         def ssl_context
           ctx = OpenSSL::SSL::SSLContext.new()
           ctx.ciphers = @prefs[:ssl_cipher] if !!@prefs[:ssl_cipher]
-          
+
           if !!@prefs[:client_certificate]
             ccp = @prefs[:client_certificate]
             ctx.cert = ccp[:ssl_client_cert]

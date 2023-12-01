@@ -13,7 +13,7 @@ module Watobo
         return unless valid?(href)
 
         return if @href_keys[href.fingerprint]
-
+        @href_collection << href
         #puts "process href: #{href.href}"
 
         @href_keys[href.fingerprint] = true
@@ -27,6 +27,7 @@ module Watobo
         tk = trigger.fingerprint
         return if @trigger_keys[tk]
 
+        @trigger_collection << trigger
         #puts "* found new trigger: #{trigger.src} >> #{trigger.tag_name} : #{trigger.script}"
         @trigger_keys[tk] = true
         @in_queue.enq trigger
@@ -37,6 +38,8 @@ module Watobo
         return unless valid?(form)
         tk = form.fingerprint
         return if @form_keys[tk]
+
+        @form_collection << form
 
         #puts "* found new trigger: #{trigger.src} >> #{trigger.tag_name} : #{trigger.script}"
         @form_keys[tk] = true
@@ -74,6 +77,7 @@ module Watobo
 
       def process(resource)
         return if resource.nil?
+        puts resource
         if resource.is_a? Href
           process_href(resource)
         elsif resource.is_a? Trigger
@@ -108,8 +112,20 @@ module Watobo
         t_start = Process.clock_gettime(Process::CLOCK_REALTIME)
 
         @allowed_hosts = [uri.host]
+
+
+
         @max_drivers.times do
           d = Spider::Driver.new(@in_queue, @out_queue, opts)
+
+          # set cookies
+          @cookies.each do |cookie|
+            c = parse_cookie(url, cookie)
+            # before setting a cookie with selenium we have to visit a site of the domain
+            d.driver.get url
+            d.driver.manage.add_cookie c
+            # binding.pry
+          end
           @drivers << d.run!
         end
 
@@ -148,6 +164,7 @@ module Watobo
 
                 puts "Num visited pages: #{href_count}"
                 puts "Duration: #{ (t_end - t_start).round(2) }"
+                binding.pry
                 break
               end
               sleep 1
@@ -156,10 +173,18 @@ module Watobo
         }
       end
 
+      def basic_auth?
+        @opts[:basic_auth].split(':').length > 1
+      end
+
+      # @param opts [Hash]
+      #   cookies: [Array] of Set-Cookie values, e.g. "X-WWW-ACCESS=1; secure; SameSite=Lax; HttpOnly; Path=/;"
       def initialize(opts = {})
         @status_lock = Mutex.new
         @stats = []
         @href_keys = {}
+        @href_collection = []
+        @trigger_collection = []
 
         @opts = {
             :autofill => true,
@@ -182,13 +207,55 @@ module Watobo
             :password => "",
             :auth_uri => nil,
             :auth_domain => "", # for ntlm auth
+            :basic_auth => "",
+            :http_headers => [],
+            :cookies => []
         }
+
 
         @opts.update opts
         @opts[:head_request_pattern] = '' if @opts[:head_request_pattern].nil?
 
-
+        puts @opts
+        @cookies = @opts.delete(:cookies)
+        puts "Cookies:"
+        puts @cookies
       end
+
+      def parse_cookie(url, cookie_string)
+        uri = URI.parse url
+        cookie_attributes = {
+          domain: uri.host,
+          secure: true
+
+        }
+
+        # Split the cookie string by semicolons to separate attributes
+        attributes = cookie_string.split(';').map(&:strip)
+
+        # Extract the cookie name and value
+        name_value_pair = attributes.shift.split('=')
+        cookie_attributes[:name] = name_value_pair[0]
+        cookie_attributes[:value] = name_value_pair[1]
+
+        # Iterate through the remaining attributes and populate the hash
+        attributes.each do |attribute|
+          case attribute.downcase
+          when 'secure'
+            cookie_attributes[:secure] = true
+          when 'httponly'
+            cookie_attributes[:httpOnly] = true
+
+            # samesite is not supported by selenium driver
+            #when /^samesite=(.+)$/
+            #cookie_attributes[:sameSite] = $1
+          when /^path=(.+)$/
+            cookie_attributes[:path] = $1
+          end
+        end
+        cookie_attributes
+      end
+
     end
   end
 end

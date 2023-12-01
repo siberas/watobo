@@ -46,8 +46,6 @@ module Watobo
           # update_instance_vars(@settings)
           define_getters(@settings)
 
-          puts JSON.pretty_generate @settings if $DEBUG
-
         end
 
         def on_header(&block)
@@ -113,10 +111,10 @@ module Watobo
           cprefs[:proxy] = Watobo::ForwardingProxy.get(site)&.to_h
           cprefs.update prefs
 
-          if $VERBOSE || $DEBUG
-            puts "\n=== Session.doRequest ==="
-            puts JSON.pretty_generate(cprefs)
-          end
+          #if $VERBOSE || $DEBUG
+          #  puts "\n=== Session.doRequest ==="
+          #  puts JSON.pretty_generate(cprefs)
+          #end
 
           # update session from sid_cache
           @sid_cache.update_request(request) if cprefs[:update_session] == true
@@ -128,6 +126,7 @@ module Watobo
             request.removeHeader('Content-Length')
           end
 
+          # TODO: make Accept-Encoding configurable
           request.setHeader('Accept-Encoding','none')
           update_tokens(request)
 
@@ -198,10 +197,10 @@ module Watobo
           creds = Watobo::Conf::Scanner.www_auth[''] unless creds
           creds = Watobo::Conf::Scanner.www_auth['*'] unless creds
 
-          puts response.to_s
+          #   puts response.to_s
 
-          puts "* Using NTLM creds:"
-          puts creds
+          #puts "* Using NTLM creds:"
+          #puts creds
           ntlm_creds = ( creds && creds[:type] == AUTH_TYPE_NTLM ) ? creds : nil
           challenge_header = response.headers('WWW-Authenticate').first
           unless challenge_header
@@ -238,7 +237,7 @@ module Watobo
             sender.send :send_request, sender.socket, auth_request
 
             response = sender.send :read_header, sender.socket
-            puts response.to_s
+            # puts response.to_s
           end
           response
         end

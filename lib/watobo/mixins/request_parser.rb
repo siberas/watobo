@@ -13,13 +13,13 @@ module Watobo #:nodoc: all
       #
       # returns nil on parse error
 
-      def parse_code(prefs = {})
+      def parse_code(request_str, prefs = {})
         cprefs = {:code_dlmtr => '%%'} # default delimiter for ruby code
         cprefs.update(prefs)
 
         #pattern="(#{cprefs[:code_dlmtr]}.*?#{cprefs[:code_dlmtr]})"
         pattern = cprefs[:code_dlmtr]
-        request = self.to_s
+        request = request_str.dup
         expression = ""
 
         begin
@@ -74,6 +74,7 @@ module Watobo #:nodoc: all
                 data = result.read
                 result.close
               elsif result.is_a? String
+                # binding.pry
                 data = result
               elsif result.is_a? Array
                 data = result.join
@@ -105,17 +106,20 @@ module Watobo #:nodoc: all
         options.update opts
 
         begin
-          text = parse_code
+          # we need to parse ERB before performing parse_code. Because parse_code might create ERB-Style content, e.g. when
+          # loading a file
+          # parse erb templating
+          parser = ERB.new self.to_s
+          erb_result_txt = parser.result(binding)
+
+          text = parse_code(erb_result_txt)
 
           # remove all CR, because we only want LF ('\n')
           # DON'T!!!!
           # we will loos CRLF added by Code-Injections
           #text.gsub!(/\r/,'')
 
-          # parse erb templating
 
-          parser = ERB.new text
-          text = parser.result(binding)
 
           return nil if text.nil?
           request = []
@@ -135,11 +139,11 @@ module Watobo #:nodoc: all
           end
 
           unless eoh.nil?
-            header = text.slice(0, eoh).split("\n").map { |h| "#{h.strip}\r\n" }
+            header = text.slice(0, eoh).split("\n").map { |h| "#{h.gsub(/\r$/,'')}\r\n" }
             #body = text.slice(eoh + 2, text.length - 1)
             body = text[eoh + 2..-1]
           else
-            header = text.split(/\n/).map { |h| "#{h.strip}\r\n" }
+            header = text.split(/\n/).map { |h| "#{h.gsub(/\r$/,'')}\r\n" }
             body = nil
           end
 
@@ -175,7 +179,7 @@ module Watobo #:nodoc: all
                 end
                 new_chunk = cheader.join("\r\n")
                 new_chunk += "\r\n\r\n"
-                new_chunk += cbody.strip + "\r\n" if cbody
+                new_chunk += cbody.gsub(/\n\z/, "") + "\r\n" if cbody
 
                 # puts cbody
                 new_body.push new_chunk
@@ -280,8 +284,10 @@ module Watobo #:nodoc: all
             if ct =~ /boundary=([\-\w]+)/
               boundary = $1.strip
               chunks = body.split(boundary)
-              e = chunks.pop # remove "--"
+              chunks.pop # remove "--"
+
               new_body = []
+
               chunks.each do |c|
                 new_chunk = ''
                 c.gsub!(/[\-]+$/, '')
@@ -291,7 +297,7 @@ module Watobo #:nodoc: all
                 if c =~ /\n\n/
                   ctmp = c.split(/\n\n/)
                   cheader = ctmp.shift.split(/\n/)
-                  cbody = ctmp.join("\n\n")
+                  cbody = ctmp.join("\r\n")
                 else
                   cheader = c.split(/\n/)
                   cbody = nil

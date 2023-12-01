@@ -6,7 +6,7 @@ module Watobo
         attr :src, :method, :action, :form_class, :button
 
         def fingerprint
-          s = [ src, method, action, button]
+          s = [ src, method, action, ( button || '') ]
           Digest::MD5.hexdigest s.join('|')
         end
 
@@ -16,6 +16,9 @@ module Watobo
         end
 
 
+        # @param url [String]
+        # @param attributes [Hash] of form attributes
+        # @param button [String|nil] css_selector of button, css is created with form_collection.css(element)
         def initialize(url, attributes, button=nil)
           @src = url
           @method = attributes.fetch('method')

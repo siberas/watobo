@@ -26,6 +26,8 @@ EOS
   #  opt :num_browsers, "number of browser instances", :type => :integer, :default => 1
   opt :max_duration, "maximum duration in seconds", :type => :integer, :default => 3600
   opt :max_visits, "maximum number of total pages visited", :type => :integer, :default => 200
+  opt :basic_auth, "username:password for Basic Authentication", :type => :string
+  opt :cookies, "cookie definition from 'Set-Cookie, e.g. X-WWW-ACCESS=1; secure; SameSite=Lax; HttpOnly; Path=/;'", :type => :string, :multi => true
 end
 
 Optimist.die :url, "Need URL" unless OPTS[:url]
@@ -35,16 +37,6 @@ require 'watobo/headless'
 
 require 'pry'
 require 'uri'
-
-
-prefs = {
-    proxy: OPTS[:proxy],
-    headless: OPTS[:headless],
-    screenshot: OPTS[:screenshot],
-    num_browsers: OPTS[:num_browsers],
-    max_duration: OPTS[:max_duration],
-    max_visits: OPTS[:max_visits]
-}
 
 
 spider = Watobo::Headless::Spider.new OPTS

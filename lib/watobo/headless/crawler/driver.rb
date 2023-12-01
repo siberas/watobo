@@ -89,6 +89,7 @@ module Watobo
                 t_start = Process.clock_gettime(Process::CLOCK_REALTIME)
                 # next if link.depth > @opts[:max_depth]
                 results = collect(resource)
+                puts results
                 t_end = Process.clock_gettime(Process::CLOCK_REALTIME)
                 results.each do |r|
                   outq.enq r
@@ -109,13 +110,30 @@ module Watobo
           @runner
         end
 
+        # @param in_queue
+        # @param out_queue
+        # @param opts [Hash]
+        #   :cookies [Array] of Cookie definitions, e.g.
+        #       {
+        #             name: 'your_cookie_name',
+        #             value: 'your_cookie_value',
+        #             domain: 'example.com', # Specify the domain for which the cookie is valid
+        #             path: '/', # Specify the path for which the cookie is valid
+        #             expires: (Time.now + 3600).to_i, # Cookie expiration time (in seconds since epoch)
+        #             secure: false, # Whether the cookie is secure (HTTPS-only)
+        #             httpOnly: false # Whether the cookie is accessible via JavaScript
+        #           }
         def initialize(in_queue, out_queue, opts = {})
           @in_queue = in_queue
           @out_queue = out_queue
           prefs = {
             proxy: nil,
             headless: true,
-            chrome_bundle_path: '/usr/share/chrome-driver'
+            chrome_bundle_path: '/usr/share/chrome-driver',
+            # http_headers: [],
+
+            # Custom cookies
+            cookies: []
           }.update opts
 
           proxy = prefs[:proxy]
@@ -151,6 +169,13 @@ module Watobo
           Selenium::WebDriver::Chrome.path = File.join(prefs[:chrome_bundle_path], 'chrome')
 
           @driver = Selenium::WebDriver.for :chrome, options: @options
+
+
+          # Set the cookie
+          # @driver.manage.add_cookie(cookie)
+
+          # set custom cookies
+          #
 
           at_exit do
             @driver.quit

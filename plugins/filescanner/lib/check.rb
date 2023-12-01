@@ -53,8 +53,10 @@ module Watobo #:nodoc: all
         #  file_extension: [Array],
         #  append_slash: [Boolean]
         #  evasion_extensions: [Array]
+        #  evasions: [Array]
         #  force_evasions: [Bool]
         #  evasions_enabled: [Bool]
+        #  rating: [Integer] VULN_RATING_(INFO|LOW|MEDIUM|HIGH|CRIT)
         def initialize(project, file_list, prefs = {})
           super(project, prefs)
 
@@ -63,7 +65,9 @@ module Watobo #:nodoc: all
           @prefs = prefs.dup.to_h
           @known_responses = []
           @known_paths = []
-          @rating = @prefs.delete(:rating) || VULN_RATING_LOW
+          @rating = @prefs.fetch(:rating, VULN_RATING_LOW)
+          @evasions = @prefs.fetch(:evasions, [])
+          @force_evasions = @prefs.fetch(:force_evasions, false)
         end
 
         def reset()
@@ -78,10 +82,11 @@ module Watobo #:nodoc: all
         def sample_files(&block)
           uris = []
           @file_list.each do |orig|
+            # remove comments
             next if orig.strip =~ /^#/
             orig.strip!
-            # remove leading '.' and '/'
-            orig.gsub!(/^[\/\.]+/, '')
+            # remove leading and '/'
+            orig.gsub!(/^[\/]+/, '')
             # remove trailing slashes
             orig.gsub!(/\/$/, '')
             next if orig.strip.empty?
@@ -101,12 +106,13 @@ module Watobo #:nodoc: all
               extended << apply_extension(orig, fext)
             end
 
-            extended.each do |mpath|
-              evasion_extensions.each do |ext|
-                next if ext.nil? or ext.empty?
-                uris << apply_extension(mpath, ext)
-              end
-            end
+            #extended.each do |mpath|
+            #  evasion_extensions.each do |ext|
+            #    next if ext.nil? or ext.empty?
+            #    uris << apply_extension(mpath, ext)
+            #  end
+            #end
+
             # append slash (only to orig)
             uris << "#{orig}/" if append_slash?
 
@@ -197,16 +203,19 @@ module Watobo #:nodoc: all
 
                   end
                   # binding.pry
-                  if evasion_enabled? && ( need_evasion or !!@prefs[:force_evasions] )
-                    evasion_handlers.each do |handler|
-                      # puts test.url if $VERBOSE
-
-                      next if found
+                  if need_evasion or @force_evasions
+                    evasion_handlers(@evasions).each do |handler|
+                      # skip if found AND NOT force_evasion
+                      # force_evasions will also force the use of all selected evasion handlers even if file exist
+                      # so we doesn't stop if a file exist is a false-positive which might be the case when
+                      # running evasions
+                      next if found && !@force_evasions
 
                       handler.run(sample) do |test|
                         fexist, test_request, test_response = fileExists?(test, @prefs)
 
                         chat = Chat.new(test_request, test_response, :id => 0, :chat_source => prefs[:chat_source])
+
                         notify(:new_chat, chat)
 
                         if fexist == true
@@ -241,6 +250,7 @@ module Watobo #:nodoc: all
           rescue => bang
             puts "!error in module #{Module.nesting[0].name}"
             puts bang
+            binding.pry if $DEBUG
           end
         end
 
@@ -253,7 +263,7 @@ module Watobo #:nodoc: all
           paths = []
           path = chat.request.path
           while !path.empty? and path != '.' and path != '/' and !paths.include?(path)
-            puts path
+            #   puts path
             yield path if block_given?
             paths << path
             path = File.dirname(path)

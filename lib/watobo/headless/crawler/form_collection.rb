@@ -9,19 +9,19 @@ for (index = 0; index < arguments[0].attributes.length; ++index) {
 };
 return items;
         JS
-        # scripts for collecting buttons
+
+        # scripts for collecting buttons inside a form
         FORM_BUTTONS_JS = <<-JS
 // var buttons = document.querySelectorAll('.button');
 var form = arguments[0];
-  var buttons = form.querySelectorAll('.button, button, input[type="submit"], input[type="button"]');
-  var clickableButtons = [];
+var buttons = form.querySelectorAll('.button, button, input[type="submit"], input[type="button"]');
+var clickableButtons = [];
   
-  for (var i = 0; i < buttons.length; i++) {
-    // Here, you can add more conditions to filter the buttons if necessary
-    clickableButtons.push(buttons[i]);
-  }
-  
-  return clickableButtons;
+for (var i = 0; i < buttons.length; i++) {
+  // Here, you can add more conditions to filter the buttons if necessary
+  clickableButtons.push(buttons[i]);
+}
+return clickableButtons;
         JS
 
         def css(element)
