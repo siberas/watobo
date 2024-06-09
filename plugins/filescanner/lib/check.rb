@@ -3,6 +3,7 @@ module Watobo #:nodoc: all
     class Filescanner
 
       class Check < Watobo::ActiveCheck
+
         include Watobo::Evasions
 
         attr :prefs

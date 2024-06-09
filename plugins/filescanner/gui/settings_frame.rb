@@ -38,8 +38,8 @@ module Watobo #:nodoc: all
                 #evasion_extensions: (@el_dt.value > 0 ? @l1_txt.text.split : []),
                 evasions_enabled: @evasions_enabled_chk.checked?,
                 force_evasions: @evasions_force_chk.checked?,
-                evasions: enabled_evasion
-
+                evasions: enabled_evasion,
+                enable_logging: @enable_logging_cb.checked?
             }
             s
           end

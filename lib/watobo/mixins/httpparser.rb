@@ -832,6 +832,16 @@ module Watobo #:nodoc: all
           hnames
         end
 
+        # returns a single header [OpenStruct] with :name and :value
+        # @param name [String] of header to search for
+        # @return [OpenSruct] representation with .name and .value of header. Returns nil if header is not found
+        def get_header(name)
+          h = headers("^#{name}:").first
+          return nil unless h
+          eoh = h.index(':')
+          OpenStruct.new name: h[0..eoh-1], value: h[eoh+1..-1]
+        end
+
         # @return Array of HTTP headers
         # @@param filter String (Regex) is case-insensitive
         def headers(filter = nil, &b)

@@ -75,6 +75,7 @@ module Watobo
 
         def exec(nprefs = {}, &block)
           begin
+
             request = to_request
 
             prefs = Watobo::Conf::Scanner.to_h
@@ -87,6 +88,7 @@ module Watobo
               # f.call(request) if f.respond_to? :call
               run_pre(request)
             end
+
 
             yield request if block_given?
 

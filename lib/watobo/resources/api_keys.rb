@@ -3,15 +3,22 @@ module Watobo::Resources
   # https://github.com/l4yton/RegHex
   # https://github.com/zricethezav/gitleaks
 
-  # TODO: also load private keys from local file
+  # TODO: also load private leak-patterns from local file
 
-  #keywords = %w( api key username user uname pw password pass passwd email mail credentials credential login token secret )
+  # keywords = %w( api key username user uname pw password pass passwd email mail credentials credential login token secret )
   keywords = %w( api key username user uname pw password pass passwd credentials credential login token secret )
 
-  generic = {}
-  generic['Generic'] = "(\\b|[ ._-])(#{keywords.join('|')})[ '\"]*(=|:)[ '\"]*([^'\" ]+)"
+  LEAK_PATTERNS = {}
+  LEAK_IGNORE_PATTERNS = {}
 
-  API_KEYS = generic
+  # generic['Generic'] = "(\\b|[ ._-])(#{keywords.join('|')})[ '\"]*(=|:)[ '\"]*([^'\" ]+)"
+  # ignore csrf-token
+  # LEAK_PATTERNS['Generic'] = "\\b([^'\" ]*[ ._-]?(#{keywords.join('|')}))[ '\"]*(=|:)[ '\"]*([^'\" ]+)"
+
+  #LEAK_IGNORE_PATTERNS['Generic'] = [
+  #  "(csrf-token|supersecret|changeme|replace|securepass)",
+  #  '(.)\1{8,}',
+  #]
 
   patterns = {
     "Slack Token" => "(xox[pborsa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})",
@@ -75,7 +82,7 @@ module Watobo::Resources
     "linkedin-secret" => "(?i)linkedin(.{0,20})?['\"][0-9a-z]{16}['\"]",
     "linkedin-id" => "(?i)linkedin(.{0,20})?(?-i)['\"][0-9a-z]{12}['\"]",
     #     "IPv6" : "(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))",
-    "IPv4" => "(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}",
+    "IPv4" => "\\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}\\b",
     "heroku-api" => "[h|H][e|E][r|R][o|O][k|K][u|U].{0,30}[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}",
     "google-ouath-token" => "ya29.[0-9A-Za-z\\-_]+",
     "google-oauth" => "[0-9]+-[0-9A-Za-z_]{32}\\.apps\\.googleusercontent\\.com",
@@ -93,12 +100,16 @@ module Watobo::Resources
     "auth-bearer" => "bearer [a-zA-Z0-9_\\-\\.=]+",
     "auth-basic" => "basic [a-zA-Z0-9_\\-:\\.=]+",
     "artifactory-token" => "(?: |=|=>|\"|^)AKC[a-zA-Z0-9]{10,}",
-    "artifactory-password" => "(?: |=|:|\"|^)AP[0-9ABCDEF][a-zA-Z0-9]{8,}"
+    "artifactory-password" => "(?: |=|:|\"|^)AP[0-9ABCDEF][a-zA-Z0-9]{8,}",
+    "openai-key" => "\\bsk-[0-9a-z]{40}\\b"
   }
 
-  API_KEYS.update patterns # JSON.parse(patterns)
-
-  API_KEYS.freeze
+  LEAK_PATTERNS.update patterns # JSON.parse(patterns)
+  LEAK_PATTERNS.transform_values! { |p| Regexp.compile(p, Regexp::IGNORECASE) }
+  LEAK_PATTERNS.freeze
   # puts JSON.pretty_generate API_KEYS
-
+  LEAK_IGNORE_PATTERNS.keys.each do |k|
+    LEAK_IGNORE_PATTERNS[k].map! { |p| Regexp.compile(p, Regexp::IGNORECASE) }
+  end
+  LEAK_IGNORE_PATTERNS.freeze
 end

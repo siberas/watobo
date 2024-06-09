@@ -120,14 +120,15 @@ module Watobo
           @sid_cache.update_request(request) if cprefs[:update_session] == true
 
           # multipart requests also require a content-length header
-          if request.method =~ /(post|put)/i #&& request.content_type !~ /multipart/i
+          # if request.method =~ /(post|put)/i #&& request.content_type !~ /multipart/i
+          if request.has_body?
             request.fix_content_length
           else
             request.removeHeader('Content-Length')
           end
 
           # TODO: make Accept-Encoding configurable
-          request.setHeader('Accept-Encoding','none')
+          #request.setHeader('Accept-Encoding','none')
           update_tokens(request)
 
           #

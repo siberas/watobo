@@ -112,7 +112,7 @@ module Watobo #:nodoc: all
           parser = ERB.new self.to_s
           erb_result_txt = parser.result(binding)
 
-          text = parse_code(erb_result_txt)
+          text = parse_code(erb_result_txt) unless opts[:skip_parser]
 
           # remove all CR, because we only want LF ('\n')
           # DON'T!!!!

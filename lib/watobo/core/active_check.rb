@@ -3,6 +3,7 @@ module Watobo #:nodoc: all
   # class ActiveCheck < Watobo::Session # Base Class for Passive Checks
   class ActiveCheck < Watobo::Net::Http::Session # Base Class for Passive Checks
     include Watobo::CheckInfoMixin
+    include Watobo::Subscriber
 
     attr :info
     attr :numChecks

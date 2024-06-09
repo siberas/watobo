@@ -10,6 +10,7 @@ X-Http-Method-Override
 X-HTTP-Method
 X-Http-Method
 X-Method-Override
+__RequestVerb
     )
 
     OVERRIDE_URL_PARMS = %w(
@@ -19,9 +20,10 @@ _method
     )
 
     # innocent methods are http methods used to get past the first authentication filter.
-    INNOCENT_METHODS = %w( OPTIONS HEAD TRACE GET CONNECT )
+    # TODO: recheck logic
+    INNOCENT_METHODS = %w( GET OPTIONS HEAD TRACE TRACK )
 
-    OVERRIDE_METHODS = %w( XXX GET PUT POST HEAD TRACE TRACK )
+    OVERRIDE_METHODS = %w( XXX GET PUT POST CONNECT )
 
     prio 3
 

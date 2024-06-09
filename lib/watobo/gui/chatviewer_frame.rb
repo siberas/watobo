@@ -131,6 +131,7 @@ module Watobo #:nodoc: all
 
       def applyFilter
         pattern = @filter_text.text
+        return false if pattern.length < 4
         @match_pos_label.text = "0/0"
         @simple_text_view.resetMatches()
         @simple_text_view.setText(@text)

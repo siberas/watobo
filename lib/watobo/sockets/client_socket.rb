@@ -137,6 +137,49 @@ module Watobo #:nodoc: all
       end
 
 
+      def self.create_fake_cert(host, port)
+        site = "#{host}:#{port}"
+        unless @fake_certs.has_key? site
+          puts "CREATE NEW CERTIFICATE FOR >> #{site} <<"
+
+          # no longer use get_ssl_cert_cn because cn does not necessarily match the requested hostname
+          # example: maps.googleapis.com
+          # [6] pry(Watobo::HTTPSocket)> cert.extensions.map{|e| e.to_s }
+          # => ["keyUsage = critical, Digital Signature",
+          #  "extendedKeyUsage = TLS Web Server Authentication",
+          #  "basicConstraints = critical, CA:FALSE",
+          #  "subjectKeyIdentifier = 67:D9:92:3D:DC:37:0C:67:24:94:9C:D7:3E:E4:7E:C3:E3:FA:E1:59",
+          #  "authorityKeyIdentifier = keyid:98:D1:F8:6E:10:EB:CF:9B:EC:60:9F:18:90:1B:A0:EB:7D:09:FD:2B, ",
+          #  "authorityInfoAccess = OCSP - URI:http://ocsp.pki.goog/gts1o1core, CA Issuers - URI:http://pki.goog/gsr2/GTS1O1.crt, ",
+          #  "subjectAltName = DNS:upload.video.google.com, DNS:*.clients.google.com, DNS:*.docs.google.com, DNS:*.drive.google.com, DNS:*.gdata.youtube.com, DNS:*.googleapis.com, DNS:*.photos.google.com, DNS:*.upload.google.com, DNS:*.upload.youtube.com, DNS:*.youtube-3rd-party.com, DNS:bg-call-donation-alpha.goog, DNS:bg-call-donation-canary.goog, DNS:bg-call-donation-dev.goog, DNS:bg-call-donation.goog, DNS:upload.google.com, DNS:upload.youtube.com, DNS:uploads.stage.gdata.youtube.com",
+          #  "certificatePolicies = Policy: 2.23.140.1.2.2, Policy: 1.3.6.1.4.1.11129.2.5.3, ",
+          #  "crlDistributionPoints = , Full Name:,   URI:http://crl.pki.goog/GTS1O1core.crl, ",
+          #  "ct_precert_scts = Signed Certificate Timestamp:,     Version   : v1 (0x0),     Log ID    : 5C:DC:43:92:FE:E6:AB:45:44:B1:5E:9A:D4:56:E6:10:,                 37:FB:D5:FA:47:DC:A1:73:94:B2:5E:E6:F6:C7:0E:CA,     Timestamp : Mar 11 15:58:59.728 2021 GMT,     Extensions: none,     Signature : ecdsa-with-SHA256,                 30:45:02:21:00:D2:A5:41:D8:6D:1E:2D:54:78:A6:8F:,                 27:CE:74:FA:2D:89:2B:A1:F8:45:A5:91:72:73:9C:AD:,                 7A:A2:F7:E7:2B:02:20:6E:85:0A:86:E7:C2:71:98:D4:,                 9D:17:C8:60:DD:AC:88:71:3F:29:F4:78:15:A8:E4:1C:,                 17:C8:35:01:3D:F5:B1, Signed Certificate Timestamp:,     Version   : v1 (0x0),     Log ID    : 7D:3E:F2:F8:8F:FF:88:55:68:24:C2:C0:CA:9E:52:89:,                 79:2B:C5:0E:78:09:7F:2E:6A:97:68:99:7E:22:F0:D7,     Timestamp : Mar 11 15:58:59.521 2021 GMT,     Extensions: none,     Signature : ecdsa-with-SHA256,                 30:45:02:21:00:C5:52:70:30:49:7F:C9:D0:E7:45:B7:,                 7C:08:54:40:30:0C:ED:91:40:E4:71:C9:3E:9A:FA:31:,                 BC:90:3B:C7:4B:02:20:7D:E8:48:79:84:7E:44:C4:69:,                 42:CE:4D:CC:A5:59:37:03:3B:BA:C6:A1:B4:E5:44:12:,                 B6:DF:7D:02:8B:B3:C8"]
+          # cn = Watobo::HTTPSocket.get_ssl_cert_cn(target, tport)
+          cn = host
+          puts "CN=#{cn}"
+
+          cert = {
+            :hostname => cn,
+            :type => 'server',
+            :user => 'watobo',
+            :email => 'root@localhost',
+          }
+
+          cert_file, key_file = Watobo::CA.create_cert cert
+
+          full_chain = File.read Watobo::CA.cert_file
+          server_cert = File.read(cert_file)
+          @fake_certs[site] = {
+            #:cert => OpenSSL::X509::Certificate.new(File.read(cert_file)),
+            :cert => OpenSSL::X509::Certificate.new(server_cert),
+            :extra_chain_cert => [OpenSSL::X509::Certificate.new(full_chain)],
+            :key => OpenSSL::PKey::RSA.new(File.read(key_file))
+          }
+        end
+
+      end
+
       def self.connect(socket)
         request = []
         @fake_certs ||= {}
@@ -240,44 +283,8 @@ module Watobo #:nodoc: all
             bscount = 0 # bad handshake counter
             #  puts "* wait for ssl handshake ..."
 
-            unless @fake_certs.has_key? site
-              puts "CREATE NEW CERTIFICATE FOR >> #{site} <<"
+            self.create_fake_cert(target, tport)
 
-              # no longer use get_ssl_cert_cn because cn does not necessarily match the requested hostname
-              # example: maps.googleapis.com
-              # [6] pry(Watobo::HTTPSocket)> cert.extensions.map{|e| e.to_s }
-              # => ["keyUsage = critical, Digital Signature",
-              #  "extendedKeyUsage = TLS Web Server Authentication",
-              #  "basicConstraints = critical, CA:FALSE",
-              #  "subjectKeyIdentifier = 67:D9:92:3D:DC:37:0C:67:24:94:9C:D7:3E:E4:7E:C3:E3:FA:E1:59",
-              #  "authorityKeyIdentifier = keyid:98:D1:F8:6E:10:EB:CF:9B:EC:60:9F:18:90:1B:A0:EB:7D:09:FD:2B, ",
-              #  "authorityInfoAccess = OCSP - URI:http://ocsp.pki.goog/gts1o1core, CA Issuers - URI:http://pki.goog/gsr2/GTS1O1.crt, ",
-              #  "subjectAltName = DNS:upload.video.google.com, DNS:*.clients.google.com, DNS:*.docs.google.com, DNS:*.drive.google.com, DNS:*.gdata.youtube.com, DNS:*.googleapis.com, DNS:*.photos.google.com, DNS:*.upload.google.com, DNS:*.upload.youtube.com, DNS:*.youtube-3rd-party.com, DNS:bg-call-donation-alpha.goog, DNS:bg-call-donation-canary.goog, DNS:bg-call-donation-dev.goog, DNS:bg-call-donation.goog, DNS:upload.google.com, DNS:upload.youtube.com, DNS:uploads.stage.gdata.youtube.com",
-              #  "certificatePolicies = Policy: 2.23.140.1.2.2, Policy: 1.3.6.1.4.1.11129.2.5.3, ",
-              #  "crlDistributionPoints = , Full Name:,   URI:http://crl.pki.goog/GTS1O1core.crl, ",
-              #  "ct_precert_scts = Signed Certificate Timestamp:,     Version   : v1 (0x0),     Log ID    : 5C:DC:43:92:FE:E6:AB:45:44:B1:5E:9A:D4:56:E6:10:,                 37:FB:D5:FA:47:DC:A1:73:94:B2:5E:E6:F6:C7:0E:CA,     Timestamp : Mar 11 15:58:59.728 2021 GMT,     Extensions: none,     Signature : ecdsa-with-SHA256,                 30:45:02:21:00:D2:A5:41:D8:6D:1E:2D:54:78:A6:8F:,                 27:CE:74:FA:2D:89:2B:A1:F8:45:A5:91:72:73:9C:AD:,                 7A:A2:F7:E7:2B:02:20:6E:85:0A:86:E7:C2:71:98:D4:,                 9D:17:C8:60:DD:AC:88:71:3F:29:F4:78:15:A8:E4:1C:,                 17:C8:35:01:3D:F5:B1, Signed Certificate Timestamp:,     Version   : v1 (0x0),     Log ID    : 7D:3E:F2:F8:8F:FF:88:55:68:24:C2:C0:CA:9E:52:89:,                 79:2B:C5:0E:78:09:7F:2E:6A:97:68:99:7E:22:F0:D7,     Timestamp : Mar 11 15:58:59.521 2021 GMT,     Extensions: none,     Signature : ecdsa-with-SHA256,                 30:45:02:21:00:C5:52:70:30:49:7F:C9:D0:E7:45:B7:,                 7C:08:54:40:30:0C:ED:91:40:E4:71:C9:3E:9A:FA:31:,                 BC:90:3B:C7:4B:02:20:7D:E8:48:79:84:7E:44:C4:69:,                 42:CE:4D:CC:A5:59:37:03:3B:BA:C6:A1:B4:E5:44:12:,                 B6:DF:7D:02:8B:B3:C8"]
-              # cn = Watobo::HTTPSocket.get_ssl_cert_cn(target, tport)
-              cn = target
-              puts "CN=#{cn}"
-
-              cert = {
-                  :hostname => cn,
-                  :type => 'server',
-                  :user => 'watobo',
-                  :email => 'root@localhost',
-              }
-
-              cert_file, key_file = Watobo::CA.create_cert cert
-
-              full_chain = File.read Watobo::CA.cert_file
-              server_cert = File.read(cert_file)
-              @fake_certs[site] = {
-                  #:cert => OpenSSL::X509::Certificate.new(File.read(cert_file)),
-                  :cert => OpenSSL::X509::Certificate.new(server_cert),
-                  :extra_chain_cert => [OpenSSL::X509::Certificate.new(full_chain)],
-                  :key => OpenSSL::PKey::RSA.new(File.read(key_file))
-              }
-            end
             ctx = OpenSSL::SSL::SSLContext.new()
 
             #ctx.cert = @cert
@@ -290,6 +297,28 @@ module Watobo #:nodoc: all
             ctx.tmp_dh_callback = proc { |*args|
               @dh_key
             }
+
+            ctx.servername_cb = proc{ |socket,name|
+              port = socket.io.addr[1]
+              create_fake_cert(name, port)
+              cb_site = "#{name}:#{port}"
+
+              ctx_cb = OpenSSL::SSL::SSLContext.new()
+
+              #ctx.cert = @cert
+              ctx_cb.cert = @fake_certs[cb_site][:cert]
+              #  @ctx.key = OpenSSL::PKey::DSA.new(File.read(key_file))
+              #ctx.key = @key
+              ctx_cb.key = @fake_certs[cb_site][:key]
+              ctx_cb.extra_chain_cert = @fake_certs[cb_site][:extra_chain_cert]
+
+              ctx_cb.tmp_dh_callback = proc { |*args|
+                @dh_key
+              }
+              ctx_cb
+            }
+
+
 
             # if ctx.respond_to? :tmp_ecdh_callback
             #   ctx.tmp_ecdh_callback = ->(*args) {

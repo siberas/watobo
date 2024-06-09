@@ -34,12 +34,10 @@ module Watobo #:nodoc: all
         settings.delete(:response)
         settings.delete(:request)
 
-
         chat = Watobo::Chat.new(request, response, settings)
         chat.file = file
 
         return chat
-
 
       rescue Psych::SyntaxError
         puts "!!! Malformed File #{file}"
@@ -47,12 +45,11 @@ module Watobo #:nodoc: all
         puts "! could not load chat from file #{file}"
         puts bang
         puts bang.backtrace
-        #puts cdata
-        #puts bang
-        #puts bang.backtrace if $DEBUG
+        # puts cdata
+        # puts bang
+        # puts bang.backtrace if $DEBUG
       end
     end
-
 
     def Utils.loadFindingMarshal(file)
       puts "LoadFindingMarshal: #{file}" if $DEBUG
@@ -92,7 +89,6 @@ module Watobo #:nodoc: all
 
           }
 
-
           chat = Watobo::Chat.new(request, response, settings)
           chat.file = file
 
@@ -108,9 +104,9 @@ module Watobo #:nodoc: all
         puts "! could not load chat from file #{file}"
         puts bang
         puts bang.backtrace
-        #puts cdata
-        #puts bang
-        #puts bang.backtrace if $DEBUG
+        # puts cdata
+        # puts bang
+        # puts bang.backtrace if $DEBUG
       end
     end
 
@@ -164,12 +160,11 @@ module Watobo #:nodoc: all
         puts "!!! Malformed File #{file}"
       rescue => bang
         puts "! could not load chat from file #{file}"
-        #puts cdata
-        #puts bang
-        #puts bang.backtrace if $DEBUG
+        # puts cdata
+        # puts bang
+        # puts bang.backtrace if $DEBUG
       end
     end
-
 
     def Utils.loadFindingYAML(file)
       puts "LoadFindingYAML: #{file}" if $DEBUG
@@ -245,7 +240,7 @@ module Watobo #:nodoc: all
             l = resFH.readline
             if l =~ /Content-Length.* (\d*)/ then
               content_length = $1.to_i
-              #puts "Content-Length is #{content_length}"
+              # puts "Content-Length is #{content_length}"
             end
             if l =~ /Content-Encoding.*gzip/ then
               response_is_gzipped = true
@@ -262,7 +257,7 @@ module Watobo #:nodoc: all
             # read rest of file
             response.push "\r\n"
             response.push resFH.read
-            #content_length = dummy.chomp.hex
+            # content_length = dummy.chomp.hex
             return request, response
           end
         rescue => bang
@@ -284,16 +279,16 @@ module Watobo #:nodoc: all
             rescue => bang
               puts "ERROR: GZIP with file #{res_file}"
               puts bang
-              #resFH.each do |l|
+              # resFH.each do |l|
               #  response.push(l) if response.join.length < @max_response_size
-              #end
+              # end
             end
             return request, response
           end
 
-          #resFH.each do |l|
+          # resFH.each do |l|
           #  response.push(l) if response.join.length < max_response_size
-          #end
+          # end
           rest = resFH.read
           response.push(rest)
 
@@ -307,7 +302,6 @@ module Watobo #:nodoc: all
 
       end
     end
-
 
   end
 end
