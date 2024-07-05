@@ -8,12 +8,13 @@ module Watobo
           # only reload if url of script is different to current
           # not sure if it will work nicely but it will be faster
           driver.navigate.to form.src if form.src != driver.current_url
-
+          begin
           wait = Selenium::WebDriver::Wait.new(timeout: 10)
           wait.until { driver.execute_script('return document.readyState') == 'complete' }
 
           wait = Selenium::WebDriver::Wait.new(timeout: 10)
-          wait.until { driver.find_element(:css, "form[action='#{form.action}']") }
+          #wait.until { driver.find_element(:css, "form[action='#{form.action}']") }
+          wait.until { driver.find_element(:tag_name, "form") }
 
           begin
             filler = Spider::Autofill.new(driver)
@@ -23,30 +24,82 @@ module Watobo
           end
 
           wait = Selenium::WebDriver::Wait.new(timeout: 10)
-          wait.until { driver.find_element(:css, "form[action='#{form.action}']") }
+          # wait.until { driver.find_element(:css, "form[action='#{form.action}']") }
+          wait.until { driver.find_element(:tag_name, "form") }
 
-          f = driver.find_element(:css, "form[action='#{form.action}']")
+          # f = driver.find_element(:css, "form[action='#{form.action}']")
 
+          f = driver.find_element(:tag_name, "form")
           # binding.pry
           if form.button
-            button = driver.find_element(css: form.button)
+            buttons = driver.find_elements(css: form.button)
             # puts "Click button: #{form.button}"
             # we use javascript to click, because seleniums click will be blocked if the page is overlayed by a popup
-            driver.execute_script('arguments[0].click();', button)
+
+            # TODO: select submit, accept, continue, ... button
+            submit_btn = buttons.select{|b| b.attribute('innerHTML').match?(/(accept|contin|submit|primary)/i)}.first
+            driver.execute_script('arguments[0].click();', submit_btn) if submit_btn
+            return true
           else
             f.submit
+            return true
+          end
+          rescue => bang
+            puts bang
+          end
+          false
+        end
+
+        def close_overlays
+          wait = Selenium::WebDriver::Wait.new(timeout: 5)
+          wait.until { driver.execute_script('return document.readyState') == 'complete' }
+
+          wait = Selenium::WebDriver::Wait.new(timeout: 5)
+          wait.until { !driver.find_elements(css: '*[role="dialog"], .modal, .popup, .dialog, .overlay, .modal-open, .show').empty? || !driver.find_elements(:tag_name, 'dialog').empty? }
+          overlays = driver.find_elements(css: '*[role="dialog"], .modal, .popup, .dialog, .overlay, .modal-open, .show')
+          overlays.concat driver.find_elements(:tag_name, 'dialog')
+
+          return if overlays.empty?
+          clickables = []
+          overlays.each do |o|
+            clickables.concat o.find_elements(:tag_name, 'button')
+            clickables.concat o.find_elements(:tag_name, 'a')
+          end
+          # try to get only "accept" elements
+          accepts = clickables.select { |a| a.attribute('innerHTML').match?(/(accept|aktz)/i) }
+          # use all clickables if no specific has been found
+          accepts = clickables if accepts.empty?
+
+          accepts.each do |a|
+            # check if element is still available
+            next unless (a.attribute('innerHTML') rescue nil)
+            driver.execute_script('arguments[0].click();', a)
           end
         end
 
         def collect(resource)
           # print '.' if $VERBOSE
+          puts "[COLLECT] element #{resource.class}"
           collection = []
           if resource.is_a? Href
             # return collection unless resource.respond_to?(:href)
+            # puts "navigate to #{resource.href}"
             @driver.navigate.to resource.href
-          end
+          elsif resource.is_a? Click
+            # binding.pry
+            @driver.navigate.to resource.src if resource.src != @driver.current_url
+            wait = Selenium::WebDriver::Wait.new(timeout: 5)
+            wait.until { @driver.execute_script('return document.readyState') == 'complete' }
 
-          if resource.is_a? Trigger
+            wait = Selenium::WebDriver::Wait.new(timeout: 5)
+            wait.until { @driver.find_elements(css: resource.css) }
+            clickables = @driver.find_elements(css: resource.css)
+
+            clickables.each do |c|
+              next unless (c.attribute('innerHTML') rescue false)
+              @driver.execute_script('arguments[0].click();', c)
+            end
+          elsif resource.is_a? Trigger
             # only reload if url of script is different to current
             # not sure if it will work nicely but it will be faster
             @driver.navigate.to resource.src if resource.src != driver.current_url
@@ -73,6 +126,8 @@ module Watobo
 
           collection.concat Spider::FormCollection.new(@driver)
 
+          # puts "!!!\nGot collection:"
+          # puts collection
           collection
         end
 
@@ -82,14 +137,14 @@ module Watobo
               begin
                 # link, referer, depth = lq.deq
 
-                outq << nil
+                outq.enq nil
                 Thread.current[:xxx] = :waiting
                 resource = inq.deq
                 Thread.current[:xxx] = :working
                 t_start = Process.clock_gettime(Process::CLOCK_REALTIME)
                 # next if link.depth > @opts[:max_depth]
                 results = collect(resource)
-                puts results
+                # puts results
                 t_end = Process.clock_gettime(Process::CLOCK_REALTIME)
                 results.each do |r|
                   outq.enq r
@@ -169,7 +224,6 @@ module Watobo
           Selenium::WebDriver::Chrome.path = File.join(prefs[:chrome_bundle_path], 'chrome')
 
           @driver = Selenium::WebDriver.for :chrome, options: @options
-
 
           # Set the cookie
           # @driver.manage.add_cookie(cookie)

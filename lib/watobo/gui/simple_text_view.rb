@@ -291,7 +291,7 @@ module Watobo
           # UTF-8 CleanUp
           text = text.unpack("C*").pack("C*")
           text.gsub!(/\x0d/u, '')
-          r = Regexp.new '[\x00-\x09\x0b-\x1f\x7f-\xff]+', nil, 'n'
+          r = Regexp.new '[\x00-\x09\x0b-\x1f\x7f-\xff]+', Regexp::NOENCODING # 'n'
           text.gsub!(r, '.')
           @textbox.setText(text, true)
           return true
@@ -313,14 +313,16 @@ module Watobo
           t = t.unpack("C*").pack("C*")
           t.gsub!(/\x0d/, '')
 
-          r = Regexp.new '[\x00-\x09\x0b-\x1f\x7f-\xff]+', nil, 'n'
+          r = Regexp.new '[\x00-\x09\x0b-\x1f\x7f-\xff]+',  Regexp::NOENCODING #'n'
           t.gsub!(r, replace_char)
           return t
         rescue => bang
           puts bang
           puts bang.backtrace if $DEBUG
         end
-        text.join
+        return text.join if text.is_a?(Array)
+        return '' if text.nil?
+        text
       end
 
       def onTextChanged(fx_text, event, fx_text_change)

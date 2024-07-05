@@ -2,6 +2,8 @@ module Watobo
   module Headless
     class Spider
 
+      attr :spider, :in_queue, :out_queue
+
       def print_stats
         @stats.each do |stat|
           out = "{ #{stat.duration.round(2)} } #{stat.resource.to_s}"
@@ -14,11 +16,21 @@ module Watobo
 
         return if @href_keys[href.fingerprint]
         @href_collection << href
-        #puts "process href: #{href.href}"
+        # puts "process href: #{href.href}"
 
         @href_keys[href.fingerprint] = true
         @in_queue.enq href
 
+      end
+
+      def process_click(click)
+        # binding.pry
+        @click_keys ||= {}
+        return unless valid?(click)
+        tk = click.fingerprint
+        return if @click_keys[tk]
+        @click_keys[tk] = true
+        @in_queue.enq click
       end
 
       def process_trigger(trigger)
@@ -28,7 +40,7 @@ module Watobo
         return if @trigger_keys[tk]
 
         @trigger_collection << trigger
-        #puts "* found new trigger: #{trigger.src} >> #{trigger.tag_name} : #{trigger.script}"
+        # puts "* found new trigger: #{trigger.src} >> #{trigger.tag_name} : #{trigger.script}"
         @trigger_keys[tk] = true
         @in_queue.enq trigger
       end
@@ -41,7 +53,7 @@ module Watobo
 
         @form_collection << form
 
-        #puts "* found new trigger: #{trigger.src} >> #{trigger.tag_name} : #{trigger.script}"
+        # puts "* found new trigger: #{trigger.src} >> #{trigger.tag_name} : #{trigger.script}"
         @form_keys[tk] = true
         @in_queue.enq form
       end
@@ -49,6 +61,8 @@ module Watobo
       def valid?(input)
         if input.is_a? Href
           return valid_href?(input)
+        elsif input.is_a? Click
+          return valid_click?(input)
         elsif input.is_a? Trigger
           return valid_trigger?(input)
         elsif input.is_a? Form
@@ -59,6 +73,11 @@ module Watobo
 
       def valid_trigger?(input)
         # TODO: implent some filter capabilities
+        return true
+      end
+
+      def valid_click?(click)
+        # TODO: implement click validation
         return true
       end
 
@@ -74,12 +93,13 @@ module Watobo
         false
       end
 
-
       def process(resource)
         return if resource.nil?
         puts resource
         if resource.is_a? Href
           process_href(resource)
+        elsif resource.is_a? Click
+          process_click(resource)
         elsif resource.is_a? Trigger
           process_trigger(resource)
         elsif resource.is_a? Form
@@ -96,15 +116,24 @@ module Watobo
       end
 
       def href_count
-        s = @stats.map{|s| s.resource.class.to_s.gsub(/.*::/,'').downcase }
+        s = @stats.map { |s| s.resource.class.to_s.gsub(/.*::/, '').downcase }
         s.count 'href'
 
       end
 
+      def create(url = '', prefs = {})
+        opts = @opts.update(prefs)
+        @spider = create_spider(opts)
+        unless url.strip.empty?
+          @spider.driver.navigate.to url
+        end
+
+        @spider.close_overlays
+      end
+
       def run(url, prefs = {})
         opts = @opts.update(prefs)
-        @in_queue = Queue.new
-        @out_queue = Queue.new
+
         @max_drivers = opts[:num_browsers] || 1
         @drivers = []
 
@@ -113,30 +142,32 @@ module Watobo
 
         @allowed_hosts = [uri.host]
 
+        # we only use one single driver for crawling
+        #@max_drivers.times do
 
-
-        @max_drivers.times do
-          d = Spider::Driver.new(@in_queue, @out_queue, opts)
-
-          # set cookies
-          @cookies.each do |cookie|
-            c = parse_cookie(url, cookie)
-            # before setting a cookie with selenium we have to visit a site of the domain
-            d.driver.get url
-            d.driver.manage.add_cookie c
-            # binding.pry
-          end
-          @drivers << d.run!
+        # unless spider has been initialized via create method
+        unless @spider
+          @spider = create_spider(opts)
+          @in_queue.enq Href.new(url, url)
+        else
+          # use current url as starting point
+          curl = @spider.driver.current_url
+          puts "current url: #{curl}"
+          #@spider.collect Href.new(curl, curl)
+          @in_queue.enq Href.new(curl, curl)
         end
 
-        @in_queue << Href.new(url, url)
+        # set cookies
+
+        @drivers << @spider.run!
+        # end
 
         last_stats = ''
         @ctrl_th = Thread.new {
           finished = false
           loop do
             stats = "IN(#{@in_queue.size}) OUT(#{@out_queue.size}) WAITING(#{@in_queue.num_waiting})" if $VERBOSE
-            #puts stats if last_stats.empty? or stats != last_stats
+            # puts stats if last_stats.empty? or stats != last_stats
             last_stats = stats
             t_now = Process.clock_gettime(Process::CLOCK_REALTIME)
             finished = true if (t_now - t_start) > @opts[:max_duration]
@@ -145,11 +176,12 @@ module Watobo
 
             if @out_queue.size > 0
               element = @out_queue.deq
+              puts "Processing: #{element}"
               process(element)
 
             else
               driver_states = @drivers.map { |d| d[:xxx] }
-              #puts driver_states
+              # puts driver_states
               if driver_states.count(:waiting) == @drivers.length
                 if @in_queue.size == 0 and @in_queue.num_waiting == @drivers.length
                   finished = true
@@ -185,41 +217,59 @@ module Watobo
         @href_keys = {}
         @href_collection = []
         @trigger_collection = []
+        @form_collection = []
 
         @opts = {
-            :autofill => true,
-            :max_depth => 5,
-            :max_repeat => 20,
-            :max_threads => 4,
-            :max_duration => 3600,
-            :max_visits => 200,
-            :user_agent => "Sp1der",
-            :proxy => nil,
-            :delay => 0,
-            :ignore_file_pattern => '(pdf|swf|doc|flv|jpg|png|gif|js)',
-            :allowed_hosts => [], # regex's
-            :allowed_urls => [], # regex's
-            :excluded_urls => ["logout"], # regex's
-            :excluded_fields => [], # ["userid", "username", "password"], # regex's'
-            :excluded_form_names => [], # regex's'
-            :root_path => "", # regex
-            :username => "",
-            :password => "",
-            :auth_uri => nil,
-            :auth_domain => "", # for ntlm auth
-            :basic_auth => "",
-            :http_headers => [],
-            :cookies => []
+          :autofill => true,
+          :max_depth => 5,
+          :max_repeat => 20,
+          :max_threads => 4,
+          :max_duration => 3600,
+          :max_visits => 200,
+          :user_agent => "Sp1der",
+          :proxy => nil,
+          :delay => 0,
+          :ignore_file_pattern => '(jpg|png|gif)',
+          :allowed_hosts => [], # regex's
+          :allowed_urls => [], # regex's
+          :excluded_urls => ["logout"], # regex's
+          :excluded_fields => [], # ["userid", "username", "password"], # regex's'
+          :excluded_form_names => [], # regex's'
+          :root_path => "", # regex
+          :username => "",
+          :password => "",
+          :auth_uri => nil,
+          :auth_domain => "", # for ntlm auth
+          :basic_auth => "",
+          :http_headers => [],
+          :cookies => []
         }
-
 
         @opts.update opts
         @opts[:head_request_pattern] = '' if @opts[:head_request_pattern].nil?
 
         puts @opts
         @cookies = @opts.delete(:cookies)
-        puts "Cookies:"
-        puts @cookies
+      end
+
+      private
+
+      def create_spider(opts)
+        @in_queue = Queue.new
+        @out_queue = Queue.new
+        @spider = Spider::Driver.new(@in_queue, @out_queue, opts)
+
+        @spider
+      end
+
+      def set_cookies(url, cookies)
+        cookies.each do |cookie|
+          c = parse_cookie(url, cookie)
+          # before setting a cookie with selenium we have to visit a site of the domain
+          @spider.driver.get url
+          @spider.driver.manage.add_cookie c
+          # binding.pry
+        end
       end
 
       def parse_cookie(url, cookie_string)
@@ -247,8 +297,8 @@ module Watobo
             cookie_attributes[:httpOnly] = true
 
             # samesite is not supported by selenium driver
-            #when /^samesite=(.+)$/
-            #cookie_attributes[:sameSite] = $1
+            # when /^samesite=(.+)$/
+            # cookie_attributes[:sameSite] = $1
           when /^path=(.+)$/
             cookie_attributes[:path] = $1
           end

@@ -8,6 +8,7 @@ ENV['BUNDLE_GEMFILE'] ||= File.expand_path('../Gemfile', __dir__)
 require 'bundler/setup'
 
 require 'optimist'
+require 'digest/md5'
 
 OPTS = Optimist::options do
   version '(c) 2022 Watobo Sp1dR'
@@ -22,6 +23,7 @@ EOS
   opt :headless, "headless mode"
   opt :screenshot, "headless mode"
   opt :chrome_bundle_path, "set chrome driver_path", :type => :string, :default =>'/usr/share/chrome-linux'
+  opt :interactive, "use interactive mode, if you need to login first", :type => :boolean
   # TODO: num_browser raise crashes if > 1
   #  opt :num_browsers, "number of browser instances", :type => :integer, :default => 1
   opt :max_duration, "maximum duration in seconds", :type => :integer, :default => 3600
@@ -38,9 +40,16 @@ require 'watobo/headless'
 require 'pry'
 require 'uri'
 
+interactive = OPTS.delete(:interactive)
 
 spider = Watobo::Headless::Spider.new OPTS
-
+if interactive
+  spider.create OPTS[:url]
+  puts "Ready to crawl? [Press enter to continue]"
+  #binding.pry
+  STDIN.gets
+end
+puts "Start crawling ..."
 spider.run OPTS[:url]
 
 spider.wait
