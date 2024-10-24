@@ -124,29 +124,22 @@ module Watobo #:nodoc: all
           return nil if text.nil?
           request = []
 
-          # find end of headers (eoh)
-          # test for \r\n\r\n and \n\n
-          # the pattern with the lower index will be taken
-          eoh = nil
-          nn_index = text.index("\n\n")
-          rnrn_index = text.index("\r\n\r\n")
-          if nn_index && rnrn_index
-            eoh = nn_index < rnrn_index ? nn_index : rnrn_index
-          elsif nn_index
-            eoh = nn_index
-          elsif rnrn_index
-            eoh = rnrn_index
-          end
+          # first we need to detect the first line-break
+          lbp = text.match(/[\r\n]+/)[0]
 
-          unless eoh.nil?
-            header = text.slice(0, eoh).split("\n").map { |h| "#{h.gsub(/\r$/,'')}\r\n" }
-            #body = text.slice(eoh + 2, text.length - 1)
-            body = text[eoh + 2..-1]
+          # next find header-body-separator, which should be 2x first line break
+          hbsp = lbp + lbp
+
+          hbi = text.index(/#{hbsp}/)
+          if hbi != nil
+            header = text[0..hbi -1].split(lbp).map(&:strip)
+            body = text[hbi + hbsp.length..-1]
           else
-            header = text.split(/\n/).map { |h| "#{h.gsub(/\r$/,'')}\r\n" }
+            header = test.split(lbp).map(&:strip)
             body = nil
           end
 
+          header.map!{|h| h + "\r\n"}
           request.concat header
 
           #Watobo::Request.create request

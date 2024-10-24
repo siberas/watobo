@@ -5,7 +5,7 @@ module Watobo #:nodoc: all
       module Web10
         include Watobo::Constants
 
-        URL_SPLIT = '(^[^ ]*) ([^:]*):\/\/([^\/:]*)(:\d*)?([^\?]*)(.*) (HTTP.*)'
+        URL_SPLIT = '(^[^ ]*) ([^:]*):\/\/([^\/:]*)(:\d*)?([^\?]*)(.*) (HTTP[^[\r\n]]*)'
 
         m, method, scheme, site, port, path, query = 'GET http://www.sib-er2_as.de/path/to/file?query=x HTTP/1.1'.match(/(^[^ ]*) ([^:]*):\/\/([^\/]*)(:\d*)?([^\?]*)(.*) (HTTP.*)/i).to_a
 
@@ -36,7 +36,9 @@ module Watobo #:nodoc: all
               new_path = i.nil? ? '/' : path[0..i]
               new_path << new_file
               new_site = site + (port.nil? ? '' : port)
-              self.first.gsub!(/#{Regexp.quote(new_site)}(.*)/, "#{new_site}#{new_path} #{version}")
+              self.first.gsub!(/#{Regexp.quote(new_site)}([^[\r\n]]*)/, "#{new_site}#{new_path} #{version}")
+              #self.first.strip
+              #self.first << "\r\n"
               return true
             end
           rescue => bang
@@ -47,11 +49,11 @@ module Watobo #:nodoc: all
 
         def replaceElement(new_element)
           new_element.gsub!(/^\//, "")
-          self.first.gsub!(/([^\?]*\/)(.*) (HTTP.*)/i, "\\1#{new_element} \\3")
+          self.first.gsub!(/([^\?]*\/)(.*) (HTTP[^\r\n]*)/i, "\\1#{new_element} \\3")
         end
 
         def replaceURL(new_url)
-          self.first.gsub!(/(^[^[:space:]]{1,}) (.*) (HTTP.*)/i, "\\1 #{new_url} \\3")
+          self.first.gsub!(/(^[^[:space:]]{1,}) (.*) (HTTP[^\r\n]*)/i, "\\1 #{new_url} \\3")
         end
 
         def replaceQuery(new_query)
@@ -61,7 +63,7 @@ module Watobo #:nodoc: all
         end
 
         def strip_path()
-          self.first.gsub!(/([^\?]*\/)(.*) (HTTP.*)/i, "\\1# \\3")
+          self.first.gsub!(/([^\?]*\/)(.*) (HTTP[^\r\n]*)/i, "\\1 \\3")
         end
 
         def setDir(dir)
@@ -69,7 +71,7 @@ module Watobo #:nodoc: all
           dir.gsub!(/^\/+/, "")
           dir.gsub!(/\/+$/, "")
           dir << '/' unless dir.empty?
-          self.first.gsub!(/(^[^[:space:]]{1,} https?:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}\/)(.*)( HTTP\/.*)/, "\\1#{dir}\\3")
+          self.first.gsub!(/(^[^[:space:]]{1,} https?:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}\/)(.*)( HTTP\/[^\r\n]*)/, "\\1#{dir}\\3")
         end
 
         def set_path(path_name)
@@ -79,7 +81,7 @@ module Watobo #:nodoc: all
             m, method, scheme, site, port, path, query, version = self.first.match(/#{URL_SPLIT}/i).to_a
             unless m.nil?
               new_site = site + (port.nil? ? '' : port)
-              self.first.gsub!(/#{Regexp.quote(new_site)}(.*)/, "#{new_site}/#{new_path} #{version}")
+              self.first.gsub!(/#{Regexp.quote(new_site)}([^[\r\n]]*)/, "#{new_site}/#{new_path} #{version}")
               return true
             end
           rescue => bang
@@ -141,7 +143,7 @@ module Watobo #:nodoc: all
           dir.strip!
           dir.gsub!(/^\//, "")
           dir << "/" unless dir =~ /\/$/
-          self.first.gsub!(/(^[^[:space:]]{1,} https?:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}.*\/).*( HTTP\/.*)/, "\\1#{dir}\\2")
+          self.first.gsub!(/(^[^[:space:]]{1,} https?:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}.*\/).*( HTTP\/[^\r\n]*)/, "\\1#{dir}\\2")
 
         end
 
@@ -164,7 +166,7 @@ module Watobo #:nodoc: all
           new_p = "&"
           new_p = "?" unless line =~ /\?/
           new_p += parm
-          line.gsub!(/( HTTP\/.*)/, "#{new_p}=#{value}\\1")
+          line.gsub!(/( HTTP\/[^\r\n]*)/, "#{new_p}=#{value}\\1")
           self.unshift(line)
         end
 
@@ -189,9 +191,9 @@ module Watobo #:nodoc: all
         alias_method :add_header, :addHeader
 
         def removeURI
-          if self.first =~ /(^[^[:space:]]{1,}) (https?:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}(\/)?)/ then
+          if self.first =~ /(^[^[:space:]]{1,})[[:space:]]{1,}(https?:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}(\/)?)/ then
             uri = $2
-            self.first.gsub!(/(^[^[:space:]]{1,}) (#{Regexp.quote(uri)})/, "\\1 /")
+            self.first.gsub!(/(^[^[:space:]]{1,})[[:space:]]{1,}(#{Regexp.quote(uri)})/, "\\1 /")
             # puts "* Removed URI: #{uri}"
             # puts self.first
             return uri
@@ -226,13 +228,15 @@ module Watobo #:nodoc: all
         end
 
         def restoreURI(uri)
-          if self.first =~ /(^[^[:space:]]{1,}) \/(.*) (HTTP\/.*)/ then
+          if self.first =~ /(^[^[:space:]]{1,})([[:space:]]{1,})\/(.*)([[:space:]]{1,})(HTTP\/[^\r\n]*)/ then
             method = $1
-            rest = $2
-            http = $3.strip
+            space1 = $2
+            rest = $3
+            space2 = $4
+            http = $5
             # self.first.gsub!(/^\w*/, "#{method} #{uri}#{rest}")
             self.shift
-            self.unshift "#{method} #{uri}#{rest} #{http}\r\n"
+            self.unshift "#{method}#{space1}#{uri}#{rest}#{space2}#{http}\r\n"
             return self.first
           else
             return nil

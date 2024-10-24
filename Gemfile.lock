@@ -15,7 +15,7 @@ GEM
     diff-lcs (1.5.0)
     domain_name (0.6.20231109)
     ffi (1.16.3)
-    fxruby (1.6.46)
+    fxruby (1.6.48)
       mini_portile2 (~> 2.1)
     http-cookie (1.0.5)
       domain_name (~> 0.5)
@@ -37,7 +37,7 @@ GEM
     mime-types (3.5.1)
       mime-types-data (~> 3.2015)
     mime-types-data (3.2023.1205)
-    mini_portile2 (2.8.5)
+    mini_portile2 (2.8.7)
     mustermann (3.0.0)
       ruby2_keywords (~> 0.0.1)
     narray (0.6.1.2)
@@ -102,7 +102,7 @@ PLATFORMS
 DEPENDENCIES
   damerau-levenshtein
   devenv (= 0.8)!
-  fxruby (= 1.6.46)
+  fxruby (= 1.6.48)
   jwt
   kmeans-clusterer
   mechanize

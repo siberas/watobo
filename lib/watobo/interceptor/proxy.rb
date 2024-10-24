@@ -21,19 +21,28 @@ module Watobo #:nodoc: all
         return false
       end
 
-      def egress_handler?
+      def egress_handler_unused?
         if @target.respond_to? :egress_handler?
-          return @target.egress_handler?
+          return true #@target.egress_handler?
         end
         false
       end
 
-      def egress_handler
+      def egress_handler_unused
         if @target.respond_to? :egress_handler
           handler = @target.egress_handler
           return handler
         end
         nil
+      end
+
+      def egress_handler?
+        return true if Watobo::Interceptor.egress_enabled? && !Watobo::Interceptor.egress_handler.nil?
+        false
+      end
+
+      def egress_handler
+        Watobo::Interceptor.egress_handler
       end
 
 
@@ -276,7 +285,6 @@ module Watobo #:nodoc: all
                     :update_contentlength => true,
                     :www_auth => @www_auth
                 }
-
 
                 if egress_handler?
                   prefs[:egress_handler] = egress_handler

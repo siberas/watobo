@@ -131,6 +131,10 @@ module Watobo
 
             response.unzip!
           rescue ::Net::ReadTimeout => bang
+            if $DEBUG
+              puts bang
+              puts bang.backtrace
+            end
             response = error_response(bang) unless response
           rescue OpenSSL::SSL::SSLError => e
             unless header
@@ -206,7 +210,7 @@ module Watobo
           if $DEBUG
             puts '[DEBUG]'
             puts "Sender.send_request:"
-            puts data
+            puts data.inspect
           end
 
           socket.write data

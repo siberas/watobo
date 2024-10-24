@@ -79,7 +79,8 @@ module Watobo#:nodoc: all
     end
 
     def self.get( site )
-      return nil unless @client_certs.has_key? site.to_sym
+      # return nil unless @client_certs.has_key? site.to_sym
+      return nil unless site
       @client_certs[ site.to_sym ]
     end
 

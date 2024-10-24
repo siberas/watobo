@@ -33,14 +33,18 @@ module Watobo #:nodoc: all
 
         index = parm.id
 
-
         ref = @mapping[index]
         # return immediatly if no reference can be found
         # this might happen if structurs have been overridden before
         return false if ref.nil?
-        hash = JSON.parse(@root.body.strip)
+        begin
+          hash = JSON.parse(@root.body.strip)
+        rescue => bang
+          hash = { "error" => bang }
+          hash['backtrace'] = bang.backtrace if $DEBUG
+        end
 
-        #puts "[Mapping] #{parm.name} -> #{index} --> #{ref}"
+        # puts "[Mapping] #{parm.name} -> #{index} --> #{ref}"
         new_val = parm.value
         #  puts "[EVAL] hash#{ref}=#{new_val}"
         eval("hash#{ref}=new_val")
@@ -88,10 +92,10 @@ module Watobo #:nodoc: all
         parms = []
         @mapping = {}
         begin
-          iterate(nil, hash, 0) {|p|
+          iterate(nil, hash, 0) { |p|
             mname = index_name(p[:name], parms.length)
             p[:id] = Digest::MD5.hexdigest(p[:name])
-            #puts "[#{mname}] --> #{p[:name]} : #{p[:value]}"
+            # puts "[#{mname}] --> #{p[:name]} : #{p[:value]}"
             @mapping[p[:id]] = p[:name]
             parms << JSONParameter.new(p)
           }
@@ -111,29 +115,29 @@ module Watobo #:nodoc: all
           object.each do |k, v|
             new_base = "#{base}['#{k}']"
             if v.is_a?(Hash)
-              p = {name: new_base, value: v, type: :HASH}
+              p = { name: new_base, value: v, type: :HASH }
               yield p if block_given?
               iterate(new_base, v, index, &block)
             elsif v.is_a?(Array)
-              p = {name: new_base, value: v, type: :ARRAY}
+              p = { name: new_base, value: v, type: :ARRAY }
               yield p if block_given?
               iterate(new_base, v, index, &block)
             else
-              p = {name: new_base, value: v, type: v.class.to_s.upcase.to_sym}
+              p = { name: new_base, value: v, type: v.class.to_s.upcase.to_sym }
               yield p if block_given?
             end
           end
         elsif object.is_a?(Array)
           object.each_with_index do |v, i|
             new_base = "#{base}[#{i}]"
-            #yield [new_base, v] if block_given?
-            p = {name: new_base, value: v, type: :ARRAY}
+            # yield [new_base, v] if block_given?
+            p = { name: new_base, value: v, type: :ARRAY }
             yield p if block_given?
             iterate(new_base, v, index, &block)
           end
         else
-          #yield [base, object] if block_given?
-          p = {name: base, value: object, type: object.class.to_s.upcase.to_sym}
+          # yield [base, object] if block_given?
+          p = { name: base, value: object, type: object.class.to_s.upcase.to_sym }
           yield p if block_given?
         end
       end
@@ -158,9 +162,8 @@ if __FILE__ == $0
     end
 
     def body
-      {aaa: '3xA', bbb: 'outer', ccc: [yyy: {xxx: '3xX', bbb: 'nested'}]}.to_json
+      { aaa: '3xA', bbb: 'outer', ccc: [yyy: { xxx: '3xX', bbb: 'nested' }] }.to_json
     end
-
 
   end
 

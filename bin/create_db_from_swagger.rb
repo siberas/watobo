@@ -31,6 +31,15 @@ def clean_description(d)
   c
 end
 
+def fix_required_fields(openapi)
+  unless openapi['info']
+    openapi['info'] = { "title" => "OpenAPI"}
+  end
+  unless openapi['info']['version']
+    openapi['info']['version'] = "1.0.0"
+  end
+end
+
 bad_keys = %w( exampleSetFlag type types extensions nullable )
 files.each do |f|
 
@@ -41,6 +50,7 @@ files.each do |f|
       data = YAML.load_file(f)
     end
     data = remove_keys(data, bad_keys)
+    fix_required_fields(data)
     api = Openapi3Parser.load data
     puts "---------------------"
     puts "#{File.basename(f)};#{api.info.title};#{api.info.description}"

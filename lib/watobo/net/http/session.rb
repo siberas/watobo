@@ -92,7 +92,7 @@ module Watobo
         def doRequest(orig, prefs = {})
           request = orig.copy
 
-          #puts "doRequest ..."
+          # puts "doRequest ..."
           cprefs = @settings ? @settings.clone : {}
           # overwrite :timeout with controllable value
           cprefs[:timeout] = timeout
@@ -111,24 +111,26 @@ module Watobo
           cprefs[:proxy] = Watobo::ForwardingProxy.get(site)&.to_h
           cprefs.update prefs
 
-          #if $VERBOSE || $DEBUG
-          #  puts "\n=== Session.doRequest ==="
-          #  puts JSON.pretty_generate(cprefs)
-          #end
+          if $VERBOSE || $DEBUG
+            puts "\n=== Session.doRequest ==="
+            puts JSON.pretty_generate(cprefs)
+          end
 
           # update session from sid_cache
           @sid_cache.update_request(request) if cprefs[:update_session] == true
 
           # multipart requests also require a content-length header
           # if request.method =~ /(post|put)/i #&& request.content_type !~ /multipart/i
-          if request.has_body?
-            request.fix_content_length
-          else
-            request.removeHeader('Content-Length')
+          if cprefs[:update_contentlength]
+            if request.has_body?
+              request.fix_content_length
+            else
+              request.removeHeader('Content-Length')
+            end
           end
 
           # TODO: make Accept-Encoding configurable
-          #request.setHeader('Accept-Encoding','none')
+          # request.setHeader('Accept-Encoding','none')
           update_tokens(request)
 
           #
@@ -200,9 +202,9 @@ module Watobo
 
           #   puts response.to_s
 
-          #puts "* Using NTLM creds:"
-          #puts creds
-          ntlm_creds = ( creds && creds[:type] == AUTH_TYPE_NTLM ) ? creds : nil
+          # puts "* Using NTLM creds:"
+          # puts creds
+          ntlm_creds = (creds && creds[:type] == AUTH_TYPE_NTLM) ? creds : nil
           challenge_header = response.headers('WWW-Authenticate').first
           unless challenge_header
             puts "NTLM Challenge missing!"
@@ -212,7 +214,7 @@ module Watobo
           if ntlm_creds && challenge_header =~ /WWW-Authenticate.*NTLM/i
 
             ntlm_challenge = challenge_header.gsub(/^.*NTLM/, '').strip
-            #puts "[NTLM] got ntlm challenge: #{ntlm_challenge}"
+            # puts "[NTLM] got ntlm challenge: #{ntlm_challenge}"
 
             t2 = ::Net::NTLM::Message.decode64(ntlm_challenge)
             domain = ntlm_creds.has_key?(:domain) ? Watobo::UTF16.encode_utf16le(ntlm_creds[:domain].upcase) : ""
@@ -227,8 +229,8 @@ module Watobo
             )
 
             auth_request = @request.copy
-            #auth_request.removeBody
-            #auth_request.removeHeader("Content-Length")
+            # auth_request.removeBody
+            # auth_request.removeHeader("Content-Length")
             auth_request.set_header("Connection", "Keep-Alive")
 
             msg = "NTLM #{t3.encode64}"

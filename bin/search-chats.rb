@@ -46,42 +46,85 @@ end
 
 =end
 
-OPTS=Optimist::options do
+OPTS = Optimist::options do
   version "#{$0} 0.1 (c) 2014 siberas"
   opt :url, "URL pattern", :type => :string, :default => '.*'
+  opt :project, "Projectname", :type => :string
+  opt :session, "Sessionname pattern or .* for all", :type => :string
   opt :path, "Pathname of directory containing the chat files", :type => :string
-  opt :response_pattern, "Regex to filter response (header and body)", :type => :string, :default => '.*'
-  opt :request_pattern, "Regex to filter request (header and body)", :type => :string, :default => '.*'
+  opt :response, "Regex to filter response (header and body)", :type => :string, :default => '.*'
+  opt :request, "Regex to filter request (header and body)", :type => :string, :default => '.*'
   opt :custom_handler, "path to custom handler, which is called on", :type => :string
 end
 
-Optimist.die :path, "Need path to chat files" unless OPTS[:path]
-raise "Path not found" unless File.exist?(OPTS[:path])
+unless OPTS[:path] || OPTS[:project]
+  Optimist.die :path, "Need path to chat files or project name" unless OPTS[:path]
+end
+# raise "Path not found" unless File.exist?(OPTS[:path])
 
 require 'watobo'
 
-module SearchHandler;end
+module SearchHandler
+  ;
+end
 if OPTS[:custom_handler]
   Kernel.load OPTS[:custom_handler] if File.exist?(OPTS[:custom_handler])
 end
 
-def load(path, &block)
+def load_from_path(path, &block)
+  chats = []
   begin
     puts "loading chats from path #{path}"
     Dir.glob("#{path}/*.mrs").each do |fname|
       chat = ::Watobo::Utils.loadChatMarshal(fname)
+      chats << chat
       yield chat if block_given?
-    rescue => bang
-      puts bang
-      binding.pry
+    end
+  rescue => bang
+    puts bang
+    binding.pry
+  end
+  chats
+end
+
+chat_paths = []
+project = OPTS[:project]
+if project
+  if OPTS[:session]
+    spat = OPTS[:session]
+
+  else
+    puts "No Session given. Please enter full name or pattern:"
+    spat = STDIN.gets.chomp
+  end
+  selected_sessions = []
+  Watobo::DataStore.sessions(project).each do |session|
+    selected_sessions << session if session.match?(spat)
+  end
+  if selected_sessions.empty?
+    puts "no sessions found"
+    exit
+  end
+
+  selected_sessions.each do |session|
+    ds = Watobo::DataStore.connect(project, session)
+    chat_paths << ds.conversation_path
+  end
+elsif OPTS[:path]
+  chat_paths << OPTS[:path]
+end
+
+chat_paths.each do |chat_path|
+  load_from_path(chat_path) do |chat|
+    # puts chat.request.path_ext
+    SearchHandler.run(chat) if SearchHandler.respond_to?(:run)
+
+    if OPTS[:response]
+
     end
   end
 end
 
-load(OPTS[:path]) do |chat|
-  #puts chat.request.path_ext
-  SearchHandler.run(chat) if SearchHandler.respond_to?(:run)
-end
 
 
 

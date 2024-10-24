@@ -312,6 +312,7 @@ module Watobo #:nodoc: all
       status = response.status
       # skip if status is 4xx, because this will be recognized by fileExists?
       return nfpatterns if status =~ /^4/
+      return nfpatterns if status =~ /^555/ # ignore watobo errors
 
       request_tags = []
       path = request.path
@@ -374,12 +375,10 @@ module Watobo #:nodoc: all
       chats.each do |chat|
         notfound_tag = '404notfound' + SecureRandom.hex(3)
         request = chat.copyRequest
-
         req_key = request.dir
         next if @nfpatterns[req_key]
 
         request.replaceFileExt(notfound_tag)
-
         test_req, test_resp = sender.doRequest(request)
 
         if $VERBOSE

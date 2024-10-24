@@ -22,7 +22,7 @@ module Watobo#:nodoc: all
         # remove all inbetween tags
         normalized.gsub!(/<.*?>/m, '')
         # remove non printable characters, except LF (\x0a)
-         r = Regexp.new '[\x00-\x09\x0b-\x1f\x7f-\xff]+', nil, 'n'
+         r = Regexp.new '[\x00-\x09\x0b-\x1f\x7f-\xff]+',  Regexp::NOENCODING # nil, 'n'
         normalized.gsub!( r,'')
         # remove empty lines
         normalized.gsub!(/((\x20+)?\x0a(\x20+)?)+/,"\n")

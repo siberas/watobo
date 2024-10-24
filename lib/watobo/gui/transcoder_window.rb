@@ -15,7 +15,7 @@ module Watobo #:nodoc: all
         #text = raw_text.gsub(/[^[:print:]]/,'.')
         text = raw_text.unpack("C*").pack("C*")
         text.gsub!(/\x0d+/, '')
-        r = Regexp.new '[\x00-\x09\x0b-\x1f\x7f-\xff]+', nil, 'n'
+        r = Regexp.new '[\x00-\x09\x0b-\x1f\x7f-\xff]+',  Regexp::NOENCODING # nil, 'n'
         text.gsub!(r, '.')
 
         @textbox.setText(text)
