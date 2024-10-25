@@ -3,21 +3,32 @@ module Watobo::Resources
   # https://github.com/l4yton/RegHex
   # https://github.com/zricethezav/gitleaks
 
-  # TODO: also load private keys from local file
+  # TODO: also load private leak-patterns from local file
 
-  keywords = %w( api key username user uname pw password pass passwd email mail credentials credential login token secret )
+  # keywords = %w( api key username user uname pw password pass passwd email mail credentials credential login token secret )
+  keywords = %w( api key username user uname pw password pass passwd credentials credential login token secret )
 
-  generic = {}
-  generic['Generic'] = "(\\b|[ ._-])(#{keywords.join('|')})[ '\"]*(=|:)[ '\"]*([^'\" ]+)"
+  LEAK_PATTERNS = {}
+  LEAK_IGNORE_PATTERNS = {}
 
-  API_KEYS = generic
+  # generic['Generic'] = "(\\b|[ ._-])(#{keywords.join('|')})[ '\"]*(=|:)[ '\"]*([^'\" ]+)"
+  # ignore csrf-token
+  # LEAK_PATTERNS['Generic'] = "\\b([^'\" ]*[ ._-]?(#{keywords.join('|')}))[ '\"]*(=|:)[ '\"]*([^'\" ]+)"
+
+  #LEAK_IGNORE_PATTERNS['Generic'] = [
+  #  "(csrf-token|supersecret|changeme|replace|securepass)",
+  #  '(.)\1{8,}',
+  #]
 
   patterns = {
     "Slack Token" => "(xox[pborsa]-[0-9]{12}-[0-9]{12}-[0-9]{12}-[a-z0-9]{32})",
+    # Base64.encode64 "-----BEGIN "
+    "Base64 Cert/Key" => "LS0tLS1CRUdJTi",
     "RSA private key" => "-----BEGIN RSA PRIVATE KEY-----",
     "SSH (DSA) private key" => "-----BEGIN DSA PRIVATE KEY-----",
     "SSH (EC) private key" => "-----BEGIN EC PRIVATE KEY-----",
     "PGP private key block" => "-----BEGIN PGP PRIVATE KEY BLOCK-----",
+    "Generic key" => "-----BEGIN [^\-] PRIVATE KEY-----",
     "AWS API Key 1" => "((?=>A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16})",
     "AWS API Key 2" => "AKIA[0-9A-Z]{16}",
     "Amazon MWS Auth Token" => "amzn\\.mws\\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -49,7 +60,7 @@ module Watobo::Resources
     "Twitter OAuth" => "[tT][wW][iI][tT][tT][eE][rR].*['|\"][0-9a-zA-Z]{35,44}['|\"]",
     "urls 1" => "https?://(www\\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)",
     "urls 2" => "[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)",
-    "url-parameter" => "(?<=\\?|\\&)[a-zA-Z0-9_]+(?=\\=)",
+    # "url-parameter" => "(?<=\\?|\\&)[a-zA-Z0-9_]+(?=\\=)",
     "twitter-secret" => "(?i)twitter(.{0,20})?['\"][0-9a-z]{35,44}",
     "twitter-oauth" => "[t|T][w|W][i|I][t|T][t|T][e|E][r|R].{0,30}['\"\\s][0-9a-zA-Z]{35,44}['\"\\s]",
     "twitter-id" => "(?i)twitter(.{0,20})?['\"][0-9a-z]{18,25}",
@@ -71,17 +82,17 @@ module Watobo::Resources
     "linkedin-secret" => "(?i)linkedin(.{0,20})?['\"][0-9a-z]{16}['\"]",
     "linkedin-id" => "(?i)linkedin(.{0,20})?(?-i)['\"][0-9a-z]{12}['\"]",
     #     "IPv6" : "(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))",
-    "IPv4" => "(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}",
+    "IPv4" => "\\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}\\b",
     "heroku-api" => "[h|H][e|E][r|R][o|O][k|K][u|U].{0,30}[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}",
     "google-ouath-token" => "ya29.[0-9A-Za-z\\-_]+",
     "google-oauth" => "[0-9]+-[0-9A-Za-z_]{32}\\.apps\\.googleusercontent\\.com",
-    "google-cloud-key" => "(?i)(google|gcp|youtube|drive|yt)(.{0,20})?['\"][AIza[0-9a-z\\-_]{35}]['\"]",
+    # "google-cloud-key" => "(?i)(google|gcp|youtube|drive|yt)(.{0,20})?['\"][AIza[0-9a-z\\-_]{35}]['\"]",
     "github" => "(?i)github(.{0,20})?(?-i)['\"][0-9a-zA-Z]{35,40}",
     "facebook-secret-key" => "(?i)(facebook|fb)(.{0,20})?(?-i)['\"][0-9a-f]{32}",
     "facebook-oauth" => "[f|F][a|A][c|C][e|E][b|B][o|O][o|O][k|K].*['|\"][0-9a-f]{32}['|\"]",
     "facebook-client-id" => "(?i)(facebook|fb)(.{0,20})?['\"][0-9]{13,17}",
     "cloudinary-basic-auth" => "cloudinary://[0-9]{15}:[0-9A-Za-z]+@[a-z]+",
-    "base64" => "(eyJ|YTo|Tzo|PD[89]|aHR0cHM6L|aHR0cDo|rO0)[a-zA-Z0-9+/]+={0,2}",
+    # "base64" => "\\b(eyJ|YTo|Tzo|PD[89]|aHR0cHM6L|aHR0cDo|rO0)[a-zA-Z0-9+/]+={0,2}",
     "aws-secret-key" => "(?i)aws(.{0,20})?(?-i)['\"][0-9a-zA-Z/+]{40}['\"]",
     "aws-mws-key" => "amzn\\.mws\\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
     "aws-client-id" => "(A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}",
@@ -89,12 +100,16 @@ module Watobo::Resources
     "auth-bearer" => "bearer [a-zA-Z0-9_\\-\\.=]+",
     "auth-basic" => "basic [a-zA-Z0-9_\\-:\\.=]+",
     "artifactory-token" => "(?: |=|=>|\"|^)AKC[a-zA-Z0-9]{10,}",
-    "artifactory-password" => "(?: |=|:|\"|^)AP[0-9ABCDEF][a-zA-Z0-9]{8,}"
+    "artifactory-password" => "(?: |=|:|\"|^)AP[0-9ABCDEF][a-zA-Z0-9]{8,}",
+    "openai-key" => "\\bsk-[0-9a-z]{40}\\b"
   }
 
-  API_KEYS.update patterns # JSON.parse(patterns)
-
-  API_KEYS.freeze
+  LEAK_PATTERNS.update patterns # JSON.parse(patterns)
+  LEAK_PATTERNS.transform_values! { |p| Regexp.compile(p, Regexp::IGNORECASE) }
+  LEAK_PATTERNS.freeze
   # puts JSON.pretty_generate API_KEYS
-
+  LEAK_IGNORE_PATTERNS.keys.each do |k|
+    LEAK_IGNORE_PATTERNS[k].map! { |p| Regexp.compile(p, Regexp::IGNORECASE) }
+  end
+  LEAK_IGNORE_PATTERNS.freeze
 end

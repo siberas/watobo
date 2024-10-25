@@ -56,8 +56,9 @@ module Watobo #:nodoc: all
       min_len = 4
       begin
         return nil if request.nil? || response.nil?
-        cleaned_response = response.headers.select { |h| !h.match?(/^Dat/) && !h.match?(/^Content/) }.join("\r\n")
-        cleaned_response << "\r\n"
+        # we don't include headers because
+        cleaned_response = '' #response.headers.select { |h| !h.match?(/^Dat/) && !h.match?(/^Content/) }.join("\r\n")
+        # cleaned_response << "\r\n"
         if response.has_body?
           required_charset = response.charset
           charset = ( required_charset && ['ASCII','UTF-8'].include?(required_charset.upcase)) ? required_charset.upcase : 'UTF-8'
@@ -66,6 +67,23 @@ module Watobo #:nodoc: all
 
           body_text = Nokogiri::HTML(body).text rescue body
           cleaned_response << body_text
+
+          # remove path or parts of path from response
+          path = request.path_ext
+          offset = 0
+          while(i = path.index('/', offset)) do
+            pattern = Regexp.quote(path[i..-1])
+            cleaned_response.gsub!(/#{pattern}/,'')
+            offset = i + 1
+          end
+
+          path = request.path
+          offset = 0
+          while(i = path.index('/', offset)) do
+            pattern = Regexp.quote(path[i..-1])
+            cleaned_response.gsub!(/#{pattern}/,'')
+            offset = i + 1
+          end
 
           # remove all parm/value pairs
           request.get_parm_names.each do |p|

@@ -8,6 +8,7 @@ ENV['BUNDLE_GEMFILE'] ||= File.expand_path('../Gemfile', __dir__)
 require 'bundler/setup'
 
 require 'optimist'
+require 'digest/md5'
 
 OPTS = Optimist::options do
   version '(c) 2022 Watobo Sp1dR'
@@ -16,36 +17,39 @@ OPTS = Optimist::options do
 
 EOS
 
-  opt :url, "set WATOBO_HOME aka working_directory", :type => :string, :default => ENV['WATOBO_HOME']
+  opt :url,  "URL, e.g. https://www.somesite.org/xxx", :type => :string
+  #  opt :watobo_home, "set WATOBO_HOME aka working_directory", :type => :string, :default => ENV['WATOBO_HOME']
   opt :proxy, "Proxy (host:port)", :type => :string
   opt :headless, "headless mode"
   opt :screenshot, "headless mode"
   opt :chrome_bundle_path, "set chrome driver_path", :type => :string, :default =>'/usr/share/chrome-linux'
+  opt :interactive, "use interactive mode, if you need to login first", :type => :boolean
   # TODO: num_browser raise crashes if > 1
   #  opt :num_browsers, "number of browser instances", :type => :integer, :default => 1
   opt :max_duration, "maximum duration in seconds", :type => :integer, :default => 3600
   opt :max_visits, "maximum number of total pages visited", :type => :integer, :default => 200
+  opt :basic_auth, "username:password for Basic Authentication", :type => :string
+  opt :cookies, "cookie definition from 'Set-Cookie, e.g. X-WWW-ACCESS=1; secure; SameSite=Lax; HttpOnly; Path=/;'", :type => :string, :multi => true
 end
 
 Optimist.die :url, "Need URL" unless OPTS[:url]
+
+
 require 'watobo/headless'
 
 require 'pry'
 require 'uri'
 
-
-prefs = {
-    proxy: OPTS[:proxy],
-    headless: OPTS[:headless],
-    screenshot: OPTS[:screenshot],
-    num_browsers: OPTS[:num_browsers],
-    max_duration: OPTS[:max_duration],
-    max_visits: OPTS[:max_visits]
-}
-
+interactive = OPTS.delete(:interactive)
 
 spider = Watobo::Headless::Spider.new OPTS
-
+if interactive
+  spider.create OPTS[:url]
+  puts "Ready to crawl? [Press enter to continue]"
+  #binding.pry
+  STDIN.gets
+end
+puts "Start crawling ..."
 spider.run OPTS[:url]
 
 spider.wait

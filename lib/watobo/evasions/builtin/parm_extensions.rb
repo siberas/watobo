@@ -1,5 +1,5 @@
 module Watobo::EvasionHandlers
-  class Queries < EvasionHandlerBase
+  class ParmExtensions < EvasionHandlerBase
 
     prio 1
 

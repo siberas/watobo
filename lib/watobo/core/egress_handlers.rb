@@ -20,7 +20,7 @@ end
 end
 
 =end
-module Watobo#:nodoc: all
+module Watobo #:nodoc: all
 
   module EgressHandlers
 
@@ -30,6 +30,7 @@ module Watobo#:nodoc: all
     @handlers = {}
     @history = []
     @last = nil
+
     def self.list(&block)
       @handlers.each_key do |name|
         yield name if block_given?
@@ -42,11 +43,11 @@ module Watobo#:nodoc: all
       update
       save_config
     end
-    
+
     def self.last
       @last
     end
-    
+
     def self.last=(name)
       @last = name
       save_config
@@ -76,16 +77,24 @@ module Watobo#:nodoc: all
     def self.length
       @handlers.length
     end
-    
+
     def self.reload
       @history.each do |file|
-        puts "load egress file #{file}" if $VERBOSE
-        Kernel.load file
+        begin
+          puts "loading egress file #{file} ..." if $VERBOSE
+
+          Kernel.load(file) if File.exist?(file)
+        rescue LoadError => bang
+          puts "!!! Failed to load egress file #{file}\n#{bang.message}"
+        rescue SyntaxError => bang
+          puts "!!! Failed to load egress file #{file}\n#{bang.message}"
+        end
       end
     end
 
     def self.load(file)
       begin
+        return false unless File.exist?(file)
         Kernel.load file
         @history << file
         @history.uniq!
@@ -104,7 +113,7 @@ module Watobo#:nodoc: all
     end
 
     def self.load_config
-      cfg = Watobo::DataStore.load_project_settings(self.name.gsub(/^.*::/,''))
+      cfg = Watobo::DataStore.load_project_settings(self.name.gsub(/^.*::/, ''))
       return false if cfg.nil?
       @last = cfg[:last]
       @history = cfg[:history]
@@ -114,10 +123,10 @@ module Watobo#:nodoc: all
 
     def self.save_config
       cfg = { :last => @last,
-        :history => @history
+              :history => @history
       }
-      Watobo::DataStore.save_project_settings(self.name.gsub(/^.*::/,''), cfg)
-  
+      Watobo::DataStore.save_project_settings(self.name.gsub(/^.*::/, ''), cfg)
+
     end
 
   end

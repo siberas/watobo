@@ -44,9 +44,10 @@ module Watobo #:nodoc: all
             Thread.current[:pos] = "wait for task"
 
             # pulls new task from queue, waits if no task is available
+            puts "[Scanner] Worker-Tasks: #{@tasks.size}"
             task = @tasks.deq
             begin
-              puts "RUNNING #{task[:module]}" #if $DEBUG
+              puts "RUNNING #{task[:module]}" if $DEBUG
               request, response = task[:check].call()
 
               next if response.nil?
@@ -76,16 +77,9 @@ module Watobo #:nodoc: all
                 end
               end
 
-              # TODO
-              chat = Chat.new(request, response, :id => 0, :chat_source => prefs[:chat_source])
-              notify(:new_chat, chat)
-
-              if prefs.has_key?(:run_passive_checks)
-                Watobo::PassiveScanner.add(chat) if prefs[:run_passive_checks] == true
-              end
-
-              unless prefs[:scanlog_name].nil? or prefs[:scanlog_name].empty?
-                Watobo::DataStore.add_scan_log(chat, prefs[:scanlog_name])
+              unless request.nil? or response.nil?
+                chat = Chat.new(request, response, :id => 0, :chat_source => prefs[:chat_source])
+                notify(:new_chat, chat)
               end
             rescue => bang
               puts "!!! #{task[:module]} !!!"
@@ -101,6 +95,7 @@ module Watobo #:nodoc: all
               Thread.exit
             end
             relogin_count = 0
+            sleep 1
           end
         }
       end
@@ -236,7 +231,6 @@ module Watobo #:nodoc: all
 
       valid_chats = @chat_list.select { |chat| @origins_alive.include?(chat.request.origin) }
 
-      binding.pry
       patterns = auto_collect_404(valid_chats, @prefs)
       @prefs[:custom_error_patterns].concat patterns
       @prefs[:custom_error_patterns].uniq!
@@ -245,8 +239,7 @@ module Watobo #:nodoc: all
 
       notify(:logger, LOG_INFO, msg)
       puts msg
-      puts @prefs.to_yaml if $VERBOSE
-
+      # puts @prefs.to_yaml if $VERBOSE
 
       # starting workers before check generation
       start_workers(@prefs)
@@ -261,10 +254,29 @@ module Watobo #:nodoc: all
           valid_chats.each do |chat|
             # puts chat.request.url.to_s
             @active_checks.uniq.each do |ac|
+              # Subscribe to Check !!!
+              # to be able to also log 'inner' requests of a module, we subscribe to :new_chat
+              # we also need to do Logging and PassiveChecks here!!!
+              ac.subscribe(:new_chat) { |c|
+                # notify(:new_chat, c)
+                @new_chat_notify.synchronize do
+
+                  unless @prefs[:scanlog_name].nil? or @prefs[:scanlog_name].empty?
+                    Watobo::DataStore.add_scan_log(c, @prefs[:scanlog_name])
+                  end
+
+                  if !!@prefs[:run_passive_checks]
+                    Watobo::PassiveScanner.add(c)
+                  end
+
+                  notify(:new_chat, c)
+                end
+              }
+
               ac.reset()
               # if site_alive?(chat) then
               puts "Generating Tasks for #{ac.class.to_s}" if $VERBOSE
-              binding.pry
+              # binding.pry
               ac.generateChecks(chat) { |check|
                 while @tasks.size > @max_tasks
                   sleep 1
@@ -292,6 +304,7 @@ module Watobo #:nodoc: all
     end
 
     # automatically detects custom file-not-found pattern
+    # the response is assumed to be a not-found-page
     def extract_not_found_pattern(request, response)
       nfpatterns = []
       # notfound = request.file
@@ -299,6 +312,7 @@ module Watobo #:nodoc: all
       status = response.status
       # skip if status is 4xx, because this will be recognized by fileExists?
       return nfpatterns if status =~ /^4/
+      return nfpatterns if status =~ /^555/ # ignore watobo errors
 
       request_tags = []
       path = request.path
@@ -331,7 +345,6 @@ module Watobo #:nodoc: all
       end
 
       # check if words contains parts of the request
-
       request_tags.each do |tag|
         nfi = words.index { |w| w =~ /#{tag}/i }
         if nfi
@@ -348,8 +361,7 @@ module Watobo #:nodoc: all
         end
       end
 
-      # seems notfound pattern is not in words,
-      # so we just take the Utils.responseHash as pattern
+      # finally also add the Utils.responseHash as pattern
       nfpatterns << Watobo::Utils.responseHash(request, response)
 
       nfpatterns
@@ -358,16 +370,15 @@ module Watobo #:nodoc: all
     def auto_collect_404(chats, prefs)
       sender = Watobo::Session.new(self.object_id, prefs)
 
-      nfpatterns = {}
+      @nfpatterns = {}
 
       chats.each do |chat|
         notfound_tag = '404notfound' + SecureRandom.hex(3)
         request = chat.copyRequest
-
-        req_key = request.short
+        req_key = request.dir
+        next if @nfpatterns[req_key]
 
         request.replaceFileExt(notfound_tag)
-
         test_req, test_resp = sender.doRequest(request)
 
         if $VERBOSE
@@ -377,10 +388,12 @@ module Watobo #:nodoc: all
           puts test_resp
           puts '---'
         end
-        nfpatterns[req_key] ||= []
-        nfpatterns[req_key].concat extract_not_found_pattern(test_req, test_resp)
+        @nfpatterns[req_key] ||= []
+        @nfpatterns[req_key].concat extract_not_found_pattern(test_req, test_resp)
 
       end
+
+      @nfpatterns.values.flatten
     end
 
     # possible prefs
@@ -490,7 +503,7 @@ module Watobo #:nodoc: all
             @logged_out.clear
             # puts "!LOGOUT DETECTED!\n#{@logged_out.size} - #{@workers.length} - #{@tasks.num_waiting}\n\n"
             begin
-              puts "Run login ..."
+              puts "Run login ..." if $DEBUG
               login
               @workers.each do |wrkr|
                 # puts "State: #{wrkr.state}"
@@ -546,6 +559,15 @@ module Watobo #:nodoc: all
 
         w.subscribe(:new_chat) { |c|
           @new_chat_notify.synchronize do
+
+            unless @prefs[:scanlog_name].nil? or @prefs[:scanlog_name].empty?
+              Watobo::DataStore.add_scan_log(c, @prefs[:scanlog_name])
+            end
+
+            if !!@prefs[:run_passive_checks]
+              Watobo::PassiveScanner.add(c)
+            end
+
             notify(:new_chat, c)
           end
         }

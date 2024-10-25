@@ -1,3 +1,4 @@
+require 'spec_helper'
 #
 # After parsing, the Content-Length header should be the size 587
 rt=<<EOF

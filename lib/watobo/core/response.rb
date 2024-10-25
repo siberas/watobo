@@ -31,9 +31,11 @@ module Watobo #:nodoc: all
 
         data = ''
         self.each do |h|
+          break if h.strip.empty?
           data << h.force_encoding('ASCII-8BIT')
         end
         data << "\r\n".force_encoding('ASCII-8BIT')
+
         if has_body?
           data << self.body.to_s
         end

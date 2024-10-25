@@ -18,8 +18,6 @@ module Watobo#:nodoc: all
       end
 
       def set(parm)
-        puts "xml set parm:"
-        puts parm
         return false unless parm.location == :xml
        # puts "= set "
        # puts parm.to_yaml

@@ -2,6 +2,8 @@ module Watobo #:nodoc: all
   module Plugin
     class Filescanner
 
+      include Watobo::Constants
+
       STATUS_IDLE = 0x00
       STATUS_RUNNING = 0x01
       STATUS_FINISHED = 0x02
@@ -43,12 +45,12 @@ module Watobo #:nodoc: all
         scan_prefs.update @settings.to_h
         scan_prefs.update prefs
 
-        if $VERBOSE
-          puts "=== FILESCANNER RUN PREFS ==="
-          puts scan_prefs
-          puts '---'
-          puts Watobo::Conf::Scanner.to_h
-        end
+        # if $VERBOSE
+        #  puts "=== FILESCANNER RUN PREFS ==="
+        #  puts scan_prefs
+        #  puts '---'
+        #  puts Watobo::Conf::Scanner.to_h
+        # end
 
         # Thread.new {
         #  @@lock.synchronize {
@@ -75,6 +77,10 @@ module Watobo #:nodoc: all
             @scanner.subscribe(:scanner_finished){
               @status = STATUS_FINISHED
             }
+
+            @scanner.subscribe(:new_chat){ |chat|
+              puts chat.request.url.to_s
+            }
             @scanner.run
           }
         }
@@ -82,7 +88,7 @@ module Watobo #:nodoc: all
       end
 
       # automatically detects pattern for F
-      def get_not_found_pattern(prefs)
+      def get_not_found_pattern_UNUSED(prefs)
         sender = Watobo::Session.new(self.object_id, prefs)
 
         nfpatterns = []
@@ -93,13 +99,13 @@ module Watobo #:nodoc: all
           request.replaceFileExt(notfound)
 
           test_req, test_resp = sender.doRequest(request)
-          if $VERBOSE
-            puts "REQUEST >>>"
-            puts test_req
-            puts "RESPONSE <<<"
-            puts test_resp
-            puts '---'
-          end
+          # if $VERBOSE
+          #  puts "REQUEST >>>"
+          #  puts test_req
+          #  puts "RESPONSE <<<"
+          #  puts test_resp
+          #  puts '---'
+          #end
           status = test_resp.status
           # skip if status is 4xx, because this will be recognized by fileExists?
           next if status =~ /^4/
@@ -173,12 +179,32 @@ module Watobo #:nodoc: all
       # @param request [Object] Watobo::Request or string
       # @param prefs [Hash]
       #   db_file: [String] url-path to check or filename of db (list of url-paths line-separated)
+      #     There are two types of db_files:
+      #       txt-lists, with one line per file
+      #       TODO: YAML List, based on file extension
+      #       yaml-lists,
+      #         :defaults => {
+      #                       rating: ,
+      #                       method: ,
+      #                       },
+      #         :entries [Array] where each entry has folling keys
+      #             - rating (optional), overwrites default_rating
+      #             - file
+      #             - location (optional, default ALL ), pattern location, e.g. body, header)
+      #             - method (optional) request method, default GET
+      #             - match - matching pattern (Regex)
+      #             - content_type (optional)
+      #             - response code (optional)
+      #
       #   egress_handler: [ClassName] of handler
       #   scanlog_name: <scan_name>
       #   run_passive_checks: TrueFalse
       #   test_subs: TrueFalse
       #   extensions: Array
       #   evasions: Array
+      #   rating: VULN_RATING_UNDEFINED, VULN_RATING_INFO, VULN_RATING_LOW, VULN_RATING_MEDIUM,
+      #   VULN_RATING_HIGH,
+      #   VULN_RATING_CRITICAL
 
       def initialize(request, prefs)
         raise "No project created!" if Watobo.project.nil?
@@ -190,6 +216,7 @@ module Watobo #:nodoc: all
         @passive_checks = []
         @status = STATUS_IDLE
         @enable_passive_checks = !!prefs[:run_passive_checks]
+        @rating = prefs.fetch(:rating, VULN_RATING_INFO )
 
         file_list_init
         chatlist_init
@@ -211,6 +238,7 @@ module Watobo #:nodoc: all
       #end
 
       def file_list_init
+        # puts "[Filescanne] file_list_init" if $VERBOSE
         # set file_list array as db_file in case it is not a file
         @file_list = [settings.db_file]
         # read file content if db_file is a valid file
@@ -225,6 +253,7 @@ module Watobo #:nodoc: all
       def chatlist_init
         @chat_list = []
         @chat_list << Watobo::Chat.new(request, [], :id => 0)
+        #  puts "[Filescanne] chatlist_init" if $VERBOSE
         if settings.test_all_dirs
           Watobo::Chats.dirs(request.site, :base_dir => request.dir).each do |dir|
             chat = Watobo::Chat.new(request, [], :id => 0)

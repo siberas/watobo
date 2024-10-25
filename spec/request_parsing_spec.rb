@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 rt = <<EOF
-POST https://no.existing.host HTTP/1.1
+POST https://no.existing.host/path/to/file?one=1234 HTTP/1.1
 Host: no.existing.host
 User-Agent: Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:79.0) Gecko/20100101 Firefox/79.0
 Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
@@ -34,7 +34,7 @@ Queues
 -----------------------------5543245338999447031528066707--
 EOF
 
-mpr=<<EOS
+mpr = <<EOS
 POST https://performancemanager5.successfactors.eu:443/odata/v2/restricted/ONB2WhatToBringActivity,ONB2WhatToBringConfig,ONB2WhatToBringItemConfig/$batch HTTP/1.1
 Host: performancemanager5.successfactors.eu
 User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:83.0) Gecko/20100101 Firefox/83.0
@@ -80,12 +80,35 @@ request = Watobo::Utils.text2request(rt)
 multipart_request = mpr.extend Watobo::Mixins::RequestParser
 
 describe Watobo::Request do
+
   context "URL Mixin" do
-
-
+    it ".site" do
+      site = request.site
+      expect(site).to eq('no.existing.host:443')
+    end
     it "str" do
-      url = request.url.to_s
-      expect(url).to eq('https://no.existing.host')
+      r = request.url.to_s
+      expect(r).to eq('https://no.existing.host/path/to/file?one=1234')
+    end
+    it ".url_string" do
+      r = request.url_string
+      expect(r).to eq('https://no.existing.host/path/to/file?one=1234')
+    end
+
+    it ".is_ssl?" do
+      r = request.is_ssl?
+      expect(r).to be(true)
+    end
+
+    it ".element" do
+      r = request.element
+      expect(r).to eq('file')
+
+    end
+
+    it ".file" do
+      r = request.file
+      expect(r).to eq('file')
 
     end
 
@@ -99,6 +122,6 @@ describe Watobo::Request do
   end
 
   context "Multipart" do
-    #binding.pry
+    # binding.pry
   end
 end

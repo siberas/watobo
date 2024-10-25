@@ -3,21 +3,28 @@ module Watobo
     class Spider
       class Form
 
-        attr :src, :attributes
+        attr :src, :method, :action, :form_class, :button
 
         def fingerprint
-          s = [ src, attributes.method, attributes.action]
+          s = [ src, method, action, ( button || '') ]
           Digest::MD5.hexdigest s.join('|')
         end
 
         # needed for stats output
         def to_s
-          "[Form] #{attributes.method || 'POST'} #{attributes.action}"
+          "[Form] #{method || 'POST'} #{action}"
         end
 
-        def initialize(url, attributes)
+
+        # @param url [String]
+        # @param attributes [Hash] of form attributes
+        # @param button [String|nil] css_selector of button, css is created with form_collection.css(element)
+        def initialize(url, attributes, button=nil)
           @src = url
-          @attributes = OpenStruct.new attributes
+          @method = attributes.fetch('method',nil)
+          @action = attributes.fetch('action',nil)
+          @form_class = attributes.fetch('class',nil)
+          @button = button
         end
       end
     end

@@ -3,6 +3,7 @@ module Watobo #:nodoc: all
   # class ActiveCheck < Watobo::Session # Base Class for Passive Checks
   class ActiveCheck < Watobo::Net::Http::Session # Base Class for Passive Checks
     include Watobo::CheckInfoMixin
+    include Watobo::Subscriber
 
     attr :info
     attr :numChecks
@@ -153,14 +154,6 @@ module Watobo #:nodoc: all
       count
     end
 
-    def maxChecks_UNUSED=(m)
-      @@max_checks = m
-    end
-
-    def maxChecks_UNUSED()
-      @@max_checks
-    end
-
     def enabled?
       r = nil
       @enable_mutex.synchronize do
@@ -204,16 +197,22 @@ module Watobo #:nodoc: all
     def fileExists?(request, prefs = {})
       begin
         t_request, t_response = doRequest(request, prefs)
-        # first custom error patterns are checked
-        status = t_response.status
+        # we don't need to check t_response, because doRequest should always return a request and a response
+        # return [ false, request, t_response ] unless t_response
+
+        return [ false, t_request, t_response ] if t_response&.first&.match?(/HTTP.*555.*Watobo/i)
+
         # if @settings.has_key? :custom_error_patterns
+        # first custom error patterns are checked
         custom_error_patterns.each do |pat|
+          # binding.pry unless pat.is_a? String
           if pat =~ /^[0-9a-zA-Z]{10,}$/
             return [false, t_request, t_response] if Watobo::Utils.responseHash(t_request, t_response) == pat
           end
           return [false, t_request, t_response] if t_response.to_s =~ /#{pat}/
         end
         # end
+        #
         # if @settings.has_key? :custom_error_patterns
         #  @settings[:custom_error_patterns].each do |pat|
         #    t_response.headers.each do |hl|
@@ -228,6 +227,7 @@ module Watobo #:nodoc: all
         #  end
         # end
 
+        status = t_response.status
         return [true, t_request, t_response] if status =~ /^405/ # Method Not Allowed
 
         return [false, t_request, t_response] if status.empty?
@@ -251,7 +251,8 @@ module Watobo #:nodoc: all
         return [true, t_request, t_response]
       rescue => bang
         puts bang
-        puts bang.backtrace if $DEBUG
+        puts bang.backtrace
+        binding.pry if $DEBUG
       end
       return [false, nil, nil]
     end

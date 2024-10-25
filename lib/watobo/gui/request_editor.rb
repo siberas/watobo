@@ -63,7 +63,8 @@ module Watobo #:nodoc: all
                   if insf != "" then
                     if File.exist?(insf) then
                       # puts "Inserting #{insf}"
-                      sender.insertText(cpos, "%%File.read('#{insf}').encode('UTF-8').force_encoding('BINARY')%%")
+                      #sender.insertText(cpos, "%%File.read('#{insf}').encode('UTF-8').force_encoding('BINARY')%%")
+                      sender.insertText(cpos, "%%IO.binread('#{insf}')%%")
                       highlight_markers
                     end
                   end

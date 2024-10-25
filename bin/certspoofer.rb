@@ -181,16 +181,18 @@ unless OPTS[:url].empty?
   begin
 
     https = Net::HTTP.start(uri.host, uri.port, req_opts)
-    response = https.request Net::HTTP::Get.new uri.path
+    path = uri.path.empty? ? '/' : uri.path
+    response = https.request(Net::HTTP::Get.new(path))
     puts '--- R E S P O N S E ---'
     puts "#{response.code} #{response.msg}"
     response.each_header do |k,v|
       puts "#{k}: #{v}"
     end
     puts response.body
+    puts "\n!!!\n--- SSL connection worked. PLEASE CHECK YOUR SSL CONFIGURATION ---"
   rescue OpenSSL::SSL::SSLError => e
     puts "\n!!!\n--- SSL Error (which is probably a good sign ;) ---"
-    puts e
+    # puts e
   rescue => bang
     puts "--- F A I L U R E ---"
     puts bang

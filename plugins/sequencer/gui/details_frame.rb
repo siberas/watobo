@@ -15,6 +15,7 @@ module Watobo #:nodoc: all
             @request_frame.request = @element.request
             @post_script_frame.script = @element.post_script
             @pre_script_frame.script = @element.pre_script
+            @pre_script_frame.egress_handler_enabled = @element.egress_handler_enabled
             @apply_btn.enable
           end
 
@@ -75,6 +76,7 @@ module Watobo #:nodoc: all
 
             @element.pre_script = @pre_script_frame.script
             @element.egress_handler = @pre_script_frame.egress_handler
+            @element.egress_handler_enabled = @pre_script_frame.egress_handler_enabled
             notify(:element_changed)
             true
           end

@@ -42,6 +42,7 @@ require 'mechanize'
 require 'jwt'
 require 'ostruct'
 require 'erb'
+require 'rubyntlm'
 
 print '+ looking for DEV_ENV environment variable ...'
 if ENV['DEV_ENV']

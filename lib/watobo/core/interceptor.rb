@@ -11,6 +11,9 @@ module Watobo#:nodoc: all
     REWRITE_RESPONSE = 0x02
     REWRITE_BOTH = 0x04
 
+    EGRESS_OFF = 0x00
+    EGRESS_ON = 0x01
+
     INTERCEPT_DEFAULT_PORT = 8081
 
     MODE_REGULAR = 0x01
@@ -36,6 +39,24 @@ module Watobo#:nodoc: all
 
     def self.rewrite_mode
       @rewrite_mode
+    end
+
+    def self.set_egress_handler(handler)
+      @egress_enabled = true
+      @egress_handler = handler
+    end
+
+    def self.egress_enabled?
+      @egress_enabled
+    end
+
+    def self.egress_handler
+      @egress_handler
+    end
+
+    def self.disable_egress
+      @egress_enabled = false
+      @egress_handler = nil
     end
 
     def self.rewrite_mode=(mode)

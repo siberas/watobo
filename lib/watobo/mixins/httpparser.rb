@@ -48,9 +48,8 @@ module Watobo #:nodoc: all
           uri.origin
         end
 
-
         def fext
-          #uri = URI.parse(url_string)
+          # uri = URI.parse(url_string)
           # we don't use File.extname because it cannot handle extensions if file name is empty
           # > u.path
           # => "/api/users/.zip"
@@ -61,14 +60,14 @@ module Watobo #:nodoc: all
           di = f.rindex('.')
           return '' unless di
           return '' if f.length - di > 4
-          f[di+1..-1]
+          f[di + 1..-1]
         end
 
         def file
           #@file ||= nil
           # return @file unless @file.nil?
-          if self.first =~ /^[^[:space:]]{1,} [a-zA-Z]+:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}[^\?]*\/(.*) HTTP.*/
-            tmp = $1
+          if self.first =~ /^[^[:space:]]{1,}[[:space:]]{1,}[a-zA-Z]+:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}[^\?]*\/(.*) HTTP.*/
+            tmp = $1.strip
             end_of_file_index = tmp.index(/\?/)
 
             if end_of_file_index.nil?
@@ -92,7 +91,7 @@ module Watobo #:nodoc: all
         def file_ext
           #@file_ext ||= nil
           # return @file_ext unless @file_ext.nil?
-          if self.first =~ /^[^[:space:]]{1,} [a-zA-Z]+:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}[^\?]*\/(.*) HTTP.*/
+          if self.first =~ /^[^[:space:]]{1,}[[:space:]]{1,}[a-zA-Z]+:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}[^\?]*\/(.*) HTTP.*/
             @file_ext = $1
           else
             @file_ext = ''
@@ -148,7 +147,7 @@ module Watobo #:nodoc: all
         # http://www.mysite.com:80/my/path/show.php?p=aaa&debug=true
         # path = "/my/path/show.php"
         def path
-          if self.first =~ /^[^[:space:]]{1,} [a-zA-Z]+:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}\/([^\?]*).* HTTP/i then
+          if self.first =~ /^[^[:space:]]{1,}[[:space:]]{1,}[a-zA-Z]+:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}\/([^\?]*).* HTTP/i then
             return "/#{$1}"
           else
             return "/"
@@ -157,7 +156,7 @@ module Watobo #:nodoc: all
 
         # path_ext = "my/path/show.php?p=aaa&debug=true"
         def path_ext
-          if self.first =~ /^[^[:space:]]{1,} [a-zA-Z]+:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}\/(.*) HTTP\//i then
+          if self.first =~ /^[^[:space:]]{1,}[[:space:]]{1,}[a-zA-Z]+:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}\/(.*) HTTP\//i then
             return "/#{$1}"
           else
             return ""
@@ -165,7 +164,7 @@ module Watobo #:nodoc: all
         end
 
         def dir
-          if self.first =~ /^[^[:space:]]{1,} [a-zA-Z]+:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}\/([^\?]*)\/.* HTTP/i then
+          if self.first =~ /^[^[:space:]]{1,}[[:space:]]{1,}[a-zA-Z]+:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}\/([^\?]*)\/.* HTTP/i then
             return "/#{$1}"
           else
             return ""
@@ -177,7 +176,7 @@ module Watobo #:nodoc: all
           begin
             q = nil
             if self.first =~ /^[^[:space:]]{1,} (.*) HTTP.*/ then
-              uri = $1
+              uri = $1.strip
             end
             off = uri.index('?')
             # parts.shift
@@ -197,7 +196,7 @@ module Watobo #:nodoc: all
           cl = self.first.gsub(/\?+/, "?")
           cl.gsub!(/ HTTP.*/, '')
           dummy = cl.split('?').first
-          if dummy =~ /^[^[:space:]]{1,} ([a-zA-Z]+:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}).*\/(.*)/i then
+          if dummy =~ /^[^[:space:]]{1,}[[:space:]]{1,}([a-zA-Z]+:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}).*\/(.*)/i then
             return $2
           else
             return ""
@@ -214,14 +213,14 @@ module Watobo #:nodoc: all
 
         def proto
           proto = "unknown"
-          if self.first =~ /^[^[:space:]]{1,} ([a-zA-Z]+):\/\//i
+          if self.first =~ /^[^[:space:]]{1,}[[:space:]]{1,}([a-zA-Z]+):\/\//i
             proto = $1
           end
           proto
         end
 
         def is_ssl?
-          return true if self.first =~ /^[^[:space:]]{1,} https/i
+          return true if self.first =~ /^[^[:space:]]{1,}[[:space:]]{1,}https/i
           return false
         end
 
@@ -240,7 +239,7 @@ module Watobo #:nodoc: all
         def url_string
           url = ''
           # return @url unless @url.nil?
-          if self.first =~ /^[^[:space:]]{1,} ([a-zA-Z]+:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}.*) HTTP\//i then
+          if self.first =~ /^[^[:space:]]{1,}[[:space:]]{1,}([a-zA-Z]+:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}.*) HTTP\//i then
             url = $1
           end
           url
@@ -251,7 +250,7 @@ module Watobo #:nodoc: all
         def site
           #@site ||= nil
           # return @site unless @site.nil?
-          if self.first =~ /^[^[:space:]]{1,} ([a-zA-Z]+):\/\/([\-0-9a-zA-Z.]*)([:0-9]{0,6})/i then
+          if self.first =~ /^[^[:space:]]{1,}[[:space:]]{1,}([a-zA-Z]+):\/\/([\-0-9a-zA-Z.]*)([:0-9]{0,6})/i then
             host = $2
             port_extension = $3
             proto = $1
@@ -271,7 +270,7 @@ module Watobo #:nodoc: all
           #@host ||= nil
           # return @host unless @host.nil?
           # if self.first =~ /^[^[:space:]]{1,} https?:\/\/([\-0-9a-zA-Z.]*)[:0-9]{0,6}/i then
-          if self.first =~ /^[^[:space:]]{1,} [a-zA-Z]+:\/\/([\-0-9a-zA-Z.]*)[:0-9]{0,6}/i then
+          if self.first =~ /^[^[:space:]]{1,}[[:space:]]{1,}[a-zA-Z]+:\/\/([\-0-9a-zA-Z.]*)[:0-9]{0,6}/i then
             @host = $1
           else
             @host = ''
@@ -294,23 +293,24 @@ module Watobo #:nodoc: all
 
           combinations
         end
+
         alias :subdirs :subDirs
 
         def port
           return nil if self.first.nil?
           dummy = self.first
-          portnum = nil
           parts = dummy.split('?')
 
-          if parts[0] =~ /^[^[:space:]]{1,} https:\/\//i then
-            portnum = 443
-          elsif parts[0] =~ /^[^[:space:]]{1,} http:\/\//i
-            portnum = 80
+          if parts[0] =~ /^[^[:space:]]{1,}[[:space:]]{1,}https?:\/\/[\-0-9a-zA-Z.]*:([0-9]{1,6})/i then
+            return $1
           end
-          if parts[0] =~ /^[^[:space:]]{1,} https?:\/\/[\-0-9a-zA-Z.]*:([0-9]{0,6})/i then
-            portnum = $1
+          if parts[0] =~ /^[^[:space:]]{1,}[[:space:]]{1,}https:\/\//i then
+            return 443
+          elsif parts[0] =~ /^[^[:space:]]{1,}[[:space:]]{1,}http:\/\//i
+            return 80
           end
-          return portnum
+
+          return nil
         end
 
         # get_parms returns an array of parm=value
@@ -525,6 +525,35 @@ module Watobo #:nodoc: all
           return ct
         end
 
+        def content_transfer_encoding
+          te = TE_NONE
+          self.each do |line|
+            break if line.strip.empty?
+            if line =~ /^Content-Transfer-Encoding:(.*)/i then
+              dummy = $1.strip
+              #  puts "Content-Encoding => #{dummy}"
+              te = case dummy
+                   when /chunked/i
+                     TE_CHUNKED
+                   when /compress/i
+                     TE_COMPRESS
+                   when /zip/i
+                     TE_GZIP
+                   when /deflate/i
+                     TE_DEFLATE
+                   when /identity/i
+                     TE_IDENTITY
+                   when /(binary|octet\-stream)/i
+                     TE_BINARY
+                   else
+                     TE_NONE
+                   end
+              break
+            end
+          end
+          return te
+        end
+
         def content_encoding
           te = TE_NONE
           self.each do |line|
@@ -543,6 +572,10 @@ module Watobo #:nodoc: all
                      TE_DEFLATE
                    when /identity/i
                      TE_IDENTITY
+                   when /(binary|octet\-stream)/i
+                     TE_BINARY
+                   when /^br$/
+                     TE_BROTLI
                    else
                      TE_NONE
                    end
@@ -656,9 +689,9 @@ module Watobo #:nodoc: all
         def body
           return nil unless raw_body
           required_charset = charset
-          charset = (required_charset && ['ASCII', 'UTF-8'].include?(required_charset.upcase)) ? required_charset.upcase : 'UTF-8'
+          # charset = (required_charset && ['ASCII', 'UTF-8'].include?(required_charset.upcase)) ? required_charset.upcase : 'UTF-8'
           s = raw_body
-          s.encode!(charset, :invalid => :replace, :undef => :replace, :replace => '.')
+          # s.encode!(charset, :invalid => :replace, :undef => :replace, :replace => '.')
           s
         end
 
@@ -671,6 +704,13 @@ module Watobo #:nodoc: all
             return true if ct =~ /text/i
             return false
           end
+        end
+
+        def is_binary?
+          return true if content_encoding == TE_BINARY
+          return true if content_transfer_encoding == TE_BINARY
+          return true if content_type =~ /(binary|octet\-)/i
+          false
         end
 
         def is_wwwform?
@@ -792,6 +832,18 @@ module Watobo #:nodoc: all
           hnames
         end
 
+        # returns a single header [OpenStruct] with :name and :value
+        # @param name [String] of header to search for
+        # @return [OpenSruct] representation with .name and .value of header. Returns nil if header is not found
+        def get_header(name)
+          h = headers("^#{name}:").first
+          return nil unless h
+          eoh = h.index(':')
+          OpenStruct.new name: h[0..eoh-1], value: h[eoh+1..-1]
+        end
+
+        # @return Array of HTTP headers
+        # @@param filter String (Regex) is case-insensitive
         def headers(filter = nil, &b)
           begin
             filter = '.*' if filter.nil?
@@ -813,7 +865,6 @@ module Watobo #:nodoc: all
             if $DEBUG
               puts bang.backtrace
               puts self.to_yaml
-              binding.pry if binding.respond_to? :pry
             end
             return nil
           end

@@ -16,9 +16,11 @@ module Watobo::EvasionHandlers
     prio 3
 
     EVASION_SRC_HEADERS = %w( Via X-Originating-IP X-Forwarded-Host X-Forwarded-For X-Original-Forwarded-For X-Real-IP True-Client-IP X-True-IP X-Remote-IP X-Remote-Addr )
+    CUSTOM_LOCATIONS = ENV['WATOBO_TRUSTED_IPS'].nil? ? [] : ENV['WATOBO_TRUSTED_IPS'].split(',').map(&:strip)
     EVASION_LOCATIONS = [
       '127.0.0.1',
       '::1',
+      '::ffff:127.0.0.1',
       'null',
       '0',
       '172.17.0.10',  # Docker IPs
@@ -33,10 +35,18 @@ module Watobo::EvasionHandlers
 
     EVASION_PROTOS = %w( https http )
 
+    def custom_locations
+      ENV['WATOBO_TRUSTED_IPS'].nil? ? [] : ENV['WATOBO_TRUSTED_IPS'].split(',').map(&:strip)
+    end
+
+    def evasion_locations
+      custom_locations.concat EVASION_LOCATIONS
+    end
+
     def run(request, &block)
       puts "! run evasion #{self}" if $DEBUG
       EVASION_SRC_HEADERS.each do |header|
-        EVASION_LOCATIONS.each do |location|
+        evasion_locations.each do |location|
           test = request.clone
           test.set_header "#{header}: #{location}"
           yield test
@@ -44,9 +54,14 @@ module Watobo::EvasionHandlers
 
       end
 
-      EVASION_LOCATIONS.each do |loc|
+      evasion_locations.each do |loc|
         EVASION_PROTOS.each do |proto|
           location = "for:#{loc};proto=#{proto};by=#{loc}"
+          test = request.clone
+          test.set_header "Forwarded: #{location}"
+          yield test
+          # do some more header-foo, as seen in a POC for CVE-2022-40684
+          location = "for:[#{loc}];proto=#{proto};by=[#{loc}]"
           test = request.clone
           test.set_header "Forwarded: #{location}"
           yield test

@@ -127,7 +127,7 @@ module Watobo #:nodoc: all
       $first_time_watobo = true
       begin
         print "Creating WATOBO's working directory #{Conf::General.working_directory}."
-        Dir.mkdir(Conf::General.working_directory)
+        FileUtils.mkdir_p(Conf::General.working_directory)
       rescue => bang
         puts "Could not create working directory for WATOBO."
         puts bang

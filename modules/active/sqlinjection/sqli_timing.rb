@@ -134,7 +134,7 @@ EOF
                     Timeout.timeout(timeout_t) do
                       test = chat.copyRequest
                       # also need to check if altered parm will change response
-                      test_value = CGI.escape("#{parm.value}#{sql.gsub(/SLEEP_TIME/, time_to_sleep.to_s)}")
+                      test_value = CGI.escape("#{test_param.value}#{sql.gsub(/SLEEP_TIME/, time_to_sleep.to_s)}")
                       parm.value = test_value
 
                       test.set parm
@@ -165,6 +165,7 @@ EOF
                     puts bang
                     puts bang.backtrace
                   end
+
 
 
                   duration = sqli_stop - sqli_start

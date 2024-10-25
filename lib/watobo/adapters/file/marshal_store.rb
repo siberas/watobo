@@ -120,6 +120,7 @@ module Watobo #:nodoc: all
 
       return false unless chat.respond_to? :request
       return false unless chat.respond_to? :response
+
       begin
 
         return false if scan_name.nil?
@@ -131,7 +132,7 @@ module Watobo #:nodoc: all
 
         Dir.mkdir path unless File.exist? path
 
-        file = File.join(path, 'log_' + Time.now.to_f.to_s + '.mrs')
+        file = File.join(path, 'log_' + Time.now.to_f.to_s + '_' + SecureRandom.hex(4) + '.mrs')
 
         unless File.exist?(file)
           File.open(file, 'wb') {|fh|

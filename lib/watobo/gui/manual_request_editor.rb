@@ -41,7 +41,7 @@ module Watobo #:nodoc: all
 
             end
           else
-            #TODO: Show warning message that no login-chats are defined
+            # TODO: Show warning message that no login-chats are defined
           end
         end
 
@@ -77,7 +77,7 @@ module Watobo #:nodoc: all
 
       #      def subscribe(event, &callback)
       #  (@event_dispatcher_listeners[event] ||= []) << callback
-      #end
+      # end
 
       def openCSRFTokenDialog(sender, sel, item)
         csrf_dlg = CSRFTokenDialog.new(self, @chat)
@@ -89,17 +89,17 @@ module Watobo #:nodoc: all
         end
       end
 
-      #def clearEvents(event)
+      # def clearEvents(event)
       #  @event_dispatcher_listener[event].clear
-      #end
+      # end
 
-      #def notify(event, *args)
+      # def notify(event, *args)
       #  if @event_dispatcher_listeners[event]
       #    @event_dispatcher_listeners[event].each do |m|
       #      m.call(*args) if m.respond_to? :call
       #    end
       #  end
-      #end
+      # end
 
       def onRequestReset(sender, sel, item)
         @req_builder.setRequest(@original_request)
@@ -119,7 +119,7 @@ module Watobo #:nodoc: all
       end
 
       def onBtnQuickScan(sender, sel, item)
-        dlg_prefs = {:target_chat => @chat, :enable_one_time_tokens => @updateCSRF.checked?}
+        dlg_prefs = { :target_chat => @chat, :enable_one_time_tokens => @updateCSRF.checked? }
         egress_handler = @egress.checked? ? @egress_handlers.getItem(@egress_handlers.currentItem) : ''
         dlg_prefs[:egress_handler] = egress_handler
 
@@ -132,7 +132,7 @@ module Watobo #:nodoc: all
           logger("QuickScan canceled by user")
           @pbar.progress = 0
           @pbar.total = 0
-          @pbar.barColor = 'grey' #FXRGB(255,0,0)
+          @pbar.barColor = 'grey' # FXRGB(255,0,0)
           sender.text = "QuickScan"
           return
         end
@@ -212,12 +212,12 @@ module Watobo #:nodoc: all
           end
 
           run_prefs = {
-              :update_sids => @updateSID.checked?,
-              :update_session => @updateSession.checked?,
-              :csrf_requests => csrf_requests,
-              :csrf_patterns => scan_prefs[:csrf_patterns],
-              :www_auth => scan_prefs[:www_auth],
-              :follow_redirect => quick_scan_options[:follow_redirect],
+            :update_sids => @updateSID.checked?,
+            :update_session => @updateSession.checked?,
+            :csrf_requests => csrf_requests,
+            :csrf_patterns => scan_prefs[:csrf_patterns],
+            :www_auth => scan_prefs[:www_auth],
+            :follow_redirect => quick_scan_options[:follow_redirect],
           }
 
           logger("Scan Started ...")
@@ -279,7 +279,7 @@ module Watobo #:nodoc: all
       end
 
       def update_egress
-        #binding.pry
+        # binding.pry
         last_item = @egress_handlers.currentItem
         @egress_handlers.clearItems
         @egress.disable
@@ -340,7 +340,6 @@ module Watobo #:nodoc: all
           @scan_status_lock = Mutex.new
           @scan_status = SCANNER_IDLE
 
-
           self.icon = ICON_MANUAL_REQUEST
 
           # Construct some hilite styles
@@ -349,8 +348,8 @@ module Watobo #:nodoc: all
           hs_red.normalBackColor = FXRGBA(255, 0, 0, 1) # FXColor::White
           hs_red.style = FXText::STYLE_BOLD
 
-          #mr_splitter = FXSplitter.new(self, LAYOUT_FILL_X|LAYOUT_FILL_Y|SPLITTER_VERTICAL|SPLITTER_REVERSED|SPLITTER_TRACKING)
-          #framFXVerticalFrame.new(mr_splitter, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
+          # mr_splitter = FXSplitter.new(self, LAYOUT_FILL_X|LAYOUT_FILL_Y|SPLITTER_VERTICAL|SPLITTER_REVERSED|SPLITTER_TRACKING)
+          # framFXVerticalFrame.new(mr_splitter, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
 
           # top = FXHorizontalFrame.new(mr_splitter, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y|LAYOUT_SIDE_BOTTOM)
           top_frame = FXVerticalFrame.new(self, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y || LAYOUT_FIX_HEIGHT | LAYOUT_BOTTOM, :height => 500)
@@ -358,7 +357,7 @@ module Watobo #:nodoc: all
 
           # log_frame = FXVerticalFrame.new(mr_splitter, :opts => LAYOUT_FILL_X|LAYOUT_SIDE_BOTTOM, :height => 100)
 
-          #LAYOUT_FILL_X in combination with LAYOUT_FIX_WIDTH
+          # LAYOUT_FILL_X in combination with LAYOUT_FIX_WIDTH
 
           req_editor = FXVerticalFrame.new(top_splitter, :opts => LAYOUT_FILL_X | LAYOUT_FIX_WIDTH | LAYOUT_FILL_Y | FRAME_GROOVE, :width => 400, :height => 500)
 
@@ -407,9 +406,9 @@ module Watobo #:nodoc: all
 
           frame = FXHorizontalFrame.new(req_editor, :opts => LAYOUT_FILL_X | LAYOUT_SIDE_BOTTOM, :padding => 0)
           req_options = FXVerticalFrame.new(frame, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y)
-          #eq_options = FXVerticalFrame.new(frame, :opts => LAYOUT_FILL_X|LAYOUT_SIDE_BOTTOM)
+          # eq_options = FXVerticalFrame.new(frame, :opts => LAYOUT_FILL_X|LAYOUT_SIDE_BOTTOM)
 
-          #opt = FXGroupBox.new(req_options, "Request Options", LAYOUT_SIDE_TOP|FRAME_GROOVE|LAYOUT_FILL_X, 0, 0, 0, 0)
+          # opt = FXGroupBox.new(req_options, "Request Options", LAYOUT_SIDE_TOP|FRAME_GROOVE|LAYOUT_FILL_X, 0, 0, 0, 0)
 
           @settings_tab = FXTabBook.new(req_options, nil, 0, LAYOUT_FILL_X | LAYOUT_FILL_Y | LAYOUT_RIGHT)
 
@@ -424,7 +423,6 @@ module Watobo #:nodoc: all
 
           eframe = FXHorizontalFrame.new(opt, :opts => FRAME_NONE | LAYOUT_FILL_X, :padding => 0)
           @egress = FXCheckButton.new(eframe, "Egress", nil, 0, JUSTIFY_LEFT | JUSTIFY_CENTER_Y | ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
-
 
           @egress_handlers = FXComboBox.new(eframe, 5, nil, 0, COMBOBOX_STATIC | FRAME_SUNKEN | FRAME_THICK | LAYOUT_SIDE_TOP)
           #@filterCombo.width =200
@@ -449,7 +447,7 @@ module Watobo #:nodoc: all
           update_egress
 
           i = @egress_handlers.findItem(Watobo::EgressHandlers.last)
-          #puts "Last Item Index: #{i} (#{Watobo::EgressHandlers.last})"
+          # puts "Last Item Index: #{i} (#{Watobo::EgressHandlers.last})"
           @egress_handlers.setCurrentItem(i) if i >= 0
 
           hframe = FXHorizontalFrame.new(opt, :opts => FRAME_NONE | LAYOUT_FILL_X, :padding => 0)
@@ -488,20 +486,39 @@ module Watobo #:nodoc: all
           @csrf_settings_btn = FXButton.new(csrf_frame, "Settings", nil, nil, 0, FRAME_RAISED | FRAME_THICK)
           @csrf_settings_btn.connect(SEL_COMMAND, method(:openCSRFTokenDialog))
 
+          # ADVANCED TAB
+          FXTabItem.new(@settings_tab, "Advanced", nil)
+          advanced_frame = FXVerticalFrame.new(@settings_tab, :opts => FRAME_THICK | FRAME_RAISED | LAYOUT_FILL_X | LAYOUT_FILL_Y)
+          raw_frame = FXHorizontalFrame.new(advanced_frame, :opts => FRAME_NONE | LAYOUT_FILL_X | PACK_UNIFORM_HEIGHT, :padding => 0)
+          @raw_request_chk = FXCheckButton.new(raw_frame, "Send Raw-Request", nil, 0, JUSTIFY_LEFT | JUSTIFY_CENTER_Y | ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
+          @raw_request_chk.checkState = false
+
+          sni_frame = FXHorizontalFrame.new(advanced_frame, :opts => FRAME_NONE | LAYOUT_FILL_X, :padding => 0)
+          @sni_host_dt = FXDataTarget.new('127.0.0.1')
+          @use_sni_host_chk = FXCheckButton.new(sni_frame, "SNI", nil, 0, JUSTIFY_LEFT | JUSTIFY_CENTER_Y | ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
+          @sni_host_txt = FXTextField.new(sni_frame, 20, :target => @sni_host_dt, :selector => FXDataTarget::ID_VALUE,
+                                          :opts => TEXTFIELD_NORMAL | LAYOUT_SIDE_RIGHT)
+
+          host_frame = FXHorizontalFrame.new(advanced_frame, :opts => FRAME_NONE | LAYOUT_FILL_X, :padding => 0)
+          @fixed_host_dt = FXDataTarget.new('')
+          @use_fixed_host_chk = FXCheckButton.new(host_frame, "Fix host (ALWAYS use this host to connect)", nil, 0, JUSTIFY_LEFT | JUSTIFY_CENTER_Y | ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
+          @fixed_host_txt = FXTextField.new(host_frame, 20, :target => @fixed_host_dt, :selector => FXDataTarget::ID_VALUE,
+                                            :opts => TEXTFIELD_NORMAL | LAYOUT_SIDE_RIGHT)
+
           #@updateCSRF.connect(SEL_COMMAND) do |sender, sel, item|
           #   if @updateCSRF.checked? then
           #      @csrf_settings_btn.enable
           #   else
           #      @csrf_settings_btn.disable
           #   end
-          #end
+          # end
 
           ##################################################
 
           button_frame = FXVerticalFrame.new(frame, :opts => LAYOUT_FILL_Y | LAYOUT_FIX_WIDTH | LAYOUT_RIGHT, :width => 100)
           send_frame = FXVerticalFrame.new(button_frame, :opts => LAYOUT_FILL_Y | LAYOUT_FILL_X, :padding => 2)
           send_frame.backColor = FXColor::Red
-          #btn_send = FXButton.new(frame, "\nSEND", ICON_SEND_REQUEST, nil, 0, :opts => ICON_ABOVE_TEXT|FRAME_RAISED|FRAME_THICK|LAYOUT_FILL_Y|LAYOUT_FIX_WIDTH|LAYOUT_RIGHT, :width => 100)
+          # btn_send = FXButton.new(frame, "\nSEND", ICON_SEND_REQUEST, nil, 0, :opts => ICON_ABOVE_TEXT|FRAME_RAISED|FRAME_THICK|LAYOUT_FILL_Y|LAYOUT_FIX_WIDTH|LAYOUT_RIGHT, :width => 100)
           @btn_send = FXButton.new(send_frame, "\nSEND", ICON_SEND_REQUEST, nil, 0, :opts => ICON_ABOVE_TEXT | FRAME_RAISED | FRAME_THICK | LAYOUT_FILL_Y | LAYOUT_FILL_X | LAYOUT_RIGHT)
           btn_prev = FXButton.new(button_frame, "preview >>", nil, nil, 0, :opts => LAYOUT_FILL_X | FRAME_RAISED | FRAME_THICK | LAYOUT_RIGHT)
           btn_prev.connect(SEL_COMMAND, method(:onPreviewClick))
@@ -513,7 +530,7 @@ module Watobo #:nodoc: all
           @pbar = FXProgressBar.new(frame, nil, 0, LAYOUT_FILL_X | LAYOUT_FILL_Y | FRAME_SUNKEN | FRAME_THICK | PROGRESSBAR_HORIZONTAL)
           @pbar.progress = 0
           @pbar.total = 0
-          @pbar.barColor = 'grey' #FXRGB(255,0,0)
+          @pbar.barColor = 'grey' # FXRGB(255,0,0)
 
           # TODO: Implement font sizing
           #@req_builder.font = FXFont.new(app, "courier" , 14, :encoding=>FONTENCODING_ISO_8859_1)
@@ -554,7 +571,6 @@ module Watobo #:nodoc: all
           req_tab = FXTabItem.new(@tabBook, "Request", nil)
           @request_viewer = Watobo::Gui::RequestViewer.new(@tabBook, FRAME_THICK | FRAME_RAISED | LAYOUT_FILL_X | LAYOUT_FILL_Y)
 
-
           FXTabItem.new(@tabBook, "Differ", nil)
 
           @diff_frame = DiffFrame.new(@tabBook, :opts => FRAME_THICK | FRAME_RAISED | LAYOUT_FILL_X | LAYOUT_FILL_Y)
@@ -593,12 +609,32 @@ module Watobo #:nodoc: all
                 logger("Scan Finished!")
                 @pbar.progress = 0
                 @pbar.total = 0
-                @pbar.barColor = 'grey' #FXRGB(255,0,0)
+                @pbar.barColor = 'grey' # FXRGB(255,0,0)
                 @btn_quickscan.text = "QuickScan"
               end
             end
           end
         }
+      end
+
+      def current_prefs
+        {
+          :run_login => @updateSession.checked? ? @runLogin.checked? : false,
+          :update_session => @updateSession.checked?,
+          :update_contentlength => @updateContentLength.checked?,
+          :update_otts => @updateCSRF.checked?,
+          #   :csrf_requests => csrf_requests,
+          # :csrf_patterns => @project.getCSRFPatterns(),
+          :update_sids => @updateSID.checked?,
+          :follow_redirect => @followRedirect.checked?,
+          :egress_handler => (@egress.checked? ? @egress_handlers.getItem(@egress_handlers.currentItem) : ''),
+          :no_connection_close => true,
+          :timeout => @timeout_dt.value,
+          :raw_request => @raw_request_chk.checked?,
+          :sni_host => @use_sni_host_chk.checked? ? @sni_host_dt.value : nil,
+          :fixed_host => @use_fixed_host_chk.checked? ? @fixed_host_dt.value : nil
+        }
+
       end
 
       def sendManualRequest
@@ -615,22 +651,7 @@ module Watobo #:nodoc: all
 
         prefs = Watobo::Conf::Scanner.to_h
 
-        egress_handler = @egress.checked? ? @egress_handlers.getItem(@egress_handlers.currentItem) : ''
-
-
-        current_prefs = {:run_login => @updateSession.checked? ? @runLogin.checked? : false,
-                         :update_session => @updateSession.checked?,
-                         :update_contentlength => @updateContentLength.checked?,
-                         :update_otts => @updateCSRF.checked?,
-                         #   :csrf_requests => csrf_requests,
-                         # :csrf_patterns => @project.getCSRFPatterns(),
-                         :update_sids => @updateSID.checked?,
-                         :follow_redirect => @followRedirect.checked?,
-                         :egress_handler => egress_handler,
-                         :no_connection_close => true,
-                         :timeout => @timeout_dt.value
-
-        }
+        # egress_handler = @egress.checked? ? @egress_handlers.getItem(@egress_handlers.currentItem) : ''
 
         prefs.update current_prefs
         logger("send request")

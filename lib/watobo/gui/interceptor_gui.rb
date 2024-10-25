@@ -431,8 +431,8 @@ module Watobo #:nodoc: all
         puts "* [Interceptor] addRequest"
 
         new_request = {
-            :request => request,
-            :thread => thread
+          :request => request,
+          :thread => thread
         }
 
         @request_lock.synchronize do
@@ -449,7 +449,6 @@ module Watobo #:nodoc: all
           end
         end
 
-
         # enable_buttons()
 
       end
@@ -463,8 +462,8 @@ module Watobo #:nodoc: all
         #  puts response
 
         new_response = {
-            :response => response,
-            :thread => thread
+          :response => response,
+          :thread => thread
         }
 
         @response_lock.synchronize do
@@ -521,7 +520,7 @@ module Watobo #:nodoc: all
         top_frame = FXVerticalFrame.new(mr_splitter, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y || LAYOUT_FIX_HEIGHT | LAYOUT_BOTTOM, :height => 500)
         top_splitter = FXSplitter.new(top_frame, LAYOUT_FILL_X | SPLITTER_HORIZONTAL | LAYOUT_FILL_Y | SPLITTER_TRACKING)
 
-        #log_frame = FXVerticalFrame.new(mr_splitter, :opts => LAYOUT_FILL_X|LAYOUT_SIDE_BOTTOM,:height => 100)
+        # log_frame = FXVerticalFrame.new(mr_splitter, :opts => LAYOUT_FILL_X|LAYOUT_SIDE_BOTTOM,:height => 100)
 
         filter_frame = FXVerticalFrame.new(top_splitter, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y || LAYOUT_FIX_HEIGHT | LAYOUT_BOTTOM)
         gbframe = FXGroupBox.new(filter_frame, "Intercept", LAYOUT_SIDE_RIGHT | FRAME_GROOVE | LAYOUT_FILL_X, 0, 0, 0, 0)
@@ -539,7 +538,7 @@ module Watobo #:nodoc: all
 
         gbframe = FXGroupBox.new(filter_frame, "Rewrite", LAYOUT_SIDE_RIGHT | FRAME_GROOVE | LAYOUT_FILL_X, 0, 0, 0, 0)
         frame = FXVerticalFrame.new(gbframe, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y, :padding => 0)
-        #FXLabel.new(filter_frame, "Rewrite:" )
+        # FXLabel.new(filter_frame, "Rewrite:" )
         @rewrite_request = FXCheckButton.new(frame, "Requests", nil, 0,
                                              ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
         @rewrite_request.connect(SEL_COMMAND, method(:onInterceptChanged))
@@ -563,12 +562,20 @@ module Watobo #:nodoc: all
         #
         gbframe = FXGroupBox.new(filter_frame, "Egress Handler", LAYOUT_SIDE_RIGHT | FRAME_GROOVE | LAYOUT_FILL_X, 0, 0, 0, 0)
         frame = FXVerticalFrame.new(gbframe, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y, :padding => 0)
-        #FXLabel.new(filter_frame, "Rewrite:" )
+        # FXLabel.new(filter_frame, "Rewrite:" )
         @egress = FXCheckButton.new(frame, "enable", nil, 0,
-                                           ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
+                                    ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
 
         @egress.checkState = false
-
+        @egress.connect(SEL_COMMAND) do |sender, sel, enabled|
+          if enabled
+            handler_name = @egress_handlers.text
+            # handler = Watobo::EgressHandlers.create(handler_name)
+            Watobo::Interceptor.set_egress_handler(handler_name) unless handler_name.strip.empty?
+          else
+            Watobo::Interceptor.disable_egress
+          end
+        end
         @egress_handlers = FXComboBox.new(frame, 5, nil, 0, COMBOBOX_STATIC | FRAME_SUNKEN | FRAME_THICK | LAYOUT_SIDE_TOP)
         #@filterCombo.width =200
 
@@ -576,7 +583,13 @@ module Watobo #:nodoc: all
         @egress_handlers.numColumns = 23
         @egress_handlers.editable = false
         @egress_handlers.connect(SEL_COMMAND) { |sender, sel, name|
-          Watobo::EgressHandlers.last = name
+          # Watobo::EgressHandlers.last = name
+          handler = Watobo::EgressHandlers.create(name)
+          handler ? @egress.enable : @egress.disable
+          # also update interceptor egress handler if @egress is checked
+          if @egress.checked?
+            Watobo::Interceptor.set_egress_handler(name)
+          end
         }
 
         eframe = FXHorizontalFrame.new(frame, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y, :padding => 0)
@@ -591,7 +604,6 @@ module Watobo #:nodoc: all
         }
 
         update_egress
-
 
         view_frame = FXVerticalFrame.new(top_splitter, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y || LAYOUT_FIX_HEIGHT | LAYOUT_BOTTOM)
 
@@ -616,7 +628,7 @@ module Watobo #:nodoc: all
 
         @response_tab = FXTabItem.new(@tabBook, "Response (0)", nil)
         response_frame_outer = FXVerticalFrame.new(@tabBook, LAYOUT_FILL_X | LAYOUT_FILL_Y | FRAME_RAISED)
-        #response_frame = FXVerticalFrame.new(response_frame_outer, LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding=>0)
+        # response_frame = FXVerticalFrame.new(response_frame_outer, LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding=>0)
         # @responsebox = Watobo::Gui::RequestEditor.new(response_frame, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y )
 
         #@responsebox = Watobo::Gui::InterceptEditor.new(response_frame_outer, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y)
@@ -697,7 +709,7 @@ module Watobo #:nodoc: all
           @egress.enable
           @egress_handlers.enable
           #@egress_btn.enable
-          Watobo::EgressHandlers.list {|h|
+          Watobo::EgressHandlers.list { |h|
             @egress_handlers.appendItem(h.to_s, nil)
           }
         end
@@ -731,7 +743,7 @@ module Watobo #:nodoc: all
                 Watobo.print_debug(self.class.to_s, "release thread #{request[:thread]}")
                 request[:thread].run
                 @request_tab.text = "Request (#{@request_list.length})"
-                #getNextRequest()
+                # getNextRequest()
                 unless @request_list.empty?
                   @requestbox.setRequest @request_list.first[:request]
                 end
@@ -749,11 +761,11 @@ module Watobo #:nodoc: all
               response = @response_list.shift
               if not response.nil?
                 response[:response].clear
-                #new_response = @responsebox.to_response(:update_content_length => true)
+                # new_response = @responsebox.to_response(:update_content_length => true)
                 new_response = @responsebox.parseRequest
-                #puts new_response.class
+                # puts new_response.class
                 response[:response].concat new_response
-                #puts new_response
+                # puts new_response
                 response[:thread].run
                 @responsebox.clear
                 @response_box_available = true
@@ -785,7 +797,7 @@ module Watobo #:nodoc: all
             end
             @request_tab.text = "Request (#{@request_list.length})"
           end
-          #getNextRequest()
+          # getNextRequest()
         else
           @response_lock.synchronize do
             response = @response_list.first
@@ -813,7 +825,7 @@ module Watobo #:nodoc: all
             @request_tab.text = "Request (#{@request_list.length})"
 
           end
-          #getNextRequest()
+          # getNextRequest()
         else
           @response_lock.synchronize do
             response = @response_list.first
@@ -822,14 +834,12 @@ module Watobo #:nodoc: all
             @responsebox.clear
             @response_box_available = true
             @response_tab.text = "Response (#{@response_list.length})"
-            #getNextResponse()
+            # getNextResponse()
           end
         end
       end
 
-      def onDiscardAll(sender, sel, ptr)
-
-      end
+      def onDiscardAll(sender, sel, ptr) end
 
       #    def onHide
       #      #  puts "* hiding interceptor"
@@ -842,6 +852,7 @@ module Watobo #:nodoc: all
       def onClose(sender, sel, ptr)
         Watobo::Interceptor.intercept_mode = INTERCEPT_NONE
         Watobo::Interceptor.rewrite_mode = REWRITE_NONE
+        Watobo::Interceptor.disable_egress
         releaseAll()
         self.hide()
       end
@@ -902,16 +913,16 @@ module Watobo #:nodoc: all
           # unless @interceptor.nil? then
           mode = @intercept_response.checked? ? INTERCEPT_RESPONSE : 0
           mode |= @intercept_request.checked? ? INTERCEPT_REQUEST : 0
-          #Watobo::Interceptor.intercept_mode = @intercept_response.checked? ? INTERCEPT_RESPONSE : 0
+          # Watobo::Interceptor.intercept_mode = @intercept_response.checked? ? INTERCEPT_RESPONSE : 0
           # Watobo::Interceptor.intercept_mode |= @intercept_request.checked? ? INTERCEPT_REQUEST : 0
-          #puts Watobo::Interceptor.intercept_mode
+          # puts Watobo::Interceptor.intercept_mode
           # puts "New Proxy Mode: #{mode}"
           Watobo::Interceptor.intercept_mode = mode
 
           mode = @rewrite_request.checked? ? REWRITE_REQUEST : 0
           mode |= @rewrite_response.checked? ? REWRITE_RESPONSE : 0
           Watobo::Interceptor.rewrite_mode = mode
-            # end
+          # end
         rescue => bang
           puts bang
           puts bang.backtrace if $DEBUG
@@ -967,7 +978,7 @@ module Watobo #:nodoc: all
         @finishButton = FXButton.new(buttons_frame, "Accept", nil, nil, :opts => BUTTON_NORMAL | LAYOUT_RIGHT)
         @finishButton.enable
         @finishButton.connect(SEL_COMMAND) do |sender, sel, item|
-          #self.handle(self, FXSEL(SEL_COMMAND, ID_CANCEL), nil)
+          # self.handle(self, FXSEL(SEL_COMMAND, ID_CANCEL), nil)
           self.handle(self, FXSEL(SEL_COMMAND, ID_ACCEPT), nil)
         end
 
@@ -979,7 +990,7 @@ module Watobo #:nodoc: all
       private
 
       def onAccept(sender, sel, event)
-        #TODO: Check if regex is valid
+        # TODO: Check if regex is valid
         @request_filter[:method_filter] = @method_filter_dt.value
         @request_filter[:negate_method_filter] = @neg_method_filter_cb.checked?
         @request_filter[:negate_url_filter] = @neg_url_filter_cb.checked?
@@ -1107,6 +1118,7 @@ module Watobo #:nodoc: all
         @neg_ftype_filter_cb.checkState = @request_filter[:negate_file_type_filter]
       end
     end
+
     #
   end
 end
@@ -1127,6 +1139,7 @@ if __FILE__ == $0
 
     end
   end
+
   #   application = FXApp.new('LayoutTester', 'FoxTest')
   TestGui.new($application)
   $application.create

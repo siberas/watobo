@@ -20,12 +20,12 @@ module Watobo::EvasionHandlers
       test = request.clone
       pes = test.path.split('/')
 
-
       pes.length.times do |i|
         first = pes[0..i].join('/')
         last = pes[i+1..-1].join('/')
-        test.path = first + ';/' + last
         test = request.clone
+        test.path = first + ';/' + last
+        yield test
       end
 
 

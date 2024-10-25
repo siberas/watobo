@@ -21,19 +21,28 @@ module Watobo #:nodoc: all
         return false
       end
 
-      def egress_handler?
+      def egress_handler_unused?
         if @target.respond_to? :egress_handler?
-          return @target.egress_handler?
+          return true #@target.egress_handler?
         end
         false
       end
 
-      def egress_handler
+      def egress_handler_unused
         if @target.respond_to? :egress_handler
           handler = @target.egress_handler
           return handler
         end
         nil
+      end
+
+      def egress_handler?
+        return true if Watobo::Interceptor.egress_enabled? && !Watobo::Interceptor.egress_handler.nil?
+        false
+      end
+
+      def egress_handler
+        Watobo::Interceptor.egress_handler
       end
 
 
@@ -277,7 +286,6 @@ module Watobo #:nodoc: all
                     :www_auth => @www_auth
                 }
 
-
                 if egress_handler?
                   prefs[:egress_handler] = egress_handler
                 end
@@ -293,6 +301,7 @@ module Watobo #:nodoc: all
                   if resp.nil?
                     puts "s_sock is nil! bye, bye, ..."
                     puts request if $DEBUG
+
                     c_sock.write resp.join unless resp.nil?
                     c_sock.close
                     Thread.exit
@@ -365,7 +374,7 @@ module Watobo #:nodoc: all
                   # Watobo::Response.create resp
                   #resp = Watobo::Response.new resp
                   # puts "* unchunk response ..."
-                  resp.unchunk!
+                  #resp.unchunk!
                   # puts "* unzip response ..."
                   #resp.unzip!
 
@@ -402,7 +411,8 @@ module Watobo #:nodoc: all
 
 
                   #resp_data = resp.join
-                  c_sock.write resp.to_s
+
+                  c_sock.send_response resp
 
                   c_sock.flush
                   # c_sock.write resp.first
@@ -420,16 +430,19 @@ module Watobo #:nodoc: all
 
 
 
-                rescue Errno::ECONNRESET
-                  print "x"
+                rescue Errno::ECONNRESET => bang
+                  puts "!!! ECONNRESET"
+                  puts bang
+                  puts bang.backtrace
                   #  puts "!!! ERROR (Reset): reading body"
                   #  puts "* last data seen on socket: #{buf}"
                   #return
                   c_sock.close
                   Thread.exit
-                rescue Errno::ECONNABORTED
-                  print "x"
-                  #return
+                rescue Errno::ECONNABORTED  => bang
+                  print "ECONNABORTED"
+                  puts bang
+                  puts bang.backtrace
                   c_sock.close
                   Thread.exit
                 rescue => bang

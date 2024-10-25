@@ -22,6 +22,15 @@ module Watobo #:nodoc: all
             @egress_handlers.getItem(@egress_handlers.currentItem)
           end
 
+          def egress_handler_enabled
+            @egress.checked?
+          end
+
+          def egress_handler_enabled=(state)
+            return false if state.nil?
+            @egress.checkState = state
+          end
+
           def initialize(owner, opts)
             frame_opts = {}
             frame_opts[:opts] = opts
@@ -34,6 +43,9 @@ module Watobo #:nodoc: all
                                         ICON_BEFORE_TEXT | LAYOUT_SIDE_TOP)
 
             @egress.checkState = false
+            @egress.connect(SEL_COMMAND) { |sender, sel, name|
+              notify(:text_changed)
+            }
 
             @egress_handlers = FXComboBox.new(frame, 5, nil, 0, COMBOBOX_STATIC | FRAME_SUNKEN | FRAME_THICK | LAYOUT_SIDE_TOP)
             #@filterCombo.width =200

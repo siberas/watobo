@@ -4,32 +4,34 @@ module Watobo #:nodoc: all
     @queue = Queue.new
     @max_threads = 1
     @scanners = []
+
     class Engine
       def initialize
         @t = nil
       end
 
       def run
+        # @t = Watobo.save_thread {
         @t = Thread.new {
           loop do
             # we don't need a sleep here, because pop is blocking
-            #if Watobo::PassiveScanner.queue.size > 0
-              chat = Watobo::PassiveScanner.pop
-              # TODO: make max size configurable
-              unless chat.nil? or chat.response.to_s.length > 500000
-                Watobo::PassiveModules.each do |test_module|
-                  begin
-                    test_module.do_test(chat)
-                  rescue => bang
-                    puts bang
-                    puts bang.backtrace #if $DEBUG
-                    #return false
-                  end
+            # if Watobo::PassiveScanner.queue.size > 0
+            chat = Watobo::PassiveScanner.pop
+            # TODO: make max size configurable
+            unless chat.nil? or chat.response.to_s.length > 500000
+              Watobo::PassiveModules.each do |test_module|
+                begin
+                  test_module.do_test(chat)
+                rescue => bang
+                  puts bang
+                  puts bang.backtrace # if $DEBUG
+                  # return false
                 end
               end
-              #else
-              #sleep 0.5
-            #end
+            end
+            # else
+            # sleep 0.5
+            # end
           end
         }
       end
@@ -40,14 +42,14 @@ module Watobo #:nodoc: all
     end
 
     def self.pop
-      return @queue.pop
+      @queue.pop
     end
 
     def self.start
-     #@max_threads.times do |i|
-        e = Engine.new
-        e.run
-     #end
+      #@max_threads.times do |i|
+      e = Engine.new
+      e.run
+      # end
     end
 
     def self.add(chat)
