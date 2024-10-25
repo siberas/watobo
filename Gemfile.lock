@@ -76,6 +76,8 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.12.0)
     rspec-support (3.12.1)
+    rspecproxies (1.0.0)
+      rspec (~> 3.5)
     ruby2_keywords (0.0.5)
     rubyntlm (0.6.3)
     rubyzip (2.3.2)
@@ -112,6 +114,7 @@ DEPENDENCIES
   optimist
   pry
   rspec
+  rspecproxies
   rubyntlm
   selenium-webdriver
   sinatra

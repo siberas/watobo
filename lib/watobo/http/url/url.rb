@@ -11,12 +11,15 @@ module Watobo #:nodoc: all
         @root.url_string
       end
 
-      def to_uri
+      def to_uri(*flags)
         # we need some cleanup before URI.parsing
-        URI.parse(@root.url_string.gsub(/[^a-zA-Z0-9\/;\-:\.]/) do |m|
-                URI.encode_www_form_component(m)
-        end
-        )
+        # TODO: Why should encoding be needed
+        #URI.parse(@root.url_string.gsub(/[^a-zA-Z0-9\/;\-:\.]/) do |m|
+          #URI.encode_www_form_component(m)
+                #end
+        #)
+
+        URI.parse(@root.url_string)
       end
 
       def set(parm)

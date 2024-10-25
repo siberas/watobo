@@ -8,22 +8,14 @@ Host: no.existing.host
 EOF
 
 describe Watobo::Mixin::Shaper::Web10 do
-  let(:request) { Watobo::Utils.text2request(rt) }
+
   context 'Query' do
     let(:new_query) { 'xxx' }
+    let(:request) { Watobo::Utils.text2request(rt) }
 
     it ".replaceQuery" do
       request.replaceQuery new_query
       expect(request.url.to_s).to match(/xxx/)
-    end
-
-    it "test" do
-      expect(request.url.to_s).to match(/bla/)
-    end
-
-    it ".removeUris" do
-      r = request.removeURI
-
     end
 
     it ".replaceFileExt" do

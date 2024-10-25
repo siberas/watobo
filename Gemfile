@@ -4,6 +4,7 @@ group :development do
   gem 'pry'
   gem 'rspec'
   gem 'sinatra'
+  gem 'rspecproxies'
 end
 
 gem 'nokogiri'

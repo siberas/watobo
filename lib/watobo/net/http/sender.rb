@@ -99,6 +99,11 @@ module Watobo
 
         end
 
+        # this method seems stupid but it's here for easier writing specs ;)
+        def close_socket(socket)
+          socket.close
+        end
+
         def exec(request)
           # request = nil
           # response = nil
@@ -127,7 +132,7 @@ module Watobo
             #
             # t_end = Process.clock_gettime(Process::CLOCK_REALTIME)
 
-            @socket.close
+            close_socket(@socket)
 
             response.unzip!
           rescue ::Net::ReadTimeout => bang

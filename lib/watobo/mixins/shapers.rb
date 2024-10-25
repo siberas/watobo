@@ -47,6 +47,9 @@ module Watobo #:nodoc: all
           return false
         end
 
+        # https://no.existing.host/fkpsep/service?query=bla
+        # request.replaceElement 'xxx'
+        # >> https://no.existing.host/fkpsep/xxx
         def replaceElement(new_element)
           new_element.gsub!(/^\//, "")
           self.first.gsub!(/([^\?]*\/)(.*) (HTTP[^\r\n]*)/i, "\\1#{new_element} \\3")
@@ -62,10 +65,19 @@ module Watobo #:nodoc: all
           replaceURL(new_url)
         end
 
+        # strips path to last /
+        # - removes also query
+        # https://no.existing.host/fkpsep/xxx.php?q=11
+        #
+        # >> https://no.existing.host/fkpsep/
+        #
         def strip_path()
           self.first.gsub!(/([^\?]*\/)(.*) (HTTP[^\r\n]*)/i, "\\1 \\3")
         end
 
+
+        # sets directory, including the trailing /
+        #
         def setDir(dir)
           dir.strip!
           dir.gsub!(/^\/+/, "")
@@ -74,6 +86,7 @@ module Watobo #:nodoc: all
           self.first.gsub!(/(^[^[:space:]]{1,} https?:\/\/[\-0-9a-zA-Z.]*[:0-9]{0,6}\/)(.*)( HTTP\/[^\r\n]*)/, "\\1#{dir}\\3")
         end
 
+        # sets the full path, can also contain query
         def set_path(path_name)
           begin
             new_path = path_name.strip
@@ -318,17 +331,17 @@ module Watobo #:nodoc: all
 
         alias :update_content_length :fixupContentLength
 
-        def setRawQueryParms(parm_string)
-          return nil if parm_string.nil?
-          return nil if parm_string == ''
-          new_r = ""
-          path = Regexp.quote(self.path)
-          # puts path
-          if self.first =~ /(.*#{path})/ then
-            new_r = $1 << "?" << parm_string
-          end
-          self.first.gsub!(/(.*) (HTTP\/.*)/, "#{new_r} \\2")
-        end
+        #   def setRawQueryParms(parm_string)
+        #  return nil if parm_string.nil?
+        #  return nil if parm_string == ''
+        #  new_r = ""
+        #  path = Regexp.quote(self.path)
+        #  # puts path
+        #  if self.first =~ /(.*#{path})/ then
+        #    new_r = $1 << "?" << parm_string
+        #  end
+        #  self.first.gsub!(/(.*) (HTTP\/.*)/, "#{new_r} \\2")
+        #end
 
         def appendQueryParms(parms)
           return if parms.nil?
@@ -407,13 +420,12 @@ module Watobo #:nodoc: all
         alias :method= :setMethod
 
         def setHTTPVersion(version)
-          self.first.gsub!(/HTTP\/(.*)$/, "HTTP\/#{version}")
+          self.first.gsub!(/HTTP\/([^\r\n]*)$/, "HTTP\/#{version}")
           #  puts "HTTPVersion fixed: #{self.first}"
         end
 
-        def version=(version)
-          self.first.gsub!(/HTTP\/(.*)$/, "HTTP\/#{version}")
-        end
+        alias :version= setHTTPVersion
+        alias :set_version :setHTTPVersion
       end
 
       module HttpResponse

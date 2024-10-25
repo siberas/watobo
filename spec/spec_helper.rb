@@ -3,9 +3,11 @@
 
 ENV['RACK_ENV'] = ENV['RACK_ENV'] || 'development'
 
-require 'devenv'
+#require 'devenv'
 require 'watobo'
-require 'pry'
+#require 'pry'
+require 'bundler/setup'
+Bundler.require(:default, :development)
 
 require_relative './app/app'
 

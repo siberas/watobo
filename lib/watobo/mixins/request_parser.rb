@@ -135,7 +135,7 @@ module Watobo #:nodoc: all
             header = text[0..hbi -1].split(lbp).map(&:strip)
             body = text[hbi + hbsp.length..-1]
           else
-            header = test.split(lbp).map(&:strip)
+            header = text.split(lbp).map(&:strip)
             body = nil
           end
 
