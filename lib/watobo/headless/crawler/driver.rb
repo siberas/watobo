@@ -193,6 +193,7 @@ module Watobo
 
           proxy = prefs[:proxy]
           headless = !!prefs[:headless]
+          user_agent = prefs[:user_agent]
           # configure the driver to run in headless mode
           @options = Selenium::WebDriver::Chrome::Options.new
 
@@ -200,6 +201,13 @@ module Watobo
           @options.add_argument('--allow-file-access-from-files')
           @options.add_argument('--ignore-certificate-errors')
           #@options.add_argument("--disable-logging")
+          @options.add_argument("--disable-gpu")
+          @options.add_argument("--no-sandbox")
+          @options.add_argument("--window-size=1920,1080")
+          @options.add_argument("--start-maximized")
+          @options.add_argument("--start-fullscreen")
+          @options.add_argument('--disable-dev-shm-usage')
+          @options.add_argument('--disable-blink-features=AutomationControlled')
           #@options.add_argument("--log-level=3")
           #@options.add_preference("goog:loggingPrefs", { browser: :NONE })
 
@@ -208,8 +216,10 @@ module Watobo
           #@options.add_preference(:loggingPrefs, logging_prefs)
 
           if proxy
-            @options.add_argument('--proxy-server=%s' % proxy)
+            @options.add_argument("--proxy-server=#{proxy}")
           end
+
+          @options.add_argument("--user-agent=#{user_agent}") if user_agent
 
           # This didn't work
           # @driver = Selenium::WebDriver::Chrome(chrome_options=@options,

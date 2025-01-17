@@ -23,7 +23,7 @@ EOS
   opt :headless, "headless mode"
   opt :screenshot, "headless mode"
   opt :chrome_bundle_path, "set chrome driver_path", :type => :string, :default =>'/usr/share/chrome-linux'
-  opt :interactive, "use interactive mode, if you need to login first", :type => :boolean
+  opt :interactive, "use interactive mode, handy if you need to login first", :type => :boolean
   # TODO: num_browser raise crashes if > 1
   #  opt :num_browsers, "number of browser instances", :type => :integer, :default => 1
   opt :max_duration, "maximum duration in seconds", :type => :integer, :default => 3600
