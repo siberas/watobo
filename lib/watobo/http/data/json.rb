@@ -66,7 +66,7 @@ module Watobo #:nodoc: all
         return [] unless @root.is_json?
         return [] unless @root.has_body?
 
-        hash = JSON.parse(@root.body.strip)
+        hash = JSON.parse(@root.body.strip) rescue {}
         ps = parse(hash)
 
         return ps

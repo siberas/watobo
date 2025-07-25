@@ -15,8 +15,8 @@ Content-Language: de-DE
 Connection: close
 Transfer-Encoding: chunked
 Content-Type: application/json;charset=utf-8
-Set-Cookie: X-WTF-PERSIST=!lSwuCMdu19OFFjZmaYk2lqNqyW1Div9DTKMXqprlPvxB/oXZFhD5nru7toMS6dLJcByIyRV1YvxQf8Y=; path=/; Httponly; Secure
-Set-Cookie2: X-GONZO=!lSwuCMdu19OFFjZmaYk2lqNqyW1Div9DTKMXqprlPvxB/oXZFhD5nru7toMS6dLJcByIyRV1YvxQf8Y=; path=/; Httponly; Secure
+Set-Cookie: X-WTF-PERSIST=!lSwuCMdu19OFFjZmaYk2lqNqyW1Div9DTKMXqprlPvxB/oXZFhD5nru7toMS6dLJcByIyRV1YvxQf8Y=; path=/xxx; Httponly; Secure
+Set-Cookie: X-GONZO=!lSwuCMdu19OFFjZmaYk2lqNqyW1Div9DTKMXqprlPvxB/oXZFhD5nru7toMS6dLJcByIyRV1YvxQf8Y=; path=/; Httponly; Secure
 EOF
 
 chunked_body = <<EOF
@@ -35,7 +35,6 @@ end
 chunked << "\r\n"
 chunked << chunked_body
 
-
 headers = <<EOF
 
 EOF
@@ -45,7 +44,6 @@ chunked_body = <<EOF
 AAAAAAAAAA
 0
 EOF
-
 
 describe Watobo::Response do
   context "unchunk" do
@@ -69,7 +67,6 @@ describe Watobo::Response do
       expect(response.raw_body.length).to be(20)
     end
 
-
   end
 
   context "unzip!" do
@@ -84,7 +81,10 @@ describe Watobo::Response do
 
   context "Response Cookies" do
     it "Cookie Count" do
-      #binding.pry
+      response = Watobo::Response.new chunked
+      request = Watobo::Request.new 'https://www.siberas.de/xxx'
+      Watobo::CookieStore.update request, response
+      binding.pry
     end
   end
 end

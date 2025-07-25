@@ -19,7 +19,7 @@ module Watobo #:nodoc: all
       @http_only = false
       #c_prefs = nil
 
-      if prefs.respond_to? :has_key?
+      if prefs.is_a? Hash
         @secure = prefs.has_key?(:secure) ? prefs[:secure] : false
         @http_only = prefs.has_key?(:http_only) ? prefs[:http_only] : false
         @location = :cookie

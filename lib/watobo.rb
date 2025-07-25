@@ -10,6 +10,7 @@ $SAFE = 0
 unless ENV['DEV_ENV']
   begin
     require 'bundler/setup'
+    Bundler.require(:default)
   rescue LoadError
     puts "You will need bundler to run watobo!"
     puts "please run\n gem install bundler\n bundle install\n"
@@ -83,6 +84,7 @@ require 'watobo/interceptor'
 require 'watobo/sockets'
 #require 'watobo/scanner4'
 require 'watobo/scanner'
+require 'watobo/cookie_store/cookie_store'
 
 
 

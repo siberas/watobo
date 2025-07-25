@@ -19,6 +19,18 @@ module Watobo #:nodoc: all
             @apply_btn.enable
           end
 
+          def set_env(text)
+            text_str = text.is_a?(Hash) ? JSON.pretty_generate(text) : text
+            @env_frame.text = text_str
+          end
+
+          def get_env
+            JSON.parse(@env_frame.text)
+          rescue => bang
+            puts bang
+            puts bang.backtrace if $DEBUG
+          end
+
           def initialize(owner, opts)
             frame_opts = {}
             frame_opts[:opts] = opts
@@ -29,40 +41,40 @@ module Watobo #:nodoc: all
 
             top_frame = FXHorizontalFrame.new(self, :opts => LAYOUT_FILL_X, :padding => 0)
             @element_label = FXLabel.new(top_frame, "Element: N/A", nil, LAYOUT_TOP | JUSTIFY_RIGHT)
-            @apply_btn = FXButton.new(top_frame, "Apply", :opts => BUTTON_NORMAL|LAYOUT_RIGHT)
+            @apply_btn = FXButton.new(top_frame, "Apply", :opts => BUTTON_NORMAL | LAYOUT_RIGHT)
             @apply_btn.connect(SEL_COMMAND) { apply_changes }
             @apply_btn.disable
 
-            base_frame = FXVerticalFrame.new(self, :opts => LAYOUT_FILL_X|LAYOUT_FILL_Y, :padding => 0)
+            base_frame = FXVerticalFrame.new(self, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y, :padding => 0)
 
-            @tabbook = FXTabBook.new(base_frame, nil, 0, LAYOUT_FILL_X|LAYOUT_FILL_Y|LAYOUT_RIGHT)
+            @tabbook = FXTabBook.new(base_frame, nil, 0, LAYOUT_FILL_X | LAYOUT_FILL_Y | LAYOUT_RIGHT)
             buttons_frame = FXHorizontalFrame.new(base_frame, :opts => LAYOUT_FILL_X)
             @req_opt_tab = FXTabItem.new(@tabbook, "Request", nil)
-            #frame = FXVerticalFrame.new(@tabbook, :opts => FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_FILL_Y)
-            @request_frame = RequestFrame.new( @tabbook, FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_FILL_Y)
+            # frame = FXVerticalFrame.new(@tabbook, :opts => FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_FILL_Y)
+            @request_frame = RequestFrame.new(@tabbook, FRAME_THICK | FRAME_RAISED | LAYOUT_FILL_X | LAYOUT_FILL_Y)
 
             @request_frame.subscribe(:text_changed) do
-              #puts "Text in editor changed"
+              # puts "Text in editor changed"
               element_changed
             end
             #@req_opt_tab.disable
 
-
             @prescript_tab = FXTabItem.new(@tabbook, "Pre-Script", nil)
-            @pre_script_frame = PreScriptFrame.new(@tabbook, FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_FILL_Y)
+            @pre_script_frame = PreScriptFrame.new(@tabbook, FRAME_THICK | FRAME_RAISED | LAYOUT_FILL_X | LAYOUT_FILL_Y)
             @pre_script_frame.subscribe(:text_changed) do
               element_changed
             end
 
-
             @postscript_tab = FXTabItem.new(@tabbook, "Post-Script", nil)
-            @post_script_frame = PostScriptFrame.new(@tabbook, FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_FILL_Y)
+            @post_script_frame = PostScriptFrame.new(@tabbook, FRAME_THICK | FRAME_RAISED | LAYOUT_FILL_X | LAYOUT_FILL_Y)
             @post_script_frame.subscribe(:text_changed) do
               element_changed
             end
-            @vars_tab = FXTabItem.new(@tabbook, "Vars", nil)
-            frame = FXVerticalFrame.new(@tabbook, :opts => FRAME_THICK|FRAME_RAISED|LAYOUT_FILL_X|LAYOUT_FILL_Y)
-
+            @env_tab = FXTabItem.new(@tabbook, "Env", nil)
+            @env_frame = EnvFrame.new(@tabbook, FRAME_THICK | FRAME_RAISED | LAYOUT_FILL_X | LAYOUT_FILL_Y)
+            @env_frame.subscribe(:text_changed) do
+              element_changed
+            end
 
           end
 
@@ -77,7 +89,7 @@ module Watobo #:nodoc: all
             @element.pre_script = @pre_script_frame.script
             @element.egress_handler = @pre_script_frame.egress_handler
             @element.egress_handler_enabled = @pre_script_frame.egress_handler_enabled
-            notify(:element_changed)
+            notify(:apply_changes)
             true
           end
 

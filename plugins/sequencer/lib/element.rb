@@ -68,6 +68,8 @@ module Watobo
           @sequence = sequence
           @sender = Watobo::Session.new
 
+          prefs.transform_keys!(&:to_sym)
+
           %w( name request pre_script post_script enabled egress_handler egress_handler_enabled ).each do |e|
             instance_variable_set("@#{e}", prefs[e.to_sym]) if prefs[e.to_sym]
           end
@@ -76,6 +78,13 @@ module Watobo
         def exec(nprefs = {}, &block)
           begin
 
+            # run pre_script before parsing the request
+            unless pre_script.nil? or pre_script.empty?
+              # f = eval(element.pre_script)
+              # f.call(request) if f.respond_to? :call
+              run_pre(nil)
+            end
+
             request = to_request
 
             prefs = Watobo::Conf::Scanner.to_h
@@ -83,11 +92,11 @@ module Watobo
 
             prefs.update nprefs
 
-            unless pre_script.nil? or pre_script.empty?
+            # unless pre_script.nil? or pre_script.empty?
               # f = eval(element.pre_script)
               # f.call(request) if f.respond_to? :call
-              run_pre(request)
-            end
+            #   run_pre(request)
+            #end
 
 
             yield request if block_given?

@@ -35,17 +35,26 @@ module Watobo #:nodoc: all
         # @return shortened URL (without query) [String]
         # e.g.uri = URI.parse 'https://www.siberas.de/xxx/y.php?w=1'
         # => "https://www.siberas.de/xxx/y.php"
-        def short
-          uri = URI.parse(url_string)
-          return File.join(uri.origin, uri.path) if uri.origin
-          nil
-        end
+
 
         # @return URI.origin [String]
         # => "https://www.siberas.de"
         def origin
-          uri = URI.parse(url_string)
-          uri.origin
+          # don't use URI for parsing because it will break on invalid URIs,
+          # e.g. when sending %u0008 in url
+          # uri = URI.parse(url_string)
+          # uri.origin
+          # Extract scheme
+          scheme_split = url_string.split("://", 2)
+          return nil if scheme_split.size != 2
+          scheme, rest = scheme_split
+
+          # Extract authority (host[:port])
+          authority = rest.split("/", 2)[0]
+
+          # Normalize
+          origin = "#{scheme}://#{authority}"
+          origin
         end
 
         def fext

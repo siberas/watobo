@@ -109,7 +109,7 @@ module Watobo #:nodoc: all
           # we need to parse ERB before performing parse_code. Because parse_code might create ERB-Style content, e.g. when
           # loading a file
           # parse erb templating
-          parser = ERB.new self.to_s
+          parser = ERB.new(self.to_s)
           erb_result_txt = parser.result(binding)
 
           text = parse_code(erb_result_txt) unless opts[:skip_parser]

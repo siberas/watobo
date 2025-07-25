@@ -20,10 +20,7 @@ EOF
 
     let(:request) { Watobo::Utils.text2request(get_request_sample) }
     let(:request_with_extension) { Watobo::Request.new('http://1.2.3.4/another/path/.zip')}
-
-    it ".short" do
-      expect(request.short).to eq('https://no.existing.host/my/path/to/here.php')
-    end
+    let(:request_with_port) { Watobo::Request.new('http://1.2.3.4:888/another/path/.zip')}
 
     it ".path" do
       # binding.pry
@@ -40,6 +37,13 @@ EOF
 
     it '.site' do
       expect(request.site).to eq('no.existing.host:443')
+    end
+
+    it ".origin" do
+      r = request.origin
+      expect(r).to eq('https://no.existing.host')
+      r = request_with_port.origin
+      expect(r).to eq('http://1.2.3.4:888')
     end
 
     it '.subdirs' do

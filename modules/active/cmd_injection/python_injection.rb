@@ -54,12 +54,12 @@ EOF
             @injections << ["ping -n 1 DNS_SENSOR", 'Ping.*Bytes Dat']
 
             @envelopes = []
-            @envelopes << [' ']
-            @envelopes << ['\'), ']
-            @envelopes << ['), ']
-            @envelopes << ['}, ']
-            @envelopes << ['\'}, ']
-
+            @envelopes << ' '
+            @envelopes << '\'), '
+            @envelopes << '), '
+            @envelopes << '}, '
+            @envelopes << '\'}, '
+            @envelopes << '"}, '
             begin
 
               @parm_list = chat.request.parameters
@@ -68,8 +68,8 @@ EOF
                 checks.concat @injections
                 @injections.each do |i|
                   @envelopes.each do |pref|
-                    checks.concat @injections.map { |i| ["#{param.value}#{pref}__import__('os').system('#{i[0]}') #", i[1] ] }
-                    checks.concat @injections.map { |i| ["#{pref}__import__('os').system('#{i[0]}') #", i[1] ] }
+                    checks.concat @injections.map { |i| ["#{param.value}#{pref}__import__('os').system('#{i[0]}') #", i[1]] }
+                    checks.concat @injections.map { |i| ["#{pref}__import__('os').system('#{i[0]}') #", i[1]] }
                   end
                   # checks.concat @injections.map { |i| ["#{param.value};#{i[0]}", i[1]] }
                   #                   checks.concat @injections.map { |i| [";#{i[0]}", i[1]] }

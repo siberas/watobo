@@ -6,7 +6,8 @@ module Watobo
         prefs = {}
         if File.exist?(filename) then
           File.open(filename, "rb") { |f|
-            prefs = Marshal::load(f.read)
+            prefs = Marshal::load(f.read) rescue nil
+            prefs = JSON.parse(IO.binread(f)) unless prefs
             prefs[:file] = filename
           }
         end
@@ -21,10 +22,14 @@ module Watobo
       seq
     end
 
-    attr :name, :file, :vars
+    attr :name, :file, :env
 
     def add(element)
       self << element
+    end
+
+    def update_env(env)
+      @env = env
     end
 
     def to_h
@@ -35,7 +40,7 @@ module Watobo
       each do |e|
         h[:elements] << e.to_h
       end
-      h[:vars] = @vars
+      h[:env] = @env || {}
       h
     end
 
@@ -46,6 +51,7 @@ module Watobo
     private
 
     def init(prefs)
+      prefs.transform_keys!(&:to_sym)
       @name = prefs[:name]
       @file = prefs[:file]
       if prefs.has_key? :elements
@@ -55,13 +61,13 @@ module Watobo
         end
       end
 
-      if prefs.has_key? :vars
+      if prefs.has_key? :env
         #   prefs[:vars].each do |var|
 
         #end
       end
 
-      @vars = prefs[:vars]
+      @env = prefs[:env]
     end
 
     def method_missing?(name, *args, &block) end

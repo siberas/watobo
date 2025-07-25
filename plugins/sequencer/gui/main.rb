@@ -20,6 +20,10 @@ module Watobo #:nodoc: all
         @@sequence = sequence
       end
 
+      def self.sequences
+        @@sequences.values
+      end
+
       class Gui < Watobo::PluginGui
 
         window_title "Sequencer"
@@ -124,9 +128,18 @@ module Watobo #:nodoc: all
             }
 
             @details_frame = DetailsFrame.new(splitter, LAYOUT_FILL_X | LAYOUT_FILL_Y | FRAME_RAISED)
-            @details_frame.subscribe(:element_change) do
+            @details_frame.subscribe(:element_changed) do
               @save_btn.textColor = 'red'
               @save_btn.enable
+            end
+
+            @details_frame.subscribe(:apply_changes) do
+              puts "[NOTIFICATION] apply changes"
+              @save_btn.textColor = 'black'
+              @save_btn.enable
+              # read env
+              $env = OpenStruct.new(@details_frame.get_env)
+              @sequence.update_env($env)
             end
 
 
@@ -153,10 +166,14 @@ module Watobo #:nodoc: all
             Thread.new(filename) { |fn|
               #    File.open(fn,"wb"){|fh| fh.print JSON.pretty_generate(@results) }
               File.open(fn, 'wb') { |f|
-                puts JSON.pretty_generate( @sequence.to_h)
-                f.print Marshal::dump(@sequence.to_h)
+                data = @sequence.to_h
+                data[:env] = @details_frame.get_env
+                puts JSON.pretty_generate( data )
+                # f.print Marshal::dump(@sequence.to_h)
+                f.print JSON.pretty_generate(data)
               }
             }
+            @save_btn.disable
           end
         end
 
@@ -167,6 +184,8 @@ module Watobo #:nodoc: all
             @sequence_name_dt.value = @sequence.name
             @list_frame.update_elements @sequence
             Watobo::Plugin::Sequencer.add_sequence @sequence
+            @details_frame.set_env @sequence.env
+            $env = OpenStruct.new @sequence.env
           end
         end
 

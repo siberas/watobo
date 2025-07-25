@@ -10,7 +10,7 @@ module Watobo #:nodoc: all
           def initialize(owner)
             #super(owner, "Edit Target Scope", DECOR_TITLE|DECOR_BORDER, :width => 300, :height => 425)
             super(owner, "Add Entry", DECOR_ALL)
-            base_frame = FXVerticalFrame.new(self, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y)
+            base_frame = FXVerticalFrame.new(self, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y | LAYOUT_MIN_WIDTH, width: 300, height: 100)
             frame = FXHorizontalFrame.new(base_frame, :opts => LAYOUT_FILL_X | LAYOUT_FILL_Y)
 
             FXLabel.new(frame, "Element Name:")
