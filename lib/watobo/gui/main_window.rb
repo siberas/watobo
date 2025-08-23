@@ -293,14 +293,14 @@ module Watobo #:nodoc: all
         if vuln.details[:check_pattern] then
 
           pattern = vuln.details[:check_pattern].strip
-
-          @request_viewer.highlight(pattern)
+          sanitized_pattern = pattern[0..50].strip
+          @request_viewer.highlight(sanitized_pattern)
         end
 
         if vuln.details[:proof_pattern] then
           pattern = vuln.details[:proof_pattern].strip
-
-          @response_viewer.highlight(pattern)
+          sanitized_pattern = pattern[0..50].strip
+          @response_viewer.highlight(sanitized_pattern)
         end
         @switcher.current = 0
 

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/../../TMP/net-http/.idea/net-http.iml" filepath="$PROJECT_DIR$/../../TMP/net-http/.idea/net-http.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../ruby-snippets/.idea/ruby-snippets.iml" filepath="$PROJECT_DIR$/../ruby-snippets/.idea/ruby-snippets.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/watobo.iml" filepath="$PROJECT_DIR$/.idea/watobo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../wordlists/.idea/wordlists.iml" filepath="$PROJECT_DIR$/../wordlists/.idea/wordlists.iml" />
+    </modules>
+  </component>
+</project>

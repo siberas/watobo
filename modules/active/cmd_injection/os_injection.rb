@@ -43,7 +43,7 @@ EOF
             @injections = []
 
             @injections << ['X="WATOBO";echo "333333"$X"44444"', '33333WATOBO44444']
-            @injections << ['id', 'uid.*gid.*groups']
+            @injections << ['id', 'uid=.* gid=.* groups=']
             # @injections << ['"|id #', 'uid.*gid.*groups']
             #@injections << [';id #', 'uid.*gid.*groups']
             @injections << ["ping -c 1 DNS_SENSOR", 'PING.*bytes of data']

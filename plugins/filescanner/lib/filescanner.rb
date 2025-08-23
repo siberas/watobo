@@ -3,6 +3,8 @@ module Watobo #:nodoc: all
     class Filescanner
 
       include Watobo::Constants
+      include Watobo::Subscriber
+
 
       STATUS_IDLE = 0x00
       STATUS_RUNNING = 0x01
@@ -76,6 +78,7 @@ module Watobo #:nodoc: all
             @scanner = Watobo::Scanner3.new(@chat_list, [@check], @passive_checks, scan_prefs)
             @scanner.subscribe(:scanner_finished){
               @status = STATUS_FINISHED
+              notify(:finished)
             }
 
             @scanner.subscribe(:new_chat){ |chat|

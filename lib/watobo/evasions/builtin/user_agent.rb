@@ -11,6 +11,16 @@ Internal
 AutodiscoverClient
 Windows-Update-Agent
 MicrosoftBITS
+scanner
+nothing
+12345
+antivirus
+internal-only
+TestAgent
+SuperSecretUserAgent
+MobileTestAgent/1.0
+AllowMe
+AllowMePlease
  )
 
     BYPASS_USER_AGENTS << 'Report Runner'

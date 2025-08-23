@@ -117,12 +117,14 @@ module Watobo
           end
 
           # update session from sid_cache
-          @sid_cache.update_request(request) if cprefs[:update_session] == true
+          if cprefs[:update_session] == true
+            @sid_cache.update_request(request)
 
-          # update cookies from cookie-store
-          cookies = Watobo::CookieStore.get_cookies(request)
-          cookies.each do |c|
-            request.set c
+            # update cookies from cookie-store
+            cookies = Watobo::CookieStore.get_cookies(request)
+            cookies.each do |c|
+              request.set c
+            end
           end
           # multipart requests also require a content-length header
           # if request.method =~ /(post|put)/i #&& request.content_type !~ /multipart/i
@@ -172,8 +174,8 @@ module Watobo
 
           # puts "!!!!!!!!!!!!!!!!! GOT ANSWER !!!!!!!!!!!!!"
           # TODO: Update-Sid, Check-Logout
-          if request && response
-            @sid_cache.update_sids(request.site, response.headers) if cprefs[:update_sids] == true
+          if request && response && cprefs[:update_sids] == true
+            @sid_cache.update_sids(request.site, response.headers)
             Watobo::CookieStore.update request, response
           end
 

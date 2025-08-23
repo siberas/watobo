@@ -262,6 +262,7 @@ module Watobo #:nodoc: all
                 if item.data
                   if item.data.is_a? Watobo::Finding
                     #@interface.show_vuln(item.data)
+                    # binding.pry if $DEBUG
                     notify(:vuln_click, item.data)
                   end
                 end
@@ -272,6 +273,7 @@ module Watobo #:nodoc: all
             end
           elsif item.data == :title then
             #@interface.show_vuln(item.first.data) if item.first.data
+            #binding.pry if $DEBUG
             notify(:vuln_click, (item.first.data)) if item.first.data
           end
         end

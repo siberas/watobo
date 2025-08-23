@@ -11,7 +11,16 @@ require 'drb/drb'
 require 'devenv'
 
 require 'optimist'
-
+# F I L E S C A N N E R
+# requires workspace, project and session to save results
+# requires url or baseline (the location where watobo chats are stored)
+#
+# Results/Findings are stored to
+#   WORKSPACE/PROJECT/SESSION/Findings
+# or additionally to OPTS[:out_dir]
+#
+# Example for run filescanner against VulnApp (see spec/app):
+# bundle exec bin/filescanner.rb -p scan01 -s s01 -w /tmp/ -u http://127.0.0.1:9292/leaks/protected/ --database /dumpster/Projects/wordlists/lists/simple/leaky-files.txt
 
 OPTS = Optimist::options do
   version '(c) 2021 Filescanner'
@@ -24,16 +33,21 @@ OPTS = Optimist::options do
   opt :url, "URL, e.g. https://www.somesite.org/xxx", :type => :string
   opt :database, "Filename of database or simple URI-Filename", :type => :string
   opt :scanlog_name, "name of log directory", :type => :string
-  opt :evasion, "evasion extensions", :type => :string, :default => '/; ?y=x.png ?debug=true'
-  opt :workspace, "workspace directory", :type => :string
-  opt :config, "file with additional configuration settings in JSON format", :type => :string
+  opt :evasion, "evasion extensions", :type => :strings, :multi => true, :default => %w(HttpMethodOverride ParmExtensions PathExtensions HTTPVersion SlashSlash AppendSlash AuthHeader UrlExtensions UserAgent UrlParameters Cookieless HttpHeaders)
+  opt :workspace, "workspace directory", :type => :string, default: '/tmp/filescanner'
+  opt :config, "file with configuration settings in JSON format", :type => :string
+  opt :recursively, "scan recursively", :type => :boolean, :default => true
   opt :quiet, "no unneccessary output"
   opt :run_passive_checks, "run passive checks during scan"
-  opt :passive_check_filter, "filter for passive checks", type: :string, default:  '.*'
+  opt :passive_check_filter, "filter for passive checks", type: :string, default: '.*'
   opt :rating, "set vuln rating for valid files[ 1(low) - 5 (critical) ]", type: :string, default: '0'
+  opt :llm_rating, "set LLM rating for found files"
+  opt :llm_url, "URL of LLM, e.g. http://ollama:11434"
+  opt :llm_model, "LLM model to use for rating", type: :string, default: 'mistral-small:24b'
 
 end
 
+prefs = {}
 project_name = OPTS[:project]
 session_name = OPTS[:session]
 
@@ -69,7 +83,6 @@ unless project_name
   exit
 end
 
-
 unless session_name
   unless OPTS[:quiet]
     puts 'Need Session Name!'
@@ -81,16 +94,28 @@ unless session_name
 end
 
 Watobo.init_framework
+findings = []
 project = Watobo.create_project project_name: project_name, session_name: session_name
 project.setupProject
 
+# if OPTS[:baseline] is set also sets OPTS[:recursively]
+# otherwise it wouldn't be usefull
+
+if OPTS[:baseline] and File.directory?(OPTS[:baseline])
+  prefs[:test_all_dirs] = true
+  # load baseline into Watobo::Chats
+  Watobo::Chats.load_marshaled(OPTS[:baseline])
+end
+
 request = Watobo::Request.new OPTS[:url]
 
-prefs = {}
+
+
 prefs[:db_file] = OPTS[:database]
-prefs[:evasion_extension] = OPTS[:evasion].split(' ').map{|e| e.strip }
+# prefs[:evasion_extension] = OPTS[:evasion].split(' ').map{|e| e.strip }
+prefs[:evasions] = OPTS[:evasion]
 prefs[:scanlog_name] = OPTS[:scanlog_name] if !!OPTS[:scanlog_name]
-prefs[:rating] =OPTS[:rating]
+prefs[:rating] = OPTS[:rating]
 
 if !!OPTS[:run_passive_checks]
   puts "+ starting passive scanner ..." if $VERBOSE
@@ -99,15 +124,21 @@ if !!OPTS[:run_passive_checks]
 end
 
 unless OPTS[:quiet]
+  puts "+ subscribe to Finding :new"
   Watobo::Findings.subscribe(:new) do |f|
     puts "+ [Finding]: " + f.request.url.to_s
+    findings << f
   end
 end
 
+prefs[:evasions] = Watobo::Evasions.list
+
 puts "+ create scanner .." if $VERBOSE
 scanner = Watobo::Plugin::Filescanner.new request, prefs
+scanner.subscribe(:finished) do
+  puts "+ Filescanner FINISHED!"
+end
 scanner.run(prefs)
-
 
 sleep 3
 
@@ -116,7 +147,13 @@ while !scanner.finished?
   sleep 3
 end
 
+unless OPTS[:quiet]
+  findings.each do |f|
+    puts "+ [Finding]: " + f.request.url.to_s
+  end
+end
 
+binding.pry
 
 
 

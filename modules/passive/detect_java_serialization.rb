@@ -26,7 +26,7 @@ module Watobo #:nodoc: all
             )
 
 
-            @pattern = 'rO0'
+            @pattern = '\brO0'
 
           rescue => bang
             puts bang

@@ -1,5 +1,6 @@
 if ENV['RACK_ENV'] == 'development'
   require 'sinatra/base'
+  require_relative './vuln_modules/file_leaks'
 
   module Middleware
     def self.registered(app)

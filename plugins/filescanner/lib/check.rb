@@ -206,6 +206,7 @@ module Watobo #:nodoc: all
                   # binding.pry
                   if need_evasion or @force_evasions
                     evasion_handlers(@evasions).each do |handler|
+                      puts "Running Evasion #{handler.class}"
                       # skip if found AND NOT force_evasion
                       # force_evasions will also force the use of all selected evasion handlers even if file exist
                       # so we doesn't stop if a file exist is a false-positive which might be the case when
@@ -224,6 +225,7 @@ module Watobo #:nodoc: all
                           rhash = Watobo::Utils.responseHash(test_request, test_response)
                           unless @known_responses.include?(rhash)
                             @known_responses << rhash
+                            puts "* Add finding for #{chat.request.url.to_s}"
                             addFinding(test_request, test_response,
                                        :test_item => uri,
                                        # :proof_pattern => "#{Regexp.quote(uri)}",
