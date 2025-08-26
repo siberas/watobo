@@ -62,6 +62,7 @@ module Watobo #:nodoc: all
         @icon_info = ICON_INFO
         @icon_info_info = ICON_INFO_INFO
         @icon_hints_info = ICON_INFO_INFO
+        @icon_tech = ICON_TECH
 
         @icon_project = ICON_PROJECT
         @icon_hints = ICON_HINTS
@@ -83,6 +84,7 @@ module Watobo #:nodoc: all
         @icon_hints_info = ICON_INFO_INFO_SMALL
         @icon_project = ICON_PROJECT_SMALL
         @icon_hints = ICON_HINTS_SMALL
+        @icon_tech = ICON_TECH_SMALL
         self.font = small_font
         reload()
       end
@@ -129,6 +131,8 @@ module Watobo #:nodoc: all
               self.setItemData(item, :finding_type)
               item = self.appendItem(site, "Info", @icon_info, @icon_info)
               self.setItemData(item, :finding_type)
+              item = self.appendItem(site, "Techs", @icon_tech, @icon_tech)
+              self.setItemData(item, :finding_type)
               # site = @findings_tree.moveItem(project.first,project,site)
               self.setItemData(site, :item_type_site)
 
@@ -162,6 +166,10 @@ module Watobo #:nodoc: all
               if finding.details[:rating] == VULN_RATING_CRITICAL
                 icon = @icon_vuln_critical
               end
+            when FINDING_TYPE_TECH
+              puts "+ add Techs"
+              finding_type = "Techs"
+              icon = @icon_tech
             end
 
             sub_tree = self.findItem(finding_type, site, SEARCH_FORWARD | SEARCH_IGNORECASE | SEARCH_NOWRAP)
@@ -273,7 +281,7 @@ module Watobo #:nodoc: all
             end
           elsif item.data == :title then
             #@interface.show_vuln(item.first.data) if item.first.data
-            #binding.pry if $DEBUG
+            # binding.pry if $DEBUG
             notify(:vuln_click, (item.first.data)) if item.first.data
           end
         end

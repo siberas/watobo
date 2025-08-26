@@ -38,4 +38,29 @@ class VulnApp < Sinatra::Base
 
    @@appsettings.to_json
   end
+
+  get '/leaks/odata' do
+    headers "Content-Type" => "application/json"
+
+    {
+  "@odata.context": "https://127.0.0.1/api/odata/$metadata",
+  "value": [
+    {
+      "name": "FeedbackOData",
+      "kind": "EntitySet",
+      "url": "FeedbackOData"
+    },
+    {
+      "name": "SessionOData",
+      "kind": "EntitySet",
+      "url": "SessionOData"
+    },
+    {
+      "name": "ExplorationOData",
+      "kind": "EntitySet",
+      "url": "ExplorationOData"
+    }
+  ]
+}.to_json
+  end
 end

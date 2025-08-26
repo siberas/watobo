@@ -107,12 +107,12 @@ module Watobo #:nodoc: all
               extended << apply_extension(orig, fext)
             end
 
-            #extended.each do |mpath|
+            # extended.each do |mpath|
             #  evasion_extensions.each do |ext|
             #    next if ext.nil? or ext.empty?
             #    uris << apply_extension(mpath, ext)
             #  end
-            #end
+            # end
 
             # append slash (only to orig)
             uris << "#{orig}/" if append_slash?
@@ -154,9 +154,11 @@ module Watobo #:nodoc: all
 
         def generateChecks(chat)
           begin
-            sample_files.each do |uri|
-              request_paths(chat) do |rpath|
-                next if @known_paths.include?(rpath)
+            rpath = chat.request.path
+            unless @known_paths.include?(rpath)
+              @known_paths << rpath
+
+              sample_files.each do |uri|
 
                 test_request = nil
                 test_response = nil
@@ -164,6 +166,7 @@ module Watobo #:nodoc: all
                 # MAKE COPY BEFORE MODIFIYING REQUEST
                 sample = chat.copyRequest
                 sample.set_path rpath
+                sample.set_header 'User-Agent', ENV['WATOBO_USER_AGENT'] || 'Watobo'
 
                 # puts ">> #{new_uri}"
                 sample.replaceFileExt(uri)
@@ -179,7 +182,7 @@ module Watobo #:nodoc: all
 
                   if test_response.respond_to? :status_code
                     status = test_response.status_code
-                    need_evasion = ( status =~ /^4\d\d/ && status != '404' )
+                    need_evasion = (status =~ /^4\d\d/ && status != '404')
                   end
 
                   chat = Chat.new(test_request, test_response, :id => 0, :chat_source => prefs[:chat_source])
@@ -191,7 +194,7 @@ module Watobo #:nodoc: all
                     unless @known_responses.include?(rhash)
                       @known_responses << rhash
                       addFinding(test_request, test_response,
-                                 :test_item => uri,
+                                 :test_item => test_request.path_ext,
                                  # :proof_pattern => "#{Regexp.quote(uri)}",
                                  :check_pattern => "#{Regexp.quote(uri)}",
                                  :chat => chat,
@@ -223,11 +226,12 @@ module Watobo #:nodoc: all
                         if fexist == true
                           found = true
                           rhash = Watobo::Utils.responseHash(test_request, test_response)
+
                           unless @known_responses.include?(rhash)
                             @known_responses << rhash
                             puts "* Add finding for #{chat.request.url.to_s}"
                             addFinding(test_request, test_response,
-                                       :test_item => uri,
+                                       :test_item => test_request.path_ext,
                                        # :proof_pattern => "#{Regexp.quote(uri)}",
                                        :check_pattern => "#{Regexp.quote(uri)}",
                                        :chat => chat,
@@ -244,7 +248,7 @@ module Watobo #:nodoc: all
                   end
                   # we don't need to return request and response, because it's already upwarded via notify(:new_chat)
                   #[test_request, test_response]
-                  [ nil, nil]
+                  [nil, nil]
                 }
                 yield checker
               end

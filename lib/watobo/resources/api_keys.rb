@@ -9,7 +9,9 @@ module Watobo::Resources
   keywords = %w( api key username user uname pw password pass passwd credentials credential login token secret )
 
   LEAK_PATTERNS = {}
-  LEAK_IGNORE_PATTERNS = {}
+  LEAK_IGNORE_PATTERNS = {
+  "IPv4" => [ '\b^127\.0\.\d+\.\d+\b' ]
+  }
 
   # generic['Generic'] = "(\\b|[ ._-])(#{keywords.join('|')})[ '\"]*(=|:)[ '\"]*([^'\" ]+)"
   # ignore csrf-token

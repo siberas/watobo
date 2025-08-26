@@ -42,13 +42,19 @@ module Watobo #:nodoc: all
                 next if @checked[resp_key]
                 @checked[resp_key] = true
 
-                if regex.match(resp_str)
-                  match = $1
+                if m = regex.match(resp_str)
+                  match = m[0]
                   path = "/" + chat.request.path
 
                   ignore = false
-                  Watobo::Resources::LEAK_IGNORE_PATTERNS[type].each do |iregx|
+                  type_patterns = Watobo::Resources::LEAK_IGNORE_PATTERNS[type] || []
+                  puts match if type.match?(/ipv4/i)
+                  type_patterns.each do |iregx|
                     next if ignore
+                    puts "   check ignore pattern #{iregx}"
+                    puts "   match #{match}"
+                    puts "   ignore #{ignore}"
+                    puts '---'
                     ignore = iregx.match?(match)
                   end
                   unless ignore
@@ -69,7 +75,7 @@ module Watobo #:nodoc: all
             # raise
             puts "ERROR!! #{Module.nesting[0].name}"
             puts bang
-            puts bang.backtrace if $DEBUG
+            puts bang.backtrace #if $DEBUG
             binding.pry if $DEBUG
           end
         end

@@ -57,6 +57,7 @@ module Watobo#:nodoc: all
       ICON_INFO_USER = Watobo::Gui.load_gui_icon("User_24x24.ico")
       ICON_HINTS = Watobo::Gui.load_gui_icon("advanced_24x24.ico")
       ICON_HINTS_INFO = Watobo::Gui.load_gui_icon("help_24x24.ico")
+      ICON_TECH = Watobo::Gui.load_gui_icon("tech_24x24.png")
 
       # small
       ICON_PROJECT_SMALL = Watobo::Gui.load_gui_icon("Web Browser_16x16.ico")
@@ -71,6 +72,7 @@ module Watobo#:nodoc: all
       ICON_INFO_USER_SMALL = Watobo::Gui.load_gui_icon("User_16x16.ico")
       ICON_HINTS_SMALL = Watobo::Gui.load_gui_icon("advanced_16x16.ico")
       ICON_HINTS_INFO_SMALL = Watobo::Gui.load_gui_icon("help_16x16.ico")
+      ICON_TECH_SMALL = Watobo::Gui.load_gui_icon("tech_16x16.png")
 
       # Sites Tree Icons
       ICON_FOLDER = Watobo::Gui.load_gui_icon("folder.ico")

@@ -5,13 +5,14 @@ group :development do
   gem 'rspec'
   gem 'sinatra'
   gem 'rspecproxies'
+  gem 'rackup'
 end
 
 gem 'nokogiri'
 gem 'xmlrpc'
 gem 'rubyntlm'
 gem 'mechanize'
-gem 'fxruby', '1.6.48'
+gem 'fxruby', '1.6.49'
 gem 'jwt'
 gem 'nfqueue', '1.0.4' if RUBY_PLATFORM =~ /linux/
 # gem 'net-http-pipeline', '1.0.1' if RUBY_PLATFORM =~ /linux/

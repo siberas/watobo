@@ -13,7 +13,9 @@ require 'devenv'
 require 'optimist'
 # F I L E S C A N N E R
 # requires workspace, project and session to save results
-# requires url or baseline (the location where watobo chats are stored)
+# requires url
+#
+# and optional baseline (the location where watobo chats are stored)
 #
 # Results/Findings are stored to
 #   WORKSPACE/PROJECT/SESSION/Findings
@@ -29,16 +31,17 @@ OPTS = Optimist::options do
   EOS
 
   opt :project, "Project name", :type => :string
+  opt :baseline_dir, "directory of baseline chats, e.g. conversation directory of crawler-result", :type => :string
   opt :session, "Session name", :type => :string
   opt :url, "URL, e.g. https://www.somesite.org/xxx", :type => :string
   opt :database, "Filename of database or simple URI-Filename", :type => :string
   opt :scanlog_name, "name of log directory", :type => :string
-  opt :evasion, "evasion extensions", :type => :strings, :multi => true, :default => %w(HttpMethodOverride ParmExtensions PathExtensions HTTPVersion SlashSlash AppendSlash AuthHeader UrlExtensions UserAgent UrlParameters Cookieless HttpHeaders)
+  opt :evasion, "evasion extensions", :type => :strings, :multi => true, :default => %w(HttpMethodOverride ParmExtensions HTTPVersion SlashSlash AppendSlash AuthHeader UrlExtensions UserAgent UrlParameters Cookieless HttpHeaders)
   opt :workspace, "workspace directory", :type => :string, default: '/tmp/filescanner'
   opt :config, "file with configuration settings in JSON format", :type => :string
   opt :recursively, "scan recursively", :type => :boolean, :default => true
   opt :quiet, "no unneccessary output"
-  opt :run_passive_checks, "run passive checks during scan"
+  opt :run_passive_checks, "run passive checks during scan", :default => true
   opt :passive_check_filter, "filter for passive checks", type: :string, default: '.*'
   opt :rating, "set vuln rating for valid files[ 1(low) - 5 (critical) ]", type: :string, default: '0'
   opt :llm_rating, "set LLM rating for found files"
@@ -101,10 +104,10 @@ project.setupProject
 # if OPTS[:baseline] is set also sets OPTS[:recursively]
 # otherwise it wouldn't be usefull
 
-if OPTS[:baseline] and File.directory?(OPTS[:baseline])
+if OPTS[:baseline_dir] and File.directory?(OPTS[:baseline_dir])
   prefs[:test_all_dirs] = true
   # load baseline into Watobo::Chats
-  Watobo::Chats.load_marshaled(OPTS[:baseline])
+  Watobo::Chats.load_marshaled(OPTS[:baseline_dir])
 end
 
 request = Watobo::Request.new OPTS[:url]
@@ -113,7 +116,7 @@ request = Watobo::Request.new OPTS[:url]
 
 prefs[:db_file] = OPTS[:database]
 # prefs[:evasion_extension] = OPTS[:evasion].split(' ').map{|e| e.strip }
-prefs[:evasions] = OPTS[:evasion]
+
 prefs[:scanlog_name] = OPTS[:scanlog_name] if !!OPTS[:scanlog_name]
 prefs[:rating] = OPTS[:rating]
 
@@ -131,8 +134,10 @@ unless OPTS[:quiet]
   end
 end
 
-prefs[:evasions] = Watobo::Evasions.list
-
+#binding.pry
+#prefs[:evasions] = Watobo::Evasions.list
+#prefs[:evasions] = OPTS[:evasion]
+prefs[:evasions] = Watobo::Evasions.list.select{|e| OPTS[:evasion].flatten.any?(e) }
 puts "+ create scanner .." if $VERBOSE
 scanner = Watobo::Plugin::Filescanner.new request, prefs
 scanner.subscribe(:finished) do

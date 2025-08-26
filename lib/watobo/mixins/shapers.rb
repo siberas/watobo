@@ -78,7 +78,8 @@ module Watobo #:nodoc: all
 
         # sets directory, including the trailing /
         #
-        def setDir(dir)
+        def setDir(new_dir)
+          dir = new_dir.dup
           dir.strip!
           dir.gsub!(/^\/+/, "")
           dir.gsub!(/\/+$/, "")

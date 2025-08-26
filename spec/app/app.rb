@@ -7,7 +7,7 @@ if ENV['RACK_ENV'] == 'development'
       app.use Rack::Session::Cookie,
               :key => 'WATOBO_RSPEC',
               :expire_after => (60 * 60 * 24 * 365),
-              :secret => 'lasjkflkdslfjl'
+              :secret => SecureRandom.base64(64)
     end
   end
 

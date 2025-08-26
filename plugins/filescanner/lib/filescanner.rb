@@ -5,7 +5,6 @@ module Watobo #:nodoc: all
       include Watobo::Constants
       include Watobo::Subscriber
 
-
       STATUS_IDLE = 0x00
       STATUS_RUNNING = 0x01
       STATUS_FINISHED = 0x02
@@ -60,7 +59,7 @@ module Watobo #:nodoc: all
         #    scan_prefs[:custom_error_patterns].concat patterns
         #    scan_prefs[:custom_error_patterns].uniq!
 
-        #if $VERBOSE || $DEBUG
+        # if $VERBOSE || $DEBUG
         #      puts '>>> PATTERNS <<<'
         #      puts scan_prefs[:custom_error_patterns].to_yaml
         #      puts '--- EOP ---'
@@ -70,18 +69,18 @@ module Watobo #:nodoc: all
         #}
 
         # sleep a bit to ensure that thread for get_not_found_patterns gets @@lock first
-        #sleep 1
+        # sleep 1
 
         Thread.new {
           @@lock.synchronize {
             @check = Watobo::Plugin::Filescanner::Check.new Watobo.project, @file_list, scan_prefs
             @scanner = Watobo::Scanner3.new(@chat_list, [@check], @passive_checks, scan_prefs)
-            @scanner.subscribe(:scanner_finished){
+            @scanner.subscribe(:scanner_finished) {
               @status = STATUS_FINISHED
               notify(:finished)
             }
 
-            @scanner.subscribe(:new_chat){ |chat|
+            @scanner.subscribe(:new_chat) { |chat|
               puts chat.request.url.to_s
             }
             @scanner.run
@@ -108,7 +107,7 @@ module Watobo #:nodoc: all
           #  puts "RESPONSE <<<"
           #  puts test_resp
           #  puts '---'
-          #end
+          # end
           status = test_resp.status
           # skip if status is 4xx, because this will be recognized by fileExists?
           next if status =~ /^4/
@@ -119,7 +118,6 @@ module Watobo #:nodoc: all
             nfpatterns << Regexp.quote(location.gsub(/#{notfound}.*/, '').strip)
             next
           end
-
 
           next unless test_resp.has_body?
           # get plain words of body
@@ -172,12 +170,11 @@ module Watobo #:nodoc: all
       # }
       def progress
         {
-            total: sum_total,
-            progress: sum_progress,
-            state: :running # :running, :finished
+          total: sum_total,
+          progress: sum_progress,
+          state: :running # :running, :finished
         }
       end
-
 
       # @param request [Object] Watobo::Request or string
       # @param prefs [Hash]
@@ -219,26 +216,22 @@ module Watobo #:nodoc: all
         @passive_checks = []
         @status = STATUS_IDLE
         @enable_passive_checks = !!prefs[:run_passive_checks]
-        @rating = prefs.fetch(:rating, VULN_RATING_INFO )
+        @rating = prefs.fetch(:rating, VULN_RATING_INFO)
 
         file_list_init
         chatlist_init
 
         init_passive_checks(prefs[:passive_check_filter]) if @enable_passive_checks
 
-
       end
-
 
       private
 
-      def init_passive_checks(filter)
+      def init_passive_checks(filter) end
 
-      end
-
-      #def scan_prefs
+      # def scan_prefs
       #  sprefs = Watobo.project.getScanPreferences
-      #end
+      # end
 
       def file_list_init
         # puts "[Filescanne] file_list_init" if $VERBOSE
@@ -252,21 +245,22 @@ module Watobo #:nodoc: all
         @file_list = @file_list.map { |e| e.gsub(/#.*/, '') }
       end
 
-
       def chatlist_init
         @chat_list = []
         @chat_list << Watobo::Chat.new(request, [], :id => 0)
+        @path_list = Set.new
         #  puts "[Filescanne] chatlist_init" if $VERBOSE
         if settings.test_all_dirs
-          Watobo::Chats.dirs(request.site, :base_dir => request.dir).each do |dir|
-            chat = Watobo::Chat.new(request, [], :id => 0)
+          @path_list.merge Watobo::Chats.dirs(request.site, :base_dir => request.dir).map { |d| Watobo::Utils.explode_path(d) }.flatten
+          @path_list.to_a.each do |dir|
+            req_copy = request.copy
+            chat = Watobo::Chat.new(req_copy, [], :id => 0)
             chat.request.replaceFileExt('')
             chat.request.setDir(dir)
             @chat_list << chat
           end
         end
       end
-
 
     end
   end
