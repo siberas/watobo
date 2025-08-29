@@ -29,7 +29,7 @@ module Watobo #:nodoc: all
         def do_test(chat)
           begin
             ct = chat.response.content_type
-            if ct =~ /(html|script)/i
+            if chat.response.has_body? && ct =~ /(html|script)/i
               unless chat.response.body.to_s =~ /html/i
 
                 addFinding(

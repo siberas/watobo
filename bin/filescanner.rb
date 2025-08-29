@@ -23,6 +23,9 @@ require 'optimist'
 #
 # Example for run filescanner against VulnApp (see spec/app):
 # bundle exec bin/filescanner.rb -p scan01 -s s01 -w /tmp/ -u http://127.0.0.1:9292/leaks/protected/ --database /dumpster/Projects/wordlists/lists/simple/leaky-files.txt
+#
+#
+# WATOBO_USER_AGENT=Howdy bundle exec bin/filescanner.rb -p scan01 -s s23 -w /tmp/ -u http://127.0.0.1:9292/ --database /tmp/dummy.txt --baseline-dir spec/spec_data/filescanner_leaks/simple --scanlog-name leaky-files-01 -e ''
 
 OPTS = Optimist::options do
   version '(c) 2021 Filescanner'
@@ -36,7 +39,7 @@ OPTS = Optimist::options do
   opt :url, "URL, e.g. https://www.somesite.org/xxx", :type => :string
   opt :database, "Filename of database or simple URI-Filename", :type => :string
   opt :scanlog_name, "name of log directory", :type => :string
-  opt :evasion, "evasion extensions", :type => :strings, :multi => true, :default => %w(HttpMethodOverride ParmExtensions HTTPVersion SlashSlash AppendSlash AuthHeader UrlExtensions UserAgent UrlParameters Cookieless HttpHeaders)
+  opt :evasion, "evasion extensions, multiple or comma separated", :type => :strings, :multi => true, :default => %w(HttpMethodOverride ParmExtensions HTTPVersion SlashSlash AppendSlash AuthHeader UrlExtensions UserAgent UrlParameters Cookieless HttpHeaders)
   opt :workspace, "workspace directory", :type => :string, default: '/tmp/filescanner'
   opt :config, "file with configuration settings in JSON format", :type => :string
   opt :recursively, "scan recursively", :type => :boolean, :default => true
@@ -47,7 +50,7 @@ OPTS = Optimist::options do
   opt :llm_rating, "set LLM rating for found files"
   opt :llm_url, "URL of LLM, e.g. http://ollama:11434"
   opt :llm_model, "LLM model to use for rating", type: :string, default: 'mistral-small:24b'
-
+  opt :out_dir, "directory to store findings", type: :string
 end
 
 prefs = {}
@@ -137,7 +140,9 @@ end
 #binding.pry
 #prefs[:evasions] = Watobo::Evasions.list
 #prefs[:evasions] = OPTS[:evasion]
-prefs[:evasions] = Watobo::Evasions.list.select{|e| OPTS[:evasion].flatten.any?(e) }
+evasions = OPTS[:evasion].flatten.map{|e| e.split(',')}.flatten.map(&:strip).map(&:downcase).uniq
+prefs[:evasions] = Watobo::Evasions.list.select{|e| evasions.any?(e.downcase) }
+
 puts "+ create scanner .." if $VERBOSE
 scanner = Watobo::Plugin::Filescanner.new request, prefs
 scanner.subscribe(:finished) do

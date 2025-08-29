@@ -81,7 +81,7 @@ module Watobo #:nodoc: all
             }
 
             @scanner.subscribe(:new_chat) { |chat|
-              puts chat.request.url.to_s
+              #puts chat.request.url.to_s
             }
             @scanner.run
           }

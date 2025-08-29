@@ -44,7 +44,7 @@ module Watobo #:nodoc: all
             Thread.current[:pos] = "wait for task"
 
             # pulls new task from queue, waits if no task is available
-            puts "[Scanner] Worker-Tasks: #{@tasks.size}"
+            #  puts "[Scanner] Worker-Tasks: #{@tasks.size}"
             task = @tasks.deq
             begin
               puts "RUNNING #{task[:module]}" if $DEBUG
