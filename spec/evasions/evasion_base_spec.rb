@@ -4,7 +4,6 @@ class EvasionDummy
   include Watobo::Evasions
 
   def run(request, &block)
-    binding.pry
   end
 end
 

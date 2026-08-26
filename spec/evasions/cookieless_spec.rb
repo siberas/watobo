@@ -7,7 +7,7 @@ Accept: application/apl.universal.ui.v1+json
 Host: no.existing.host
 EOF
 
-describe Watobo::EvasionHandlers::HTTPVersion do
+describe Watobo::EvasionHandlers::Cookieless do
   let(:request) { Watobo::Utils.text2request(rt) }
   let(:evasion) { Watobo::EvasionHandlers::Cookieless.new }
   it ".run" do
@@ -16,13 +16,7 @@ describe Watobo::EvasionHandlers::HTTPVersion do
       requests << r
     end
 
-    #    paths = requests.map{|r| r.path_ext }
-    #r = paths.select{|p| p =~ /\/\/fkpsep\/\/service.*query=bla/ }
-    binding.pry
     expect(requests.length).to be(6)
-    #r = paths.select{|p| p =~ /\/\/\/fkpsep\/\/\/service.*query=bla/ }
-    #expect(r.length).to be(1)
-
   end
 end
 

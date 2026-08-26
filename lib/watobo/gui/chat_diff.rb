@@ -1,9 +1,11 @@
-# @private 
+# @private
+require 'watobo/externals'
+
 module Watobo#:nodoc: all
   module Gui
     DIFF_TYPE_ORIG = 0
     DIFF_TYPE_NEW = 1
-    
+
     include Diff::LCS
     
     class ChatDiffFrame < FXVerticalFrame

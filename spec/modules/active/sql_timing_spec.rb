@@ -93,9 +93,6 @@ EOF
     it ".generateChecks" do
       collection = []
 
-      # expect(sender).to receive(:exec).and_wrap_original
-      #  allow(test_session).to receive(:doRequest).and_return('AAA', 'BBB')
-      # allow(sender).to receive(:read_body).and_return(response_with_token)
       allow_any_instance_of(Watobo::Net::Http::Sender).to receive(:connect).and_return(nil)
       allow_any_instance_of(Watobo::Net::Http::Sender).to receive(:unzip!).and_return(nil)
       allow_any_instance_of(Watobo::Net::Http::Sender).to receive(:close_socket).and_return(nil)
@@ -103,15 +100,11 @@ EOF
       allow_any_instance_of(Watobo::Net::Http::Sender).to receive(:read_header).and_return(response_header)
       allow_any_instance_of(Watobo::Net::Http::Sender).to receive(:read_body).and_return(response)
 
-      allow_any_instance_of(Watobo::Modules::Active::Sqlinjection::Sqli_timing).to receive(:doRequest).and_after_calling_original{| response| collection << response }
-
       checks = []
-      check.generateChecks(xml_chat){|check|
-        checks << check
-      }
+      check.generateChecks(xml_chat){|c| checks << c }
       results = checks.map(&:call)
-      binding.pry
 
+      expect(results).not_to be_empty
     end
   end
 end

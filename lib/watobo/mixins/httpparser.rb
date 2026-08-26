@@ -98,8 +98,8 @@ module Watobo #:nodoc: all
         end
 
         def http_version
-          m = self.first.match(/HTTP\/(.*)$/)
-          m[1] || nil
+          m = self.first.match(/HTTP\/([^\r\n]*)/)
+          m && m[1]
         end
 
         def file_ext

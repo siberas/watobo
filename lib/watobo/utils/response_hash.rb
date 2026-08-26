@@ -117,6 +117,10 @@ module Watobo #:nodoc: all
           cleaned_response.gsub!(/\s+/, ' ')
           # Remove empty lines
           cleaned_response.gsub!(/^\s*$\n/, '')
+          # Trim leading/trailing whitespace so HTML bodies (whose Nokogiri
+          # text extraction can introduce a leading newline from inter-tag
+          # whitespace) hash equivalently to plain-text bodies.
+          cleaned_response.strip!
         end
 
         return cleaned_response

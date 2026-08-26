@@ -421,8 +421,7 @@ module Watobo #:nodoc: all
         alias :method= :setMethod
 
         def setHTTPVersion(version)
-          self.first.gsub!(/HTTP\/([^\r\n]*)$/, "HTTP\/#{version}")
-          #  puts "HTTPVersion fixed: #{self.first}"
+          self.first.gsub!(/HTTP\/[^\r\n]*/, "HTTP\/#{version}")
         end
 
         alias :version= setHTTPVersion

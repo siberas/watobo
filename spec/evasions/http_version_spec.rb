@@ -29,8 +29,6 @@ describe Watobo::EvasionHandlers::HTTPVersion do
   let(:request) { Watobo::Utils.text2request(rt) }
   let(:evasion) { Watobo::EvasionHandlers::HTTPVersion.new }
   it ".run" do
-
-
     requests = []
     evasion.run(request) do |r|
       requests << r
@@ -38,9 +36,7 @@ describe Watobo::EvasionHandlers::HTTPVersion do
     num_evasions =  Watobo::EvasionHandlers::HTTPVersion::INJECTIONS.length
     expect(requests.length).to be(num_evasions)
     versions = requests.map{|r| r.http_version }
-    Watobo::EvasionHandlers::HTTPVersion::INJECTIONS.each do |e|
-      expect(versions.include?(e)).to be(true)
-    end
+    expect(versions).to match_array(Watobo::EvasionHandlers::HTTPVersion::INJECTIONS)
   end
 end
 

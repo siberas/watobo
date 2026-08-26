@@ -2,15 +2,11 @@ require 'spec_helper'
 
 
 describe Watobo::Net::Http::Session do
-  context "replaceFileExt" do
+  context "one-time token replacement" do
 
-
-    #let(:request){ instance_double(Watobo::Request)}
     let(:request){ Watobo::Request.new("http://www.siberas.de")}
-    # let(:test_session){ instance_double(Watobo::Net::Http::Session)}
     let(:session) { Watobo::Net::Http::Session.new('rspec')}
     let(:sender){ Watobo::Net::Http::Sender.new( update_otts: true )}
-    let(:ott_cache){}
     let(:response_with_token){ s =<<EOF
 HTTP/1.1 200 OK
 Host: 100.100.1.20
@@ -34,20 +30,14 @@ EOF
 
     before do
       allow(Watobo::Net::Http::Sender).to receive(:new).and_return(sender)
+      allow_any_instance_of(Watobo::Net::Http::Sender).to receive(:read_body).and_return(response_with_token)
     end
 
-    it "replace One-Time-Token" do
-
-      #expect(sender).to receive(:exec).and_wrap_original
-      #  allow(test_session).to receive(:doRequest).and_return('AAA', 'BBB')
-      #allow(sender).to receive(:read_body).and_return(response_with_token)
-      allow_any_instance_of(Watobo::Net::Http::Sender).to receive(:read_body).and_return(response_with_token)
-
-
+    it "returns the exchanged request/response pair" do
       req, resp = session.doRequest(request)
 
-      #      binding.pry
-
+      expect(req).to be_a(Watobo::Request)
+      expect(resp).to be_a(Watobo::Response)
     end
   end
 end

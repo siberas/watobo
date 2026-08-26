@@ -76,7 +76,9 @@ require 'watobo/evasions'
 require 'watobo/net'
 
 require 'watobo/core'
-require 'watobo/externals'
+# NOTE: watobo/externals loads the vendored diff-lcs copy used only by
+# watobo/gui/chat_diff.rb. It's loaded from chat_diff.rb itself so the
+# non-GUI code path doesn't collide with the diff-lcs gem (RSpec, etc.).
 require 'watobo/adapters'
 require 'watobo/framework'
 require 'watobo/parser'

@@ -40,8 +40,9 @@ EOF
     end
 
     it ".origin" do
+      # `origin` always includes the port (default or explicit) per its docstring.
       r = request.origin
-      expect(r).to eq('https://no.existing.host')
+      expect(r).to eq('https://no.existing.host:443')
       r = request_with_port.origin
       expect(r).to eq('http://1.2.3.4:888')
     end

@@ -10,16 +10,16 @@ EOF
 describe Watobo::EvasionHandlers::UrlExtensions do
   let(:request) { Watobo::Utils.text2request(rt) }
   let(:evasion) { Watobo::EvasionHandlers::UrlExtensions.new }
-  it ".run" do
+  it ".run yields evaded path variants" do
     requests = []
     evasion.run(request) do |r|
       requests << r
     end
 
-    paths = requests.map{|r| r.path_ext }
-    r = paths.select{|p| p =~ /\/\/fkpsep\/\/service.*query=bla/ }
-    binding.pry
-
+    expect(requests).not_to be_empty
+    paths = requests.map(&:path)
+    expect(paths).to include('/./fkpsep/./service')
+    expect(paths).to include('/;/fkpsep;/service')
   end
 end
 

@@ -84,7 +84,10 @@ describe Watobo::Response do
       response = Watobo::Response.new chunked
       request = Watobo::Request.new 'https://www.siberas.de/xxx'
       Watobo::CookieStore.update request, response
-      binding.pry
+
+      cookies = Watobo::CookieStore.get_cookies(request)
+      names = cookies.map(&:name)
+      expect(names).to include('X-WTF-PERSIST', 'X-GONZO')
     end
   end
 end
