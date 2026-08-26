@@ -120,7 +120,7 @@ module Watobo #:nodoc: all
           # need to restore CRLF
           cdata[:request].map! { |l|
             if l =~ /^\"/ then
-              x = secure_eval(l)
+              x = eval_saved_literal(l)
             else
               x = l.strip + "\r\n"
               x = l if l == cdata[:request].last
@@ -131,7 +131,7 @@ module Watobo #:nodoc: all
 
           cdata[:response].map! { |l|
             if l =~ /^\"/ then
-              x = secure_eval(l)
+              x = eval_saved_literal(l)
             else
               x = l.strip + "\r\n"
               x = l if l == cdata[:response].last
@@ -175,7 +175,7 @@ module Watobo #:nodoc: all
           return nil unless fdata
           fdata[:request].map! { |l|
             if l =~ /^\"/ then
-              x = secure_eval(l)
+              x = eval_saved_literal(l)
             else
               x = l.strip + "\r\n"
               x = l if l == fdata[:request].last
@@ -185,7 +185,7 @@ module Watobo #:nodoc: all
 
           fdata[:response].map! { |l|
             if l =~ /^\"/ then
-              x = secure_eval(l)
+              x = eval_saved_literal(l)
             else
               x = l.strip + "\r\n"
               x = l if l == fdata[:response].last
