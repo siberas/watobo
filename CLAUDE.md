@@ -135,7 +135,6 @@ Persistence:
 - `config/*.yml` — default settings, one file per `Watobo::Conf::*` group.
 - `spec/` — RSpec suite; helpers/stubs in `spec/app/` (Sinatra vuln app).
 - `dev/plugin_loader.rb` — GUI-lite bootstrap for developing a plugin in isolation.
-- `.github/workflows/rspec.yml` — CI that installs the fxruby/nfqueue system libs, then runs `bundle exec rake`. `spec_helper` never loads `fox16`, so no `xvfb` is needed.
 
 ## Platform notes
 
