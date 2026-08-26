@@ -97,6 +97,7 @@ GEM
       rack (>= 3.0.0)
     rackup (2.2.1)
       rack (>= 3)
+    rake (13.4.2)
     rbtree (0.4.6)
     rexml (3.4.1)
     rspec (3.13.1)
@@ -162,6 +163,7 @@ DEPENDENCIES
   optimist
   pry
   rackup
+  rake
   rspec
   rspecproxies
   rubyntlm
