@@ -1,4 +1,4 @@
-#!/usr/bin/ruby
+#!/usr/bin/env ruby
 if $0 == __FILE__
   inc_path = File.expand_path(File.join(File.dirname(__FILE__), "..", "lib"))
   $: << inc_path

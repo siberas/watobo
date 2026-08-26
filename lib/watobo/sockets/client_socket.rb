@@ -204,9 +204,12 @@ module Watobo #:nodoc: all
 
         if Watobo::Interceptor::Proxy.transparent?
 
-          puts "* running transparent ..." if $VERBOSE
+          if $VERBOSE
+            puts "* running transparent ..."
+          end
 
           ci = Watobo::Interceptor::Transparent.info({'host' => caddr, 'port' => cport})
+          
           unless ci.nil? or ci['target'].empty? or ci['cn'].empty?
             puts "SSL-REQUEST FROM #{caddr}:#{cport}" if $VERBOSE
 

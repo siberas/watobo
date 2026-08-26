@@ -102,6 +102,7 @@
     <orderEntry type="library" scope="PROVIDED" name="bundler (v2.6.2, rbenv: 3.3.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="coderay (v1.1.3, rbenv: 3.3.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="commonmarker (v2.3.2, rbenv: 3.3.1) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="concurrent-ruby (v1.3.5, rbenv: 3.3.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="connection_pool (v2.5.3, rbenv: 3.3.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="csv (v3.3.5, rbenv: 3.3.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="damerau-levenshtein (v1.3.3, rbenv: 3.3.1) [gem]" level="application" />
@@ -111,8 +112,9 @@
     <orderEntry type="library" scope="PROVIDED" name="fxruby (v1.6.49, rbenv: 3.3.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="http-cookie (v1.0.8, rbenv: 3.3.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="httparty (v0.23.1, rbenv: 3.3.1) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="immutable-ruby (v0.2.0, rbenv: 3.3.1) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="jose (v1.2.0, rbenv: 3.3.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="jwt (v3.1.2, rbenv: 3.3.1) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="kmeans-clusterer (v0.11.4, rbenv: 3.3.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="logger (v1.7.0, rbenv: 3.3.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="mechanize (v2.14.0, rbenv: 3.3.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="method_source (v1.1.0, rbenv: 3.3.1) [gem]" level="application" />
@@ -122,7 +124,6 @@
     <orderEntry type="library" scope="PROVIDED" name="mini_portile2 (v2.8.9, rbenv: 3.3.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="multi_xml (v0.7.2, rbenv: 3.3.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="mustermann (v3.0.4, rbenv: 3.3.1) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="narray (v0.6.1.2, rbenv: 3.3.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="net-http-digest_auth (v1.4.1, rbenv: 3.3.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="net-http-persistent (v4.0.6, rbenv: 3.3.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="nfnetlink (v1.0.2, rbenv: 3.3.1) [gem]" level="application" />
@@ -138,6 +139,7 @@
     <orderEntry type="library" scope="PROVIDED" name="rack-protection (v4.1.1, rbenv: 3.3.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="rack-session (v2.1.1, rbenv: 3.3.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="rackup (v2.2.1, rbenv: 3.3.1) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="rbtree (v0.4.6, rbenv: 3.3.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="rexml (v3.4.1, rbenv: 3.3.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="rspec (v3.13.1, rbenv: 3.3.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="rspec-core (v3.13.5, rbenv: 3.3.1) [gem]" level="application" />
@@ -149,7 +151,9 @@
     <orderEntry type="library" scope="PROVIDED" name="rubyntlm (v0.6.5, rbenv: 3.3.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="rubyzip (v3.0.2, rbenv: 3.3.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="selenium-webdriver (v4.35.0, rbenv: 3.3.1) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="set (v1.1.2, rbenv: 3.3.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="sinatra (v4.1.1, rbenv: 3.3.1) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="sorted_set (v1.0.3, rbenv: 3.3.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="tilt (v2.6.1, rbenv: 3.3.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="uri (v1.0.3, rbenv: 3.3.1) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="webrick (v1.9.1, rbenv: 3.3.1) [gem]" level="application" />

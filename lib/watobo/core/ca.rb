@@ -409,7 +409,8 @@ module Watobo #:nodoc: all
       end
 
       req = OpenSSL::X509::Request.new
-      req.version = 3
+      # version now is 0 instead of 3 before - don't know why it was 3 ;)
+      req.version = 0
       req.subject = name
       req.public_key = keypair.public_key
 

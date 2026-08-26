@@ -15,8 +15,9 @@ RSpec.configure do |config|
   config.before(:suite) do
     if ENV['RACK_ENV'] == 'development'
       @app = VulnApp.new.freeze
+      
       Thread.new do
-        @server = Rack::Server.start(app: @app, Port: 6666, Host: 'localhost')
+        @server = Rackup::Server.start(app: @app, Port: 6666, Host: 'localhost')
       end
       while true
         begin

@@ -112,6 +112,11 @@ describe Watobo::Request do
 
     end
 
+    it ".origin" do
+      r = request.origin
+      expect(r).to eq('https://no.existing.host:443')
+    end
+
   end
 
   context "Cookie Parsing" do

@@ -1,4 +1,4 @@
-require 'kmeans-clusterer'
+#require 'kmeans-clusterer'
 require "damerau-levenshtein"
 
 module Watobo

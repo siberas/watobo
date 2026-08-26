@@ -1,51 +1,97 @@
 PATH
-  remote: /dumpster/Projects/devenv
+  remote: /dumpster/Projects/ebics-saf
   specs:
-    devenv (0.8)
+    esaf (1.0.0)
+      builder
+      epics
+      faraday
+      nokogiri
+      optimist
+      rubyzip
+      sepa_king
 
 PATH
-  remote: /dumpster/Projects/epi_client
+  remote: /dumpster/Projects/fints
   specs:
-    epi_client (0.1)
-      httparty
+    fints (0.1.0)
+      nokogiri
+      optimist
+      pry
+      smartcard
 
 GEM
   remote: https://rubygems.org/
   specs:
+    activemodel (8.1.3)
+      activesupport (= 8.1.3)
+    activesupport (8.1.3)
+      base64
+      bigdecimal
+      concurrent-ruby (~> 1.0, >= 1.3.1)
+      connection_pool (>= 2.2.5)
+      drb
+      i18n (>= 1.6, < 2)
+      json
+      logger (>= 1.4.2)
+      minitest (>= 5.1)
+      securerandom (>= 0.3)
+      tzinfo (~> 2.0, >= 2.0.5)
+      uri (>= 0.13.1)
     addressable (2.8.7)
       public_suffix (>= 2.0.2, < 7.0)
     base64 (0.3.0)
-    bigdecimal (3.2.2)
+    bigdecimal (4.1.2)
+    builder (3.3.0)
+    childprocess (4.1.0)
     coderay (1.1.3)
-    commonmarker (2.3.2-aarch64-linux)
-    commonmarker (2.3.2-aarch64-linux-musl)
-    commonmarker (2.3.2-arm64-darwin)
-    commonmarker (2.3.2-x86_64-darwin)
-    commonmarker (2.3.2-x86_64-linux)
-    commonmarker (2.3.2-x86_64-linux-musl)
+    commonmarker (2.7.0-aarch64-linux)
+    commonmarker (2.7.0-aarch64-linux-musl)
+    commonmarker (2.7.0-arm64-darwin)
+    commonmarker (2.7.0-x86_64-darwin)
+    commonmarker (2.7.0-x86_64-linux)
+    commonmarker (2.7.0-x86_64-linux-musl)
+    concurrent-ruby (1.3.5)
     connection_pool (2.5.3)
-    csv (3.3.5)
     damerau-levenshtein (1.3.3)
     diff-lcs (1.6.2)
     domain_name (0.6.20240107)
+    drb (2.2.3)
+    epics (2.11.0)
+      base64
+      bigdecimal
+      faraday (>= 1.10.0)
+      i18n (>= 1.1.0)
+      nokogiri (>= 1.16.7)
+      rexml (>= 3.3.7)
+      rubyzip (>= 2.3.2)
+    faraday (2.14.2)
+      faraday-net_http (>= 2.0, < 3.5)
+      json
+      logger
+    faraday-net_http (3.4.4)
+      net-http (~> 0.5)
     ffi (1.17.2-aarch64-linux-gnu)
     ffi (1.17.2-aarch64-linux-musl)
     ffi (1.17.2-arm64-darwin)
     ffi (1.17.2-x86_64-darwin)
     ffi (1.17.2-x86_64-linux-gnu)
     ffi (1.17.2-x86_64-linux-musl)
-    fxruby (1.6.49)
+    fxruby (1.6.50)
       mini_portile2 (~> 2.1)
     http-cookie (1.0.8)
       domain_name (~> 0.5)
-    httparty (0.23.1)
-      csv
-      mini_mime (>= 1.0.0)
-      multi_xml (>= 0.5.2)
+    i18n (1.14.8)
+      concurrent-ruby (~> 1.0)
+    iban-tools (1.2.1)
+    immutable-ruby (0.2.0)
+      concurrent-ruby (~> 1.1)
+      sorted_set (~> 1.0)
+    jose (1.2.0)
+      base64
+      immutable-ruby
+    json (2.19.9)
     jwt (3.1.2)
       base64
-    kmeans-clusterer (0.11.4)
-      narray (~> 0.6)
     logger (1.7.0)
     mechanize (2.14.0)
       addressable (~> 2.8)
@@ -65,13 +111,14 @@ GEM
       logger
       mime-types-data (~> 3.2025, >= 3.2025.0507)
     mime-types-data (3.2025.0819)
-    mini_mime (1.1.5)
     mini_portile2 (2.8.9)
-    multi_xml (0.7.2)
-      bigdecimal (~> 3.1)
+    minitest (6.0.6)
+      drb (~> 2.0)
+      prism (~> 1.5)
     mustermann (3.0.4)
       ruby2_keywords (~> 0.0.1)
-    narray (0.6.1.2)
+    net-http (0.9.1)
+      uri (>= 0.11.1)
     net-http-digest_auth (1.4.1)
     net-http-persistent (4.0.6)
       connection_pool (~> 2.2, >= 2.2.4)
@@ -96,6 +143,7 @@ GEM
     openapi3_parser (0.10.1)
       commonmarker (>= 1.0)
     optimist (3.2.1)
+    prism (1.9.0)
     pry (0.15.2)
       coderay (~> 1.1)
       method_source (~> 1.0)
@@ -111,6 +159,7 @@ GEM
       rack (>= 3.0.0)
     rackup (2.2.1)
       rack (>= 3)
+    rbtree (0.4.6)
     rexml (3.4.1)
     rspec (3.13.1)
       rspec-core (~> 3.13.0)
@@ -131,12 +180,16 @@ GEM
     rubyntlm (0.6.5)
       base64
     rubyzip (3.0.2)
-    selenium-webdriver (4.35.0)
-      base64 (~> 0.2)
-      logger (~> 1.4)
+    securerandom (0.4.1)
+    selenium-webdriver (4.1.0)
+      childprocess (>= 0.5, < 5.0)
       rexml (~> 3.2, >= 3.2.5)
-      rubyzip (>= 1.2.2, < 4.0)
-      websocket (~> 1.0)
+      rubyzip (>= 1.2.2)
+    sepa_king (0.14.0)
+      activemodel (>= 4.2)
+      iban-tools
+      nokogiri
+    set (1.1.2)
     sinatra (4.1.1)
       logger (>= 1.6.0)
       mustermann (~> 3.0)
@@ -144,13 +197,25 @@ GEM
       rack-protection (= 4.1.1)
       rack-session (>= 2.0.0, < 3)
       tilt (~> 2.0)
+    smartcard (0.5.6)
+      ffi (>= 1.2.0)
+      rubyzip (>= 0.9.9)
+      zerg_support (>= 0.1.6)
+      zip-zip (>= 0.3)
+    sorted_set (1.0.3)
+      rbtree
+      set (~> 1.0)
     tilt (2.6.1)
+    tzinfo (2.0.6)
+      concurrent-ruby (~> 1.0)
     uri (1.0.3)
     webrick (1.9.1)
     webrobots (0.1.2)
-    websocket (1.2.11)
     xmlrpc (0.3.3)
       webrick
+    zerg_support (0.1.6)
+    zip-zip (0.3)
+      rubyzip (>= 1.0.0)
 
 PLATFORMS
   aarch64-linux
@@ -163,11 +228,12 @@ PLATFORMS
 
 DEPENDENCIES
   damerau-levenshtein
-  devenv (= 0.8)!
-  epi_client!
-  fxruby (= 1.6.49)
+  drb
+  esaf!
+  fints!
+  fxruby (= 1.6.50)
+  jose
   jwt
-  kmeans-clusterer
   mechanize
   nfqueue (= 1.0.4)
   nokogiri

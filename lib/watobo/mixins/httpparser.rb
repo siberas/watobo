@@ -32,13 +32,8 @@ module Watobo #:nodoc: all
       module Url
         include Watobo::Constants
 
-        # @return shortened URL (without query) [String]
-        # e.g.uri = URI.parse 'https://www.siberas.de/xxx/y.php?w=1'
-        # => "https://www.siberas.de/xxx/y.php"
-
-
-        # @return URI.origin [String]
-        # => "https://www.siberas.de"
+        # @return origin:port [String]
+        # => "https://www.siberas.de:443"
         def origin
           # don't use URI for parsing because it will break on invalid URIs,
           # e.g. when sending %u0008 in url
@@ -51,10 +46,20 @@ module Watobo #:nodoc: all
 
           # Extract authority (host[:port])
           authority = rest.split("/", 2)[0]
+          host, explicit_port = authority.split(":", 2)
 
-          # Normalize
-          origin = "#{scheme}://#{authority}"
-          origin
+          port_value =
+            if explicit_port && !explicit_port.empty?
+              explicit_port
+            elsif scheme =~ /^https$/i
+              DEFAULT_PORT_HTTPS
+            elsif scheme =~ /^http$/i
+              DEFAULT_PORT_HTTP
+            else
+              nil
+            end
+
+          port_value ? "#{scheme}://#{host}:#{port_value}" : "#{scheme}://#{host}"
         end
 
         def fext
@@ -848,7 +853,7 @@ module Watobo #:nodoc: all
           h = headers("^#{name}:").first
           return nil unless h
           eoh = h.index(':')
-          OpenStruct.new name: h[0..eoh-1], value: h[eoh+1..-1]
+          OpenStruct.new name: h[0..eoh - 1], value: h[eoh + 1..-1]
         end
 
         # @return Array of HTTP headers

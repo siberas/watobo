@@ -156,7 +156,7 @@ module Watobo#:nodoc: all
               # if flags == 2
               #    puts  "ADD SSL REQUEST"
               puts "NFQ >> #{get_ip_string(raw_src)}:#{src_port} -> #{get_ip_string(raw_dst)}:#{dst_port}"
-              add_ssl_request(get_ip_string(raw_src), src_port, get_ip_string(raw_dst), dst_port)
+            # add_ssl_request(get_ip_string(raw_src), src_port, get_ip_string(raw_dst), dst_port)
 
               Netfilter::Packet::ACCEPT
             end

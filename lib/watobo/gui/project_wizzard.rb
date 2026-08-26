@@ -196,7 +196,7 @@ module Watobo#:nodoc: all
       def initialize(parent, workspace_path=nil)
         # Invoke base class initialize function first
         #  super(parent, "New Project", DECOR_TITLE|DECOR_BORDER)
-        super(parent, "New Project", DECOR_ALL)
+        super(parent, "New Project", DECOR_ALL, width: 500, height: 400)
         
         @selected_project_path = ''
         @new_project_name = FXDataTarget.new('')

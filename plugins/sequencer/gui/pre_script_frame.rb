@@ -19,6 +19,12 @@ module Watobo #:nodoc: all
 
           def egress_handler
             return nil unless @egress.checked?
+            return nil if @egress_handlers.currentItem < 0
+            @egress_handlers.getItem(@egress_handlers.currentItem)
+          end
+
+          def egress_handler=(handler_name)
+            return nil if @egress_handlers.currentItem < 0
             @egress_handlers.getItem(@egress_handlers.currentItem)
           end
 
