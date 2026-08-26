@@ -55,8 +55,7 @@ Read at startup (see `bin/watobo` banner and `lib/watobo/framework/init.rb`):
 - `WATOBO_TRUSTED_IPS` — used by evasion modules.
 - `WATOBO_MODULES` — colon-separated extra directories appended to `Watobo.active_module_paths` (see `lib/watobo/environment.rb`).
 - `DEV_ENV` — when set, `lib/watobo.rb` skips `Bundler.require` and instead loads `devenv` plus `~/.watobo/devgems.rb`, allowing private plugins to bring their own gems.
-
-`Gemfile` also `eval_gemfile`s `~/.watobo/Gemfile.private` under the `:private_gems` group if it exists.
+- `WATOBO_PRIVATE_GEMS` — when set, `Gemfile` `eval_gemfile`s `~/.watobo/Gemfile.private` under the `:private_gems` group. Opt-in on purpose: keeps local path-based private gems out of the committed `Gemfile.lock`. If you set this, do not commit the resulting lockfile diff.
 
 ## Architecture
 
@@ -134,8 +133,9 @@ Persistence:
 - `modules/active/<Group>/*.rb`, `modules/passive/*.rb` — the check library.
 - `plugins/<name>/` — first-party plugins (aem, crawler, filefinder, invader, jwt, nuclei, sequencer, sniper, sqlmap, sslchecker, wshell, …).
 - `config/*.yml` — default settings, one file per `Watobo::Conf::*` group.
-- `spec/` — RSpec suite; helpers/stubs in `spec/app/` (Sinatra vuln app) and `spec/spec_data/`.
+- `spec/` — RSpec suite; helpers/stubs in `spec/app/` (Sinatra vuln app).
 - `dev/plugin_loader.rb` — GUI-lite bootstrap for developing a plugin in isolation.
+- `.github/workflows/rspec.yml` — CI that installs the fxruby/nfqueue system libs, then runs `bundle exec rake`. `spec_helper` never loads `fox16`, so no `xvfb` is needed.
 
 ## Platform notes
 

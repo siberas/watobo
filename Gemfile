@@ -8,9 +8,15 @@ group :development do
   gem 'rackup'
 end
 
-group :private_gems do
-private_gems_file = File.join( ENV['HOME'], '.watobo/Gemfile.private')
-eval_gemfile private_gems_file if File.exist?(private_gems_file)
+# Private dev-only gems are opt-in via env var so their local paths
+# never leak into the committed Gemfile.lock. To include them:
+#   WATOBO_PRIVATE_GEMS=1 bundle install
+# (and do not commit the resulting Gemfile.lock diff).
+if ENV['WATOBO_PRIVATE_GEMS']
+  group :private_gems do
+    private_gems_file = File.join(ENV['HOME'], '.watobo/Gemfile.private')
+    eval_gemfile private_gems_file if File.exist?(private_gems_file)
+  end
 end
 
 gem 'drb'
